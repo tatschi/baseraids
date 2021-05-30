@@ -1,0 +1,2 @@
+help on task handling of entities (entity AI)
+https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/mapping-and-modding-tutorials/2281106-tutorial-how-to-change-an-existing-mobs-ai
