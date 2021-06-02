@@ -1,31 +1,25 @@
 package may.baseraids;
 
 
-import java.util.Collection;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
+import may.baseraids.entities.*;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.monster.EndermanEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
-import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
@@ -170,34 +164,28 @@ public class RaidManager {
     	Baseraids.LOGGER.info("Initiating raid");
     	data.setRaidActive(true);
     	
-    	MobEntity[] zombies = (MobEntity[]) spawnRaidMobs(world, () -> new ZombieEntity(world), numZombies);
+    	MobEntity[] zombies = (MobEntity[]) spawnRaidMobs(world, () -> new BaseraidsZombieEntity(Baseraids.BASERAIDS_ZOMBIE_TYPE.get(), world), numZombies);
     	MobEntity[] spiders = (MobEntity[]) spawnRaidMobs(world, () -> new SpiderEntity(EntityType.SPIDER, world), numSpiders);
     	MobEntity[] enderman = (MobEntity[]) spawnRaidMobs(world, () -> new EndermanEntity(EntityType.ENDERMAN, world), numEnderman);
     	MobEntity[] skeletons = (MobEntity[]) spawnRaidMobs(world, () -> new SkeletonEntity(EntityType.SKELETON, world), numSkeletons);
     	
+    	/*
     	for(int i = 0; i < zombies.length; i++) {
     		// WORK IN PROGRESS
-    		// look closer at AbstractRaiderEntity
-    		
-    		PlayerEntity player = world.getClosestPlayer(zombies[i].getPosX(), zombies[i].getPosY(), zombies[i].getPosZ(), 20000, false);
-    		if(player == null) {
-    			Baseraids.LOGGER.info("No player nearby found");
-    			
-    			//zombies[i].getMoveHelper().setMoveTo(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1.15);
-    			zombies[i].getNavigator().clearPath();
-    			boolean moved = zombies[i].getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1.15);
-    			Baseraids.LOGGER.info("Moved: " + moved);
-    		}else {
-    			Baseraids.LOGGER.info("Try to target player");
-    			zombies[i].setAttackTarget(player);
-        		zombies[i].setAggroed(true);
-        		Baseraids.LOGGER.info("Selected goal: " + zombies[i].goalSelector.getRunningGoals().findFirst().toString());
-        		zombies[i].getNavigator().clearPath();
-        		boolean moved = zombies[i].getNavigator().tryMoveToEntityLiving(player, (double)1.15F);
-        		Baseraids.LOGGER.info("Moved: " + moved);
+    		Baseraids.LOGGER.info("adding goal");
+    		// turned out to not be disabled
+    		/*
+    		if(zombies[i].isAIDisabled()) {
+    			Baseraids.LOGGER.info("AI was disabled");
+    			zombies[i].setNoAI(false);
+    			if(zombies[i].isAIDisabled()) {
+    				Baseraids.LOGGER.info("AI is still disabled");
+    			}
     		}
     		
+    		
     	}
+    	*/
     	
     	
     }
@@ -227,6 +215,7 @@ public class RaidManager {
     		spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, tryRadiusSpawnPos);     
     		
         	Baseraids.LOGGER.info("Spawn " + mobs[i].getType().toString() + " at radius " + radius + " and angle " + angle);
+        	
         	mobs[i].getType().spawn((ServerWorld) world, null, null, spawnPos, SpawnReason.MOB_SUMMONED, false, false);
         	
     	}
@@ -248,6 +237,10 @@ public class RaidManager {
 			isRaidActive = active;
 		}
 		
+		public boolean isRaidActive() {
+			return isRaidActive;
+		}
+		
 		public CompoundNBT write() {
 			CompoundNBT nbt = new CompoundNBT();
 			nbt.putBoolean("deactivateMonsterNightSpawn", deactivateMonsterNightSpawn);
@@ -263,5 +256,7 @@ public class RaidManager {
 			raidManagerData.isRaidActive = nbt.getBoolean("isRaidActive");
 			return raidManagerData;
 		}
+		
+		
 	}
 }
