@@ -21,11 +21,9 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	
 	public BaseraidsWorldSavedData() {
 		super(DATA_NAME);
-		Baseraids.LOGGER.info("LOGID:SAVEDDATA Constructing a BaseraidsWorldSavedData");
 	}
 	public BaseraidsWorldSavedData(String name) {
 		super(name);
-		Baseraids.LOGGER.info("LOGID:SAVEDDATA Constructing a BaseraidsWorldSavedData");
 	}
 	
 	@Override
@@ -38,7 +36,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 				);
 		this.raidManagerData = RaidManagerData.read(nbt.getCompound("raidManagerData"));
 		raidManager.data = this.raidManagerData;
-		Baseraids.LOGGER.info("Initialized raidManager");
 		this.raidManager.isInitialized = true;
 	}
 	@Override
@@ -59,13 +56,11 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	
 	public void setRaidManagerData(RaidManagerData data) {
 		this.raidManagerData = data;
-		//Baseraids.LOGGER.info("BaseraidsWorldSavedData Set time since raid to :" + data.timeSinceRaid);
 		this.markDirty();
 	}
 	
 
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
-		//Baseraids.LOGGER.info("LOGID:SAVEDDATA get BaseraidsWorldSavedData");
 		DimensionSavedDataManager manager = world.getSavedData();
 		BaseraidsWorldSavedData worldSavedDataInstance = manager.getOrCreate(() -> new BaseraidsWorldSavedData(), DATA_NAME);
 		

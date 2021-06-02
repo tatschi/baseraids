@@ -42,13 +42,14 @@ public class RaidManager {
 	private int lastTickGameTime = -1;
 	private int raidSoundInterval = 60;
 	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
-	private Set<Integer> warnAllPlayersOfRaidTimes = Set.of(600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
+	private Set<Integer> warnAllPlayersOfRaidTimes = Set.of(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 
 	
 	
 	// RAID SETTINGS
-	private int raidTimeInterval = 1000; // time between to raids in GameTime, 10min is 12000, 1min is 1200
+	private int timeBetweenRaids = 1200; // time between to raids in GameTime, 10min is 12000, 1min is 1200
 	private int nightTimeInWorldDayTime = 13000; // defines the world.daytime at which it starts to be night (one day == 24000)
+	private int maxRaidDuration = 600;
 	private int numZombies = 10;
 	private int numSkeletons = 10;
 	private int numSpiders = 5;
@@ -57,7 +58,6 @@ public class RaidManager {
 	
 	public RaidManager() {
 		MinecraftForge.EVENT_BUS.register(this);
-		Baseraids.LOGGER.info("LOGID:constructRaidManager Constructing a RaidManager");
 	}
 	
 	
@@ -86,14 +86,15 @@ public class RaidManager {
 			
 			
 			// END RAID AFTER SOME TIME
-			if(data.isRaidActive && data.timeSinceRaid % 300 == 0) {
+			if(data.isRaidActive && data.timeSinceRaid % maxRaidDuration == 0) {
 				data.setRaidActive(false);
 				Baseraids.LOGGER.info("LOGID:raidEvent Raid over");
 			}
 			
 			
 			// PLAYER WARNINGS
-			double timeUntilRaidInSec = Math.max((raidTimeInterval-data.timeSinceRaid) / 20, nightTimeInWorldDayTime - (event.world.getDayTime() % 24000) % 24000);
+			// TODO: warned at daytime as well => Bug, Debug recommended
+			double timeUntilRaidInSec = Math.max((timeBetweenRaids-data.timeSinceRaid) / 20, nightTimeInWorldDayTime - (event.world.getDayTime() % 24000) % 24000);
 			if(timeUntilRaidInSec % 1 == 0 && warnAllPlayersOfRaidTimes.stream().anyMatch(time -> time == timeUntilRaidInSec)) {
 				warnAllPlayersOfRaid(event.world, (int) timeUntilRaidInSec);
 			}
@@ -103,7 +104,6 @@ public class RaidManager {
 		
 		// HANDLE SOUND DURING RAID
 		if(data.isRaidActive && tick % raidSoundInterval == 0) {
-			Baseraids.LOGGER.info("LOGID:soundEvent Playing Raid Sound, tick: " + tick);
 			event.world.playSound(null, Baseraids.baseraidsData.placedNexusBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
 		}
 		
@@ -111,12 +111,12 @@ public class RaidManager {
 		tick = tick % 1000;
 		
 		// CHECK FOR RAID
-		if(data.timeSinceRaid > raidTimeInterval) {
+		if(data.timeSinceRaid > timeBetweenRaids) {
 			if(event.world.getDayTime() % 24000 >= nightTimeInWorldDayTime) {
 				for(PlayerEntity player : event.world.getPlayers()) {
 					player.sendMessage(new StringTextComponent("You are being raided!"), null);
 				}
-				data.setTimeSinceRaid(0);
+				
 				this.initiateRaid(event.world);
 			}
 		}
@@ -132,6 +132,7 @@ public class RaidManager {
 	
 	@SubscribeEvent
 	public void onMonsterSpawn(WorldEvent.PotentialSpawns event){
+		if(event.getWorld().isRemote()) return;
 		if(data == null) return;
 		if(data.deactivateMonsterNightSpawn) {
 			if(event.getType() == EntityClassification.MONSTER) {
@@ -153,6 +154,8 @@ public class RaidManager {
     public void initiateRaid(World world) {
     	if(world.isRemote()) return;
     	if (!world.getDimensionKey().equals(World.OVERWORLD)) return;
+    	
+    	data.setTimeSinceRaid(0);
     	
     	BlockPos nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
     	if(nexusPos.getX() == -1) {

@@ -2,6 +2,10 @@ package may.baseraids;
 
 import may.baseraids.entities.*;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.ZombieRenderer;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
@@ -88,12 +92,15 @@ public class Baseraids
     
     private void setup(final FMLCommonSetupEvent event)
     {
-        // some preinit code
-    	// 
     	
     	// connect attributes of BASERAIDS_ZOMBIE_TYPE to those of ZombieEntity
     	// if custom attributes are desired, mimic func_234342_eQ_() in the entity class and call it instead
     	GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
+    	// connect ZombieRenderer to BASERAIDS_ZOMBIE_TYPE
+    	EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
+    	@SuppressWarnings("unchecked")
+		EntityRenderer<ZombieEntity> renderer = (EntityRenderer<ZombieEntity>) renderManager.renderers.get(EntityType.ZOMBIE);
+    	renderManager.register(BASERAIDS_ZOMBIE_TYPE.get(), renderer);
     }
     
     @SubscribeEvent
@@ -101,9 +108,8 @@ public class Baseraids
     	if(event.getWorld().isRemote()) return;
     	if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) return;
     	if(event.getWorld() instanceof ServerWorld) {
-    		LOGGER.info("loading baseraidsSavedData for: " + event.getWorld().getDimensionType().toString());
+    		LOGGER.info("loading baseraidsSavedData");
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-    		Baseraids.LOGGER.info("Baseraidsdata, time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
     	}
     	
     }
@@ -113,9 +119,9 @@ public class Baseraids
     	if(event.getWorld().isRemote()) return;
     	if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) return;
     	if(event.getWorld() instanceof ServerWorld) {
-    		LOGGER.info("loading baseraidsSavedData after save for: " + event.getWorld().getDimensionType().toString());
+    		LOGGER.info("loading baseraidsSavedData after save");
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-    		Baseraids.LOGGER.info("Baseraidsdata, time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
+    		LOGGER.info("loaded time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
     	}
     }
 	
