@@ -1,11 +1,8 @@
 package may.baseraids;
 
-import java.util.Vector;
-
 import may.baseraids.RaidManager.RaidManagerData;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
@@ -14,16 +11,21 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 
 	private static final String DATA_NAME = Baseraids.MODID + "_WorldSavedData";
 	
-	public BlockPos placedNexusBlockPos = new BlockPos(-1, -1, -1);
-	public RaidManager raidManager = new RaidManager();
-	public RaidManagerData raidManagerData = raidManager.data;
+	public BlockPos placedNexusBlockPos;
+	public RaidManager raidManager;
+	public RaidManagerData raidManagerData;
 	
+	public boolean isNewWorld;
 	
 	public BaseraidsWorldSavedData() {
-		super(DATA_NAME);
+		this(DATA_NAME);
 	}
 	public BaseraidsWorldSavedData(String name) {
 		super(name);
+		raidManager = new RaidManager();
+		raidManagerData = raidManager.data;
+		placedNexusBlockPos = new BlockPos(-1, -1, -1);
+		isNewWorld = true;
 	}
 	
 	@Override
@@ -36,6 +38,8 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 				);
 		this.raidManagerData = RaidManagerData.read(nbt.getCompound("raidManagerData"));
 		raidManager.data = this.raidManagerData;
+		
+		isNewWorld = nbt.getBoolean("isNewWorld");
 		this.raidManager.isInitialized = true;
 	}
 	@Override
@@ -44,6 +48,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		nbt.putInt("placedNexusBlockPosY", this.placedNexusBlockPos.getY());
 		nbt.putInt("placedNexusBlockPosZ", this.placedNexusBlockPos.getZ());
 		nbt.put("raidManagerData", raidManagerData.write());
+		nbt.putBoolean("isNewWorld", isNewWorld);
 		return nbt;
 	
 	}

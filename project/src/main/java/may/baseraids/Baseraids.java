@@ -5,7 +5,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.entity.ZombieRenderer;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
@@ -19,10 +18,11 @@ import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -44,6 +44,10 @@ import org.apache.logging.log4j.Logger;
 @Mod("baseraids")
 public class Baseraids
 {
+	
+    // TODO on world started for the first time give nexus to random player
+	// TODO on world load: load/init data 
+	
 	
 	public static final String MODID = "baseraids";
 	
@@ -73,6 +77,7 @@ public class Baseraids
     //public static RaidManager raidManager;
     public static ItemEntity nexusItem = null;
     
+    
     public Baseraids() {
     	IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus(); 
         // Register the setup method for modloading
@@ -88,7 +93,7 @@ public class Baseraids
         ENTITIES.register(bus);
     }
     
-    
+
     
     private void setup(final FMLCommonSetupEvent event)
     {
@@ -107,9 +112,18 @@ public class Baseraids
     public void onWorldLoaded(WorldEvent.Load event) {
     	if(event.getWorld().isRemote()) return;
     	if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) return;
+    	
     	if(event.getWorld() instanceof ServerWorld) {
     		LOGGER.info("loading baseraidsSavedData");
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
+    	}
+    	
+    	if(baseraidsData.isNewWorld) {
+    		BlockPos spawnNexus = new BlockPos(event.getWorld().getWorldInfo().getSpawnX(), event.getWorld().getWorldInfo().getSpawnY(), event.getWorld().getWorldInfo().getSpawnZ());
+    		event.getWorld().setBlockState(spawnNexus, NEXUS_BLOCK.get().getDefaultState(), 1);
+    		baseraidsData.setPlacedNexusBlock(spawnNexus);
+    		baseraidsData.isNewWorld = false;
+    		baseraidsData.markDirty();
     	}
     	
     }
@@ -129,7 +143,6 @@ public class Baseraids
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
     	
     }
     
@@ -163,6 +176,13 @@ public class Baseraids
     	}
         	
         
+    }
+
+    
+    public static void sendChatMessage(String message) {
+    	for(PlayerEntity player : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
+			player.sendMessage(new StringTextComponent(message), null);
+		}
     }
     
     private void addDebuff(World world) {
