@@ -26,6 +26,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		raidManagerData = raidManager.data;
 		placedNexusBlockPos = new BlockPos(-1, -1, -1);
 		isNewWorld = true;
+		raidManager.isInitialized = true;
 	}
 	
 	@Override

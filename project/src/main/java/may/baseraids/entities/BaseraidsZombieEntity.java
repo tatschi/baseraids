@@ -4,6 +4,7 @@ import may.baseraids.Baseraids;
 import may.baseraids.entities.ai.*;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
@@ -35,6 +36,7 @@ public class BaseraidsZombieEntity extends ZombieEntity {
 		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0D, false));
 		
 		this.targetSelector.addGoal(1, (new HurtByTargetGoal(this)).setCallsForHelp(ZombifiedPiglinEntity.class));
+		this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
 		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
 		this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillagerEntity.class, false));
 		this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolemEntity.class, true));

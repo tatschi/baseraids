@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -45,8 +46,11 @@ import org.apache.logging.log4j.Logger;
 public class Baseraids
 {
 	
-    // TODO on world started for the first time give nexus to random player
-	// TODO on world load: load/init data 
+	// TODO collective block breaking (add up block breaking progress)
+	// TODO add loot to loot chest
+	// TODO add raid level system
+	// TODO add more variance in raid spawning (varying distance to nexus)
+	
 	
 	
 	public static final String MODID = "baseraids";
@@ -70,6 +74,9 @@ public class Baseraids
     public static final RegistryObject<EntityType<BaseraidsZombieEntity>> BASERAIDS_ZOMBIE_TYPE =
     		ENTITIES.register("baseraids_zombie_entity",
     		() -> EntityType.Builder.<BaseraidsZombieEntity>create(BaseraidsZombieEntity::new, EntityClassification.MONSTER).build("baseraids_zombie_entity"));
+    public static final RegistryObject<EntityType<BaseraidsSkeletonEntity>> BASERAIDS_SKELETON_TYPE =
+    		ENTITIES.register("baseraids_skeleton_entity",
+    		() -> EntityType.Builder.<BaseraidsSkeletonEntity>create(BaseraidsSkeletonEntity::new, EntityClassification.MONSTER).build("baseraids_skeleton_entity"));
     		
     
     
@@ -94,18 +101,22 @@ public class Baseraids
     }
     
 
-    
+    @SuppressWarnings("unchecked")
     private void setup(final FMLCommonSetupEvent event)
     {
     	
     	// connect attributes of BASERAIDS_ZOMBIE_TYPE to those of ZombieEntity
     	// if custom attributes are desired, mimic func_234342_eQ_() in the entity class and call it instead
     	GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
+    	GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_TYPE.get(), SkeletonEntity.registerAttributes().create());
     	// connect ZombieRenderer to BASERAIDS_ZOMBIE_TYPE
     	EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
-    	@SuppressWarnings("unchecked")
-		EntityRenderer<ZombieEntity> renderer = (EntityRenderer<ZombieEntity>) renderManager.renderers.get(EntityType.ZOMBIE);
-    	renderManager.register(BASERAIDS_ZOMBIE_TYPE.get(), renderer);
+    	
+		EntityRenderer<ZombieEntity> zombieRenderer = (EntityRenderer<ZombieEntity>) renderManager.renderers.get(EntityType.ZOMBIE);
+    	renderManager.register(BASERAIDS_ZOMBIE_TYPE.get(), zombieRenderer);
+    	EntityRenderer<SkeletonEntity> skeletonRenderer = (EntityRenderer<SkeletonEntity>) renderManager.renderers.get(EntityType.SKELETON);
+    	renderManager.register(BASERAIDS_SKELETON_TYPE.get(), skeletonRenderer);
+    	
     }
     
     @SubscribeEvent
@@ -122,8 +133,12 @@ public class Baseraids
     		BlockPos spawnNexus = new BlockPos(event.getWorld().getWorldInfo().getSpawnX(), event.getWorld().getWorldInfo().getSpawnY(), event.getWorld().getWorldInfo().getSpawnZ());
     		event.getWorld().setBlockState(spawnNexus, NEXUS_BLOCK.get().getDefaultState(), 1);
     		baseraidsData.setPlacedNexusBlock(spawnNexus);
+    		
+    		
+    		
     		baseraidsData.isNewWorld = false;
     		baseraidsData.markDirty();
+    		
     	}
     	
     }
@@ -140,10 +155,8 @@ public class Baseraids
     }
 	
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-    	
     }
     
     
