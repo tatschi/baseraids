@@ -24,7 +24,7 @@ displayName="BaseRaids" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification <here>
 #updateJSONURL="http://myurl.me/" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
-#displayURL="http://example.com/" #optional
+displayURL="https://github.com/tatschi/baseraids" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
 #logoFile="examplemod.png" #optional
 # A text field displayed in the mod UI
@@ -33,34 +33,30 @@ credits="Thanks to Foxi :)" #optional
 authors="Natascha May" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-This mod is planned to add monster raids on your base that could destroy some of it or earn you valuable goods.
+This mod adds monster raids on your base that will destroy parts of your base or earn you valuable goods.
 
-It is planned to add a nexus block that will be the heart of your base and the attacks target. You must have a nexus block in your base.
-It is planned to have a number (15?) of raid levels of increasing difficulty and reward. Defending off a raid will reward you with valuable goods and increase the next raid level.
-If the nexus is destroyed during a raid, the next raid will reset to level 1. 
+It adds a nexus block that will be the heart of your base and the attacks target. You must have a nexus block in your base. If the nexus is destroyed, you lose the raid. If you can kill all attackers or the nexus survives for long enough, you earn a reward!
+The raids have multiple levels(15?) of increasing difficulty and reward. Defending off a raid will increase the next raid level, however, if you lose a raid, the level will be reset to 1.
+
 After you have defended the highest raid level, you will be able to avoid raids.
-Raids occur every couple (3?) of days.
+Raids are intended to occur every couple of days, but there will be a the possibility to change this setting.
 
-It is also planned to remove monster spawning at night (maybe optional).
+The mod also removes monster spawning at night (but not in caves).
 
 Raise your defense, secure your base and nexus, fight! The raids are coming.
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.examplemod]] #optional
+#[[dependencies.examplemod]] #optional
     # the modid of the dependency
-    modId="forge" #mandatory
+    #modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
-    mandatory=true #mandatory
+    #mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[35,)" #mandatory
+    #versionRange="[35,)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
-    ordering="NONE"
+    #ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
-    side="BOTH"
-# Here's another dependency
-[[dependencies.examplemod]]
-    modId="minecraft"
-    mandatory=true
+    #side="BOTH"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
     versionRange="[1.16.4,1.17)"
     ordering="NONE"
