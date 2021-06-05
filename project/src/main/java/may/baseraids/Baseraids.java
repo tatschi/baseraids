@@ -1,7 +1,16 @@
 package may.baseraids;
 
+import may.baseraids.entities.*;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.SkeletonEntity;
+import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -10,10 +19,11 @@ import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -36,6 +46,13 @@ import org.apache.logging.log4j.Logger;
 public class Baseraids
 {
 	
+	// TODO collective block breaking (add up block breaking progress)
+	// TODO add loot to loot chest
+	// TODO add raid level system
+	// TODO add more variance in raid spawning (varying distance to nexus)
+	
+	
+	
 	public static final String MODID = "baseraids";
 	
     // Directly reference a log4j logger.
@@ -44,6 +61,7 @@ public class Baseraids
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Baseraids.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Baseraids.MODID);
     private static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Baseraids.MODID);
+    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, Baseraids.MODID);
     
     
     public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> new NexusBlock());
@@ -53,11 +71,19 @@ public class Baseraids
     public static final RegistryObject<TileEntityType<NexusEffectsTileEntity>> NEXUS_TILE_ENTITY_TYPE =
     		TILE_ENTITIES.register("nexus_effects_tile_entity",
     		() -> TileEntityType.Builder.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
+    public static final RegistryObject<EntityType<BaseraidsZombieEntity>> BASERAIDS_ZOMBIE_TYPE =
+    		ENTITIES.register("baseraids_zombie_entity",
+    		() -> EntityType.Builder.<BaseraidsZombieEntity>create(BaseraidsZombieEntity::new, EntityClassification.MONSTER).build("baseraids_zombie_entity"));
+    public static final RegistryObject<EntityType<BaseraidsSkeletonEntity>> BASERAIDS_SKELETON_TYPE =
+    		ENTITIES.register("baseraids_skeleton_entity",
+    		() -> EntityType.Builder.<BaseraidsSkeletonEntity>create(BaseraidsSkeletonEntity::new, EntityClassification.MONSTER).build("baseraids_skeleton_entity"));
+    		
     
     
     public static BaseraidsWorldSavedData baseraidsData;
     //public static RaidManager raidManager;
     public static ItemEntity nexusItem = null;
+    
     
     public Baseraids() {
     	IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus(); 
@@ -71,24 +97,48 @@ public class Baseraids
         BLOCKS.register(bus);
         ITEMS.register(bus);
         TILE_ENTITIES.register(bus);
-
+        ENTITIES.register(bus);
     }
     
-    
-    
+
+    @SuppressWarnings("unchecked")
     private void setup(final FMLCommonSetupEvent event)
     {
-        // some preinit code
+    	
+    	// connect attributes of BASERAIDS_ZOMBIE_TYPE to those of ZombieEntity
+    	// if custom attributes are desired, mimic func_234342_eQ_() in the entity class and call it instead
+    	GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
+    	GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_TYPE.get(), SkeletonEntity.registerAttributes().create());
+    	// connect ZombieRenderer to BASERAIDS_ZOMBIE_TYPE
+    	EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
+    	
+		EntityRenderer<ZombieEntity> zombieRenderer = (EntityRenderer<ZombieEntity>) renderManager.renderers.get(EntityType.ZOMBIE);
+    	renderManager.register(BASERAIDS_ZOMBIE_TYPE.get(), zombieRenderer);
+    	EntityRenderer<SkeletonEntity> skeletonRenderer = (EntityRenderer<SkeletonEntity>) renderManager.renderers.get(EntityType.SKELETON);
+    	renderManager.register(BASERAIDS_SKELETON_TYPE.get(), skeletonRenderer);
+    	
     }
     
     @SubscribeEvent
     public void onWorldLoaded(WorldEvent.Load event) {
     	if(event.getWorld().isRemote()) return;
     	if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) return;
+    	
     	if(event.getWorld() instanceof ServerWorld) {
-    		LOGGER.info("loading baseraidsSavedData for: " + event.getWorld().getDimensionType().toString());
+    		LOGGER.info("loading baseraidsSavedData");
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-    		Baseraids.LOGGER.info("Baseraidsdata, time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
+    	}
+    	
+    	if(baseraidsData.isNewWorld) {
+    		BlockPos spawnNexus = new BlockPos(event.getWorld().getWorldInfo().getSpawnX(), event.getWorld().getWorldInfo().getSpawnY(), event.getWorld().getWorldInfo().getSpawnZ());
+    		event.getWorld().setBlockState(spawnNexus, NEXUS_BLOCK.get().getDefaultState(), 1);
+    		baseraidsData.setPlacedNexusBlock(spawnNexus);
+    		
+    		
+    		
+    		baseraidsData.isNewWorld = false;
+    		baseraidsData.markDirty();
+    		
     	}
     	
     }
@@ -98,18 +148,15 @@ public class Baseraids
     	if(event.getWorld().isRemote()) return;
     	if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) return;
     	if(event.getWorld() instanceof ServerWorld) {
-    		LOGGER.info("loading baseraidsSavedData after save for: " + event.getWorld().getDimensionType().toString());
+    		LOGGER.info("loading baseraidsSavedData after save");
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-    		Baseraids.LOGGER.info("Baseraidsdata, time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
+    		LOGGER.info("loaded time since last raid: " + baseraidsData.raidManagerData.timeSinceRaid);
     	}
     }
 	
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
-    	
     }
     
     
@@ -142,6 +189,13 @@ public class Baseraids
     	}
         	
         
+    }
+
+    
+    public static void sendChatMessage(String message) {
+    	for(PlayerEntity player : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
+			player.sendMessage(new StringTextComponent(message), null);
+		}
     }
     
     private void addDebuff(World world) {

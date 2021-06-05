@@ -62,6 +62,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 	 
 	 @SubscribeEvent
 	 public static void onBlockPlaced(final BlockEvent.EntityPlaceEvent event) {
+		 if(event.getWorld().isRemote()) return;
 		 if(event.getPlacedBlock().getBlock() instanceof NexusBlock) {
 			 if(Baseraids.baseraidsData.placedNexusBlockPos.getX() != -1) {
 				 Baseraids.LOGGER.info("Removed double nexus block");
@@ -83,6 +84,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 	 
 	 @SubscribeEvent
 	 public static void onBlockDestroyed(final BlockEvent.BreakEvent event) {
+		 if(event.getPlayer().world.isRemote()) return;
 		 if(event.getState().getBlock() instanceof NexusBlock) {
 			 Baseraids.baseraidsData.setPlacedNexusBlock(new BlockPos(-1, -1, -1));
 		 }
@@ -91,6 +93,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 	 
 	 @SubscribeEvent
 	 public static void onItemDropped(final ItemTossEvent event) {
+		 if(event.getPlayer().world.isRemote()) return;
 		 if(event.getEntityItem().getItem().getItem() instanceof BlockItem) {
 			 BlockItem item = (BlockItem) event.getEntityItem().getItem().getItem();
 			 
@@ -104,6 +107,8 @@ public class NexusBlock extends Block implements IForgeBlock{
 	 
 	 @SubscribeEvent
 	 public static void onItemPickedUp(final EntityItemPickupEvent event) {
+		 if(event.getPlayer().world.isRemote()) return;
+		 
 		 Item item = event.getItem().getItem().getItem();
 		 if(item instanceof BlockItem) {
 			 BlockItem blockitem = (BlockItem) item;
@@ -124,6 +129,9 @@ public class NexusBlock extends Block implements IForgeBlock{
 		 Baseraids.LOGGER.info("PlayerLoggedOutEvent");
 		 PlayerEntity playerLogOut = event.getPlayer();
 		 World world = playerLogOut.world;
+		 if(world.isRemote()) return;
+		 
+		 
 		 
 		 if(playerLogOut.inventory.hasAny(Set.of(Baseraids.NEXUS_ITEM.get()))) {
 			

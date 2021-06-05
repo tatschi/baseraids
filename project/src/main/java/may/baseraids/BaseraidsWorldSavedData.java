@@ -1,11 +1,8 @@
 package may.baseraids;
 
-import java.util.Vector;
-
 import may.baseraids.RaidManager.RaidManagerData;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
@@ -14,18 +11,22 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 
 	private static final String DATA_NAME = Baseraids.MODID + "_WorldSavedData";
 	
-	public BlockPos placedNexusBlockPos = new BlockPos(-1, -1, -1);
-	public RaidManager raidManager = new RaidManager();
-	public RaidManagerData raidManagerData = raidManager.data;
+	public BlockPos placedNexusBlockPos;
+	public RaidManager raidManager;
+	public RaidManagerData raidManagerData;
 	
+	public boolean isNewWorld;
 	
 	public BaseraidsWorldSavedData() {
-		super(DATA_NAME);
-		Baseraids.LOGGER.info("LOGID:SAVEDDATA Constructing a BaseraidsWorldSavedData");
+		this(DATA_NAME);
 	}
 	public BaseraidsWorldSavedData(String name) {
 		super(name);
-		Baseraids.LOGGER.info("LOGID:SAVEDDATA Constructing a BaseraidsWorldSavedData");
+		raidManager = new RaidManager();
+		raidManagerData = raidManager.data;
+		placedNexusBlockPos = new BlockPos(-1, -1, -1);
+		isNewWorld = true;
+		raidManager.isInitialized = true;
 	}
 	
 	@Override
@@ -38,7 +39,8 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 				);
 		this.raidManagerData = RaidManagerData.read(nbt.getCompound("raidManagerData"));
 		raidManager.data = this.raidManagerData;
-		Baseraids.LOGGER.info("Initialized raidManager");
+		
+		isNewWorld = nbt.getBoolean("isNewWorld");
 		this.raidManager.isInitialized = true;
 	}
 	@Override
@@ -47,6 +49,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		nbt.putInt("placedNexusBlockPosY", this.placedNexusBlockPos.getY());
 		nbt.putInt("placedNexusBlockPosZ", this.placedNexusBlockPos.getZ());
 		nbt.put("raidManagerData", raidManagerData.write());
+		nbt.putBoolean("isNewWorld", isNewWorld);
 		return nbt;
 	
 	}
@@ -59,13 +62,11 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	
 	public void setRaidManagerData(RaidManagerData data) {
 		this.raidManagerData = data;
-		//Baseraids.LOGGER.info("BaseraidsWorldSavedData Set time since raid to :" + data.timeSinceRaid);
 		this.markDirty();
 	}
 	
 
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
-		//Baseraids.LOGGER.info("LOGID:SAVEDDATA get BaseraidsWorldSavedData");
 		DimensionSavedDataManager manager = world.getSavedData();
 		BaseraidsWorldSavedData worldSavedDataInstance = manager.getOrCreate(() -> new BaseraidsWorldSavedData(), DATA_NAME);
 		

@@ -9,11 +9,6 @@
           "type": "minecraft:item",
           "name": "baseraids:nexus_block"
         }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
       ]
     }
   ]
