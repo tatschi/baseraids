@@ -25,7 +25,7 @@ public class BaseraidsSkeletonEntity extends SkeletonEntity {
 	}
 	
 	public BaseraidsSkeletonEntity(World worldIn) {
-		this(Baseraids.BASERAIDS_SKELETON_TYPE.get(), worldIn);
+		this(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), worldIn);
 		
 		
 	}

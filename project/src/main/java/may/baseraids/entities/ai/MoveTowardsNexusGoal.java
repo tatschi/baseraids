@@ -23,11 +23,11 @@ public class MoveTowardsNexusGoal extends Goal{
 	
 	
 	public boolean shouldExecute() {
-		return entity.getAttackTarget() == null && raidManager.data.isRaidActive();
+		return entity.getAttackTarget() == null && raidManager.isRaidActive();
 	}
 	
 	public boolean shouldContinueExecuting() {
-		return raidManager.data.isRaidActive() && entity.world instanceof ServerWorld;
+		return raidManager.isRaidActive() && entity.world instanceof ServerWorld;
 	}
 	
 	public void startExecuting() {

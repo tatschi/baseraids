@@ -23,7 +23,7 @@ public class BaseraidsZombieEntity extends ZombieEntity {
 	}
 	
 	public BaseraidsZombieEntity(World worldIn) {
-		this(Baseraids.BASERAIDS_ZOMBIE_TYPE.get(), worldIn);
+		this(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), worldIn);
 		
 		
 	}

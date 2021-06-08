@@ -40,11 +40,11 @@ public class DestroyNexusGoal extends Goal{
 	
 	
 	public boolean shouldExecute() {
-		return raidManager.data.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus;
+		return raidManager.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus;
 	}
 	
 	public boolean shouldContinueExecuting() {
-		return raidManager.data.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus && entity.world instanceof ServerWorld;
+		return raidManager.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus && entity.world instanceof ServerWorld;
 	}
 	
 	public void startExecuting() {

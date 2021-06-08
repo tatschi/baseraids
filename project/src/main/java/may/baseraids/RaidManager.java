@@ -1,9 +1,12 @@
 package may.baseraids;
 
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -48,29 +51,34 @@ import net.minecraftforge.items.CapabilityItemHandler;
 public class RaidManager {
 
 	
-	public RaidManagerData data;
+	// RUNTIME VARIABLES
 	public boolean isInitialized = false;
 	
-	
+	private boolean isRaidActive = false;
 	private int tick = 0;
 	private int lastTickGameTime = -1;
-	private int raidSoundInterval = 60;
-	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
-	private Set<Integer> warnAllPlayersOfRaidTimes = Set.of(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
-
+	private int curLevel = 1;
+	
+	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
 	
 	
 	// RAID SETTINGS
+	private int timeSinceRaid = 0;
 	private int timeBetweenRaids = 24000; // time between to raids in GameTime, 10min is 12000, 1min is 1200
 	private int nightTimeInWorldDayTime = 13000; // defines the world.daytime at which it starts to be night (one day == 24000)
-	private int maxRaidDuration = 1600;
-	private int numZombies = 10;
-	private int numSkeletons = 10;
-	private int numSpiders = 5;
-	private int numEnderman = 2;
+	private int maxRaidDuration = 3600;
+	private int raidSoundInterval = 60;
+	
+	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
+	private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
+	
+	private boolean deactivateMonsterNightSpawn = true;
+	
+	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
+	private Set<Integer> warnAllPlayersOfRaidTimes = Set.of(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 	
 	
-	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
+	
 	
 	
 	
@@ -78,10 +86,21 @@ public class RaidManager {
 	
 	public RaidManager() {
 		MinecraftForge.EVENT_BUS.register(this);
+		setAmountOfMobsToSpawn();
 		Baseraids.LOGGER.info("RaidManager created");
-		data = new RaidManagerData();
 	}
 	
+	
+	private void setAmountOfMobsToSpawn() {
+		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "zombie"), 5);
+		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "skeleton"), 2);
+		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "spider"), 3);
+		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "enderman"), 0);
+	}
+	
+	private int getAmountOfMobsToSpawnForCurLevel(String name) {
+		return amountOfMobsToSpawn.get(new AbstractMap.SimpleEntry<Integer, String>(curLevel, name));
+	}
 	
 	@SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
@@ -91,7 +110,7 @@ public class RaidManager {
 		if (!event.world.getDimensionKey().equals(World.OVERWORLD)) return;
 
 		if(event.world.getDifficulty() == Difficulty.PEACEFUL) {
-			if(data.isRaidActive()) {
+			if(isRaidActive()) {
 				endRaid();
 			}
 			return;
@@ -103,13 +122,13 @@ public class RaidManager {
 		tick = tick % 1000;
 		
 		// CHECK FOR RAID
-		if(data.timeSinceRaid > timeBetweenRaids) {
+		if(getTimeSinceRaid() > timeBetweenRaids) {
 			if(event.world.getDayTime() % 24000 >= nightTimeInWorldDayTime) {				
 				initiateRaid(event.world);
 			}
 		}
 		
-		if(data.isRaidActive()) {
+		if(isRaidActive()) {
 			raidTick(event.world);
 		}
 		
@@ -123,12 +142,12 @@ public class RaidManager {
 		if (tick % 20 == 0) {
 			
 			// HANDLE RAID TIMER
-			data.setTimeSinceRaid(data.timeSinceRaid + (int) world.getGameTime() - lastTickGameTime);
+			setTimeSinceRaid(getTimeSinceRaid() + (int) world.getGameTime() - lastTickGameTime);
 			lastTickGameTime = (int) (world.getGameTime());
 			
 			// Log timeSinceRaid
-			if(data.timeSinceRaid % 100 == 0) {
-				Baseraids.LOGGER.info("GameTime since last raid: " + data.timeSinceRaid);
+			if(getTimeSinceRaid() % 100 == 0) {
+				Baseraids.LOGGER.info("GameTime since last raid: " + getTimeSinceRaid());
 			}
 			
 			
@@ -151,12 +170,18 @@ public class RaidManager {
 	private void raidTick(World world) {
 		
 		// HANDLE SOUND		
-		if(data.isRaidActive && tick % raidSoundInterval == 0) {
+		if(isRaidActive && tick % raidSoundInterval == 0) {
 			world.playSound(null, Baseraids.baseraidsData.placedNexusBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
 		}
 		
+		// CHECK IF RAID IS WON
+		if(isRaidWon()) {
+			Baseraids.LOGGER.info("Raid ended because all mobs are dead");
+			winRaid(world);
+		}
+		
 		// END RAID AFTER MAX DURATION
-		if(data.isRaidActive() && data.timeSinceRaid > maxRaidDuration) {
+		if(isRaidActive && getTimeSinceRaid() > maxRaidDuration) {
 			Baseraids.LOGGER.info("Raid ended because of max duration");
 			winRaid(world);
 		}
@@ -167,8 +192,7 @@ public class RaidManager {
 	@SubscribeEvent
 	public void onMonsterSpawn(WorldEvent.PotentialSpawns event){
 		if(event.getWorld().isRemote()) return;
-		if(data == null) return;
-		if(data.deactivateMonsterNightSpawn) {
+		if(deactivateMonsterNightSpawn) {
 			if(event.getType() == EntityClassification.MONSTER) {
 				
 				World world = (World) event.getWorld();
@@ -191,7 +215,7 @@ public class RaidManager {
     	
     	Baseraids.sendChatMessage("You are being raided!");
     	
-    	data.setTimeSinceRaid(0);
+    	setTimeSinceRaid(0);
     	
     	BlockPos nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
     	if(nexusPos.getX() == -1) {
@@ -201,18 +225,24 @@ public class RaidManager {
     	
     	
     	Baseraids.LOGGER.info("Initiating raid");
-    	data.setRaidActive(true);
+    	setRaidActive(true);
     	
     	// SPAWNING
     	
-    	MobEntity[] zombies = (MobEntity[]) spawnRaidMobs(world, () -> new BaseraidsZombieEntity(Baseraids.BASERAIDS_ZOMBIE_TYPE.get(), world), numZombies);
-    	MobEntity[] spiders = (MobEntity[]) spawnRaidMobs(world, () -> new SpiderEntity(EntityType.SPIDER, world), numSpiders);
-    	MobEntity[] enderman = (MobEntity[]) spawnRaidMobs(world, () -> new EndermanEntity(EntityType.ENDERMAN, world), numEnderman);
-    	MobEntity[] skeletons = (MobEntity[]) spawnRaidMobs(world, () -> new BaseraidsSkeletonEntity(Baseraids.BASERAIDS_SKELETON_TYPE.get(), world), numSkeletons);
+    	MobEntity[] zombies = (MobEntity[]) spawnRaidMobs(world,
+    			() -> new BaseraidsZombieEntity(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), world),
+    			getAmountOfMobsToSpawnForCurLevel("zombie"));
+    	MobEntity[] spiders = (MobEntity[]) spawnRaidMobs(world,
+    			() -> new BaseraidsSpiderEntity(Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(), world),
+    			getAmountOfMobsToSpawnForCurLevel("spider"));
+    	MobEntity[] skeletons = (MobEntity[]) spawnRaidMobs(world,
+    			() -> new BaseraidsSkeletonEntity(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), world),
+    			getAmountOfMobsToSpawnForCurLevel("skeleton"));
     	
+    	spawnedMobs.clear();
     	spawnedMobs.addAll(Arrays.asList(zombies));
     	spawnedMobs.addAll(Arrays.asList(spiders));
-    	spawnedMobs.addAll(Arrays.asList(enderman));
+    	//spawnedMobs.addAll(Arrays.asList(enderman));
     	spawnedMobs.addAll(Arrays.asList(skeletons));
     	
     	
@@ -244,7 +274,7 @@ public class RaidManager {
     		
         	Baseraids.LOGGER.info("Spawn " + mobs[i].getType().toString() + " at radius " + radius + " and angle " + angle);
         	
-        	mobs[i].getType().spawn((ServerWorld) world, null, null, spawnPos, SpawnReason.MOB_SUMMONED, false, false);
+        	mobs[i] = (MobEntity) mobs[i].getType().spawn((ServerWorld) world, null, null, spawnPos, SpawnReason.MOB_SUMMONED, false, false);
         	
     	}
     	return (T[]) mobs;
@@ -260,7 +290,6 @@ public class RaidManager {
     
     public void winRaid(World world) {
     	if(world.isRemote()) return;
-    	if(!data.isRaidActive()) return;
     	Baseraids.LOGGER.info("Raid won");
     	Baseraids.sendChatMessage("You have won the raid!");
     	endRaid();
@@ -274,8 +303,8 @@ public class RaidManager {
     		chestEntity.setLootTable(loottable_level_1, world.getRandom().nextLong());
     		chestEntity.fillWithLoot(null);
     		
-    		LazyOptional<?> cap = chestEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
-    		cap.ifPresent(); // need IItemHandler, research capabilities
+    		//LazyOptional<?> cap = chestEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+    		//cap.ifPresent(); // need IItemHandler, research capabilities
     		// or find out how the loot tables work ...
     		Baseraids.LOGGER.info("Added loot to loot chest");
     	}else {
@@ -287,52 +316,66 @@ public class RaidManager {
     
     private void endRaid() {
     	Baseraids.LOGGER.info("Ending raid");
-    	data.setRaidActive(false);
+    	setRaidActive(false);
     	spawnedMobs.forEach(mob -> mob.onKillCommand());
+    	spawnedMobs.clear();
     }
     
     public int getTimeUntilRaidInSec(World world) {
     	// Math.floorMod returns only positive values (for a positive modulus) while % returns the actual remainder
 		return (int) Math.max(
-				(timeBetweenRaids-data.timeSinceRaid),
+				(timeBetweenRaids-getTimeSinceRaid()),
 				Math.floorMod(nightTimeInWorldDayTime - (world.getDayTime() % 24000), 24000)
 				) /20;
     }
     
-	public static class RaidManagerData {
-		public boolean deactivateMonsterNightSpawn = true;
-		public int timeSinceRaid = 0;
-		public boolean isRaidActive = false;
+    
+    private boolean isRaidWon() {
+    	if(spawnedMobs.isEmpty()) return false;
+    	for(MobEntity mob : spawnedMobs) {
+    		if(mob.isAlive()) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
+    
+    public CompoundNBT writeAdditional() {
+		CompoundNBT nbt = new CompoundNBT();
+		nbt.putBoolean("deactivateMonsterNightSpawn", deactivateMonsterNightSpawn);
+		nbt.putInt("timeSinceRaid", getTimeSinceRaid());
+		nbt.putBoolean("isRaidActive", isRaidActive);
+		return nbt;
+	}
+	
+	public void readAdditional(CompoundNBT nbt) {
 		
-		void setTimeSinceRaid(int timeSinceRaid) {
-			this.timeSinceRaid = timeSinceRaid;
-			Baseraids.baseraidsData.setRaidManagerData(this);
-		}
-		
-		void setRaidActive(boolean active) {
-			isRaidActive = active;
-		}
-		
-		public boolean isRaidActive() {
-			return isRaidActive;
-		}
-		
-		public CompoundNBT write() {
-			CompoundNBT nbt = new CompoundNBT();
-			nbt.putBoolean("deactivateMonsterNightSpawn", deactivateMonsterNightSpawn);
-			nbt.putInt("timeSinceRaid", timeSinceRaid);
-			nbt.putBoolean("isRaidActive", isRaidActive);
-			return nbt;
-		}
-		
-		public static RaidManagerData read(CompoundNBT nbt) {
-			RaidManagerData raidManagerData = new RaidManagerData();
-			raidManagerData.deactivateMonsterNightSpawn = nbt.getBoolean("deactivateMonsterNightSpawn");
-			raidManagerData.timeSinceRaid = nbt.getInt("timeSinceRaid");
-			raidManagerData.isRaidActive = nbt.getBoolean("isRaidActive");
-			return raidManagerData;
-		}
-		
-		
+		deactivateMonsterNightSpawn = nbt.getBoolean("deactivateMonsterNightSpawn");
+		timeSinceRaid = nbt.getInt("timeSinceRaid");
+		isRaidActive = nbt.getBoolean("isRaidActive");
+	}
+	
+	public void setTimeSinceRaid(int timeSinceRaid) {
+		this.timeSinceRaid = timeSinceRaid;
+		markDirty();
+	}
+	
+	public void setRaidActive(boolean active) {
+		isRaidActive = active;
+		markDirty();
+	}
+    
+	public boolean isRaidActive() {
+		return isRaidActive;
+	}
+	
+	public void markDirty() {
+		Baseraids.baseraidsData.markDirty();
+	}
+
+
+	public int getTimeSinceRaid() {
+		return timeSinceRaid;
 	}
 }
