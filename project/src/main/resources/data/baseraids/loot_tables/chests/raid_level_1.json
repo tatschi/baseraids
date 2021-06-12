@@ -1,196 +1,73 @@
 {
-	"type": "minecraft:chest",
+	"name": "baseraids:raid_level_1",
 	"pools": [
 		{
-			"rolls": 1,
-			"entries": [
-				{
-					"type": "minecraft:item",
-					"weight": 20,
-					"name": "minecraft:golden_apple"
-				},
-				{
-					"type": "minecraft:item",
-					"name": "minecraft:enchanted_golden_apple"
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 30,
-					"name": "minecraft:name_tag"
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 10,
-					"name": "minecraft:book",
-					"functions": [
-						{
-							"function": "minecraft:enchant_randomly"
-						}
-					]
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 5,
-					"name": "minecraft:iron_pickaxe"
-				},
-				{
-					"type": "minecraft:empty",
-					"weight": 5
-				}
-			]
-		},
-		{
-			"rolls": 3,
-			"entries": [
-				{
-					"type": "minecraft:item",
-					"weight": 20,
-					"name": "minecraft:rail",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 4,
-								"max": 8
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 5,
-					"name": "minecraft:powered_rail",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 4
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 5,
-					"name": "minecraft:detector_rail",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 4
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 5,
-					"name": "minecraft:activator_rail",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 4
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:item",
-					"weight": 15,
-					"name": "minecraft:torch",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 16
-							}
-						}
-					]
-				}
-			]
-		},
-		{
 			"rolls": {
-				"min": 4,
-				"max": 10
+				"min": 3,
+				"max": 11
 			},
 			"entries": [
 				{
 					"type": "minecraft:item",
-					"weight": 25,
-					"name": "minecraft:bread",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 8
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:tag",
-					"weight": 25,
-					"name": "minecraft:sand",
+					"name": "minecraft:cobblestone",
 					"functions": [
 						{
 							"function": "minecraft:set_count",
 							"count": {
 								"min": 5,
-								"max": 20
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:tag",
-					"weight": 100,
-					"name": "minecraft:coals",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 20
-							}
-						}
-					]
-				},
-				{
-					"type": "minecraft:tag",
-					"weight": 50,
-					"name": "minecraft:logs",
-					"functions": [
-						{
-							"function": "minecraft:set_count",
-							"count": {
-								"min": 1,
-								"max": 64
+								"max": 30
 							}
 						}
 					]
 				},
 				{
 					"type": "minecraft:item",
-					"weight": 50,
-					"name": "minecraft:stone",
+					"name": "minecraft:coal",
 					"functions": [
 						{
 							"function": "minecraft:set_count",
 							"count": {
-								"min": 1,
-								"max": 25
+								"min": 5,
+								"max": 10
+							}
+						}
+					]
+				},
+				{
+					"type": "minecraft:item",
+					"name": "minecraft:bread",
+					"functions": [
+						{
+							"function": "minecraft:set_count",
+							"count": {
+								"min": 2,
+								"max": 5
 							}
 						}
 					]
 				}
 			]
+		},
+		
+		{
+			"rolls": 1,
+			"entries": [
+				{
+					"type": "minecraft:tag",
+					"name": "minecraft:logs",
+					"expand": true
+				}
+			],
+			"functions": [
+						{
+							"function": "minecraft:set_count",
+							"count": {
+								"min": 5,
+								"max": 30
+							}
+						}
+					]
+			
 		}
 	]
 }

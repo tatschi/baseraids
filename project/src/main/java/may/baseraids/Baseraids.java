@@ -16,11 +16,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.loot.LootTable;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -36,6 +39,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 import java.util.List;
 
@@ -107,9 +111,10 @@ public class Baseraids
     	GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
     	GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_ENTITY_TYPE.get(), SkeletonEntity.registerAttributes().create());
     	GlobalEntityTypeAttributes.put(BASERAIDS_SPIDER_ENTITY_TYPE.get(), SpiderEntity.func_234305_eI_().create());
-    	// connect ZombieRenderer to BASERAIDS_ZOMBIE_TYPE
+    	
     	EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
     	
+    	// add renderers to custom entity types
 		EntityRenderer<ZombieEntity> zombieRenderer = (EntityRenderer<ZombieEntity>) renderManager.renderers.get(EntityType.ZOMBIE);
     	renderManager.register(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), zombieRenderer);
     	EntityRenderer<SkeletonEntity> skeletonRenderer = (EntityRenderer<SkeletonEntity>) renderManager.renderers.get(EntityType.SKELETON);

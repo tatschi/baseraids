@@ -38,13 +38,13 @@ public class BaseraidsSpiderEntity extends SpiderEntity{
 	
 	@Override
 	protected void registerGoals() {
-		this.goalSelector.addGoal(1, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
+		this.goalSelector.addGoal(3, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
 		this.goalSelector.addGoal(0, new DestroyNexusGoal(this, Baseraids.baseraidsData.raidManager, Baseraids.baseraidsData.placedNexusBlockPos));
 		
 
 		this.goalSelector.addGoal(1, new SwimGoal(this));
 		this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
-		this.goalSelector.addGoal(4, new BaseraidsSpiderEntity.AttackGoal(this));
+		this.goalSelector.addGoal(2, new BaseraidsSpiderEntity.AttackGoal(this));
 		this.goalSelector.addGoal(6, new LookAtGoal(this, PlayerEntity.class, 8.0F));
 		this.goalSelector.addGoal(6, new LookRandomlyGoal(this));
 		this.targetSelector.addGoal(1, new HurtByTargetGoal(this));

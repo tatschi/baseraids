@@ -1,4 +1,7 @@
 {
     "item.baseraids.nexus_item":  "Nexus",
-	"block.baseraids.nexus_block":  "Nexus"
+	"block.baseraids.nexus_block":  "Nexus",
+	"entity.baseraids.baseraids_zombie_entity": "Zombie",
+	"entity.baseraids.baseraids_skeleton_entity": "Skeleton",
+	"entity.baseraids.baseraids_spider_entity": "Spider"
 }
