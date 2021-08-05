@@ -28,7 +28,7 @@ public class BlockBreakGoal extends Goal{
  	public BlockBreakGoal(MobEntity entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
-		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET));
+		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
 		curFocusedBlock = new BlockPos(0, 0, 0);
 	}
  	
@@ -40,7 +40,14 @@ public class BlockBreakGoal extends Goal{
 		// search for destroyable block in reach
 		BlockPos testPosition = new BlockPos(entity.getPosition());
 		testPosition.add(0, 1, 0);
-		// nearest blocks should be checked first => radial check?
+		
+		// IDEAS:
+		// - check for collision
+		// if(entity.collidedHorizontally)
+		// - radially check nearest blocks
+		
+		
+		// previous code, to be changed
 		/*
 		for(int i = 0; i < maxDistance; i++) {
 			testPosition.add(x, y, z)
@@ -48,6 +55,7 @@ public class BlockBreakGoal extends Goal{
 			if(!entity.world.getBlockState(testPosition).canEntityDestroy(entity.world, testPosition, entity)) continue;
 		}
 		*/
+		
 		// copy value of block pos
 		curFocusedBlock = new BlockPos(testPosition.getX(), testPosition.getY(), testPosition.getZ());
 		return true;

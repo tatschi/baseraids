@@ -32,8 +32,8 @@ public class BaseraidsSkeletonEntity extends SkeletonEntity {
 	
 	@Override
 	protected void registerGoals() {
-		this.goalSelector.addGoal(5, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
-		this.goalSelector.addGoal(0, new DestroyNexusGoal(this, Baseraids.baseraidsData.raidManager, Baseraids.baseraidsData.placedNexusBlockPos));
+		this.goalSelector.addGoal(0, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
+		this.goalSelector.addGoal(0, new DestroyNexusGoal(this, Baseraids.baseraidsData.raidManager));
 		
 		this.goalSelector.addGoal(2, new RestrictSunGoal(this));
 	    this.goalSelector.addGoal(3, new FleeSunGoal(this, 1.0D));

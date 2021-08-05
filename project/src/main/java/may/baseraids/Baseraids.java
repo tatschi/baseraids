@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.ZombieEntity;
@@ -79,6 +80,10 @@ public class Baseraids
     public static final RegistryObject<EntityType<BaseraidsSpiderEntity>> BASERAIDS_SPIDER_ENTITY_TYPE =
     		ENTITIES.register("baseraids_spider_entity",
     		() -> EntityType.Builder.<BaseraidsSpiderEntity>create(BaseraidsSpiderEntity::new, EntityClassification.MONSTER).build("baseraids_spider_entity"));
+    public static final RegistryObject<EntityType<BaseraidsPhantomEntity>> BASERAIDS_PHANTOM_ENTITY_TYPE =
+    		ENTITIES.register("baseraids_phantom_entity",
+    		() -> EntityType.Builder.<BaseraidsPhantomEntity>create(BaseraidsPhantomEntity::new, EntityClassification.MONSTER).build("baseraids_phantom_entity"));
+    
     
     
     public static BaseraidsWorldSavedData baseraidsData;
@@ -99,6 +104,7 @@ public class Baseraids
         ITEMS.register(bus);
         TILE_ENTITIES.register(bus);
         ENTITIES.register(bus);
+        
     }
     
 
@@ -111,6 +117,7 @@ public class Baseraids
     	GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
     	GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_ENTITY_TYPE.get(), SkeletonEntity.registerAttributes().create());
     	GlobalEntityTypeAttributes.put(BASERAIDS_SPIDER_ENTITY_TYPE.get(), SpiderEntity.func_234305_eI_().create());
+    	GlobalEntityTypeAttributes.put(BASERAIDS_PHANTOM_ENTITY_TYPE.get(), BaseraidsPhantomEntity.registerAttributes().create());
     	
     	EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
     	
@@ -121,7 +128,8 @@ public class Baseraids
     	renderManager.register(BASERAIDS_SKELETON_ENTITY_TYPE.get(), skeletonRenderer);
     	EntityRenderer<BaseraidsSpiderEntity> spiderRenderer = (EntityRenderer<BaseraidsSpiderEntity>) renderManager.renderers.get(EntityType.SPIDER);
     	renderManager.register(BASERAIDS_SPIDER_ENTITY_TYPE.get(), spiderRenderer);
-    	
+    	EntityRenderer<BaseraidsPhantomEntity> phantomRenderer = (EntityRenderer<BaseraidsPhantomEntity>) renderManager.renderers.get(EntityType.PHANTOM);
+    	renderManager.register(BASERAIDS_PHANTOM_ENTITY_TYPE.get(), phantomRenderer);
     }
     
     @SubscribeEvent

@@ -11,22 +11,30 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jline.utils.Log;
+
 import may.baseraids.entities.*;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.monster.EndermanEntity;
+import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
@@ -34,6 +42,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
@@ -73,7 +82,8 @@ public class RaidManager {
 	
 	
 	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
-	private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
+	//private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
+	private HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobsToSpawn;
 	
 	private boolean deactivateMonsterNightSpawn;
 	
@@ -88,6 +98,7 @@ public class RaidManager {
 	public RaidManager() {
 		MinecraftForge.EVENT_BUS.register(this);
 		setDefaultWriteParameters();
+		amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
 		setAmountOfMobsToSpawn();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
@@ -96,28 +107,35 @@ public class RaidManager {
 	
 	
 	private void setAmountOfMobsToSpawn() {
+		/*
+		 * DEFINES WHAT AND HOW MANY MOBS WILL SPAWN FOR EACH LEVEL
+		 */
+		
 		// LEVEL 1
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "zombie"), 3);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "skeleton"), 1);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "spider"), 0);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(1, "enderman"), 0);
+		HashMap<EntityType<?>, Integer> level1 = new HashMap<EntityType<?>, Integer>();
+		level1.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 3);
+		level1.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 1);
+		level1.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 1);
 		
 		// LEVEL 2
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(2, "zombie"), 5);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(2, "skeleton"), 2);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(2, "spider"), 2);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(2, "enderman"), 0);
+		HashMap<EntityType<?>, Integer> level2 = new HashMap<EntityType<?>, Integer>();
+		level2.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 5);
+		level2.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 2);
+		//level2.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 2);
+		level2.put(Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(), 2);
 		
 		// LEVEL 3
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(3, "zombie"), 8);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(3, "skeleton"), 4);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(3, "spider"), 4);
-		amountOfMobsToSpawn.put(new AbstractMap.SimpleEntry<Integer, String>(3, "enderman"), 0);
+		HashMap<EntityType<?>, Integer> level3 = new HashMap<EntityType<?>, Integer>();
+		level3.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 8);
+		level3.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 4);
+		level3.put(Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(), 4);
+		//level3.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 3);
+		
+		amountOfMobsToSpawn.put(1, level1);
+		amountOfMobsToSpawn.put(2, level2);
+		amountOfMobsToSpawn.put(3, level3);
 	}
 	
-	private int getAmountOfMobsToSpawnForCurLevel(String name) {
-		return amountOfMobsToSpawn.get(new AbstractMap.SimpleEntry<Integer, String>(curRaidLevel, name));
-	}
 	
 	@SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
@@ -241,53 +259,63 @@ public class RaidManager {
     	setRaidActive(true);
     	
     	// SPAWNING
-    	
-    	MobEntity[] zombies = (MobEntity[]) spawnRaidMobs(
-    			Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(),
-    			getAmountOfMobsToSpawnForCurLevel("zombie"));
-    	MobEntity[] spiders = (MobEntity[]) spawnRaidMobs(
-    			Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(),
-    			getAmountOfMobsToSpawnForCurLevel("spider"));
-    	MobEntity[] skeletons = (MobEntity[]) spawnRaidMobs(
-    			Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(),
-    			getAmountOfMobsToSpawnForCurLevel("skeleton"));
-    	
     	spawnedMobs.clear();
-    	spawnedMobs.addAll(Arrays.asList(zombies));
-    	spawnedMobs.addAll(Arrays.asList(spiders));
-    	//spawnedMobs.addAll(Arrays.asList(enderman));
-    	spawnedMobs.addAll(Arrays.asList(skeletons));
-    	
+    	amountOfMobsToSpawn.get(curRaidLevel).forEach(
+    			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
+    			);
     	
     }
     
-    @SuppressWarnings("unchecked")
-	private <T extends MobEntity> T[] spawnRaidMobs(EntityType<T> entityType, int numMobs) {
+	private <T extends Entity> MobEntity[] spawnRaidMobs(EntityType<T> entityType, int numMobs) {
     	BlockPos nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
     	int radius = 50;
     	double angleInterval = 2*Math.PI/100;
-    	BlockPos spawnPos;
+    	BlockPos centerSpawnPos = new BlockPos(nexusPos).add(0, 1, 0);
+    	
+    	ILivingEntityData ilivingentitydata = null;
     	MobEntity[] mobs = new MobEntity[numMobs];
     	for(int i = 0; i < numMobs; i++) {
+    		
+    		// find random coordinates in a circle around the nexus to spawn the current mob
     		Random r = new Random();
     		int randomAngle = r.nextInt(100);
         	double angle = randomAngle * angleInterval;
         	
-        	
-        	BlockPos centerSpawnPos = new BlockPos(nexusPos).add(0, 1, 0);
-        	BlockPos tryRadiusSpawnPos = centerSpawnPos;
-        		
     		int x = (int) (radius * Math.cos(angle));
     		int z = (int) (radius * Math.sin(angle));
-    		tryRadiusSpawnPos = centerSpawnPos.add(x, 0, z);
-    		spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, tryRadiusSpawnPos);     
+    		BlockPos spawnPosXZ = centerSpawnPos.add(x, 0, z);
     		
-        	Baseraids.LOGGER.debug("Spawn " + entityType.toString() + " at radius " + radius + " and angle " + angle);
+    		
+    		// find the right height
+    		BlockPos spawnPos;    		     
+    		if(EntitySpawnPlacementRegistry.getPlacementType(entityType).equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
+    			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
+    		}else {
+    			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ);
+    		}
+    		
+        	Baseraids.LOGGER.debug("Spawn " + entityType.getName().getString() + " at radius " + radius + " and angle " + angle);
         	
-        	mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos, SpawnReason.MOB_SUMMONED, false, false);
+        	
+        	
+        	if(EntitySpawnPlacementRegistry.canSpawnEntity(entityType, (IServerWorld) world, SpawnReason.MOB_SUMMONED, spawnPos, r)) {
+        		
+        		if(entityType.equals(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get())) {
+        			mobs[i] = EntityType.PHANTOM.create(world);
+        			mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
+                    ilivingentitydata = mobs[i].onInitialSpawn((IServerWorld) world, world.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata, (CompoundNBT)null);
+                    ((IServerWorld) world).func_242417_l(mobs[i]);
+        		}else {
+        			mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos, SpawnReason.MOB_SUMMONED, false, false);
+        		}
+        		
+        		
+        	}else {
+        		Baseraids.LOGGER.error("Couldn't spawn entity");
+        	}
         	
     	}
-    	return (T[]) mobs;
+    	return mobs;
     }
     
 	
@@ -334,6 +362,7 @@ public class RaidManager {
     	setRaidActive(false);
     	spawnedMobs.forEach(mob -> mob.onKillCommand());
     	spawnedMobs.clear();
+    	world.sendBlockBreakProgress(-1, Baseraids.baseraidsData.placedNexusBlockPos, -1); 
     }
     
     public int getTimeUntilRaidInSec() {
@@ -374,6 +403,17 @@ public class RaidManager {
 		nbt.putInt("curRaidLevel", curRaidLevel);
 		nbt.putInt("lastRaidGameTime", lastRaidGameTime);
 		nbt.putBoolean("isRaidActive", isRaidActive);
+		
+		// spawned mobs
+		ListNBT spawnedMobsList = new ListNBT();
+		for(MobEntity mob : spawnedMobs) {
+			CompoundNBT compound = new CompoundNBT();
+			compound.putUniqueId("ID", mob.getUniqueID());
+			spawnedMobsList.add(compound);
+		}
+		
+		nbt.put("spawnedMobs", spawnedMobsList);
+		
 		return nbt;
 	}
 	
@@ -383,6 +423,22 @@ public class RaidManager {
 			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
 			curRaidLevel = nbt.getInt("curRaidLevel");
 			isRaidActive = nbt.getBoolean("isRaidActive");
+			ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
+			for(INBT compound : spawnedMobsList) {
+				CompoundNBT compoundNBT = (CompoundNBT) compound;
+				Entity entity = world.getServer().func_241755_D_().getEntityByUuid(compoundNBT.getUniqueId("ID"));
+				if(entity == null) {
+					Log.warn("Could not read entity from data");
+					continue;
+				}
+				if(!(entity instanceof MobEntity)) {
+					Log.warn("Error while reading data for RaidManager: Read entity not of type MobEntity");
+					continue;
+				}
+				
+				spawnedMobs.add((MobEntity) entity);
+			}
+			
 		}catch(Exception e) {
 			setDefaultWriteParameters();
 			markDirty();

@@ -16,34 +16,31 @@ public class DestroyNexusGoal extends Goal{
 	private MobEntity entity;
 	private RaidManager raidManager;
 	private BlockPos nexusPos;
-	private int minDistanceToNexus;
+	private int distanceToTriggerGoal = 15;
+	private int distanceToAllowBreaking = 2;
 	
- 	protected int previousBreakProgress = -1;
+ 	protected static AtomicInteger previousBreakProgress = new AtomicInteger(-1);
  	
  	protected static AtomicInteger globalBreakingProgress = new AtomicInteger(0);
  	
  	// time to break the block in ticks
  	protected int timeToBreak = 500;
 	
-	public DestroyNexusGoal(MobEntity entity, RaidManager raidManager, BlockPos nexusPos) {
-		this(entity, raidManager, nexusPos, 10);
-	}
 	
-	public DestroyNexusGoal(MobEntity entity, RaidManager raidManager, BlockPos nexusPos, int minDistanceToNexus) {
+	public DestroyNexusGoal(MobEntity entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
-		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET));
-		this.nexusPos = nexusPos;
-		this.minDistanceToNexus = minDistanceToNexus;
+		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
+		nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
 	}
 	
 	
 	public boolean shouldExecute() {
-		return raidManager.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus;
+		return raidManager.isRaidActive() && entity.isAlive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToTriggerGoal;
 	}
 	
 	public boolean shouldContinueExecuting() {
-		return raidManager.isRaidActive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < minDistanceToNexus && entity.world instanceof ServerWorld;
+		return raidManager.isRaidActive() && entity.isAlive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToTriggerGoal && entity.world instanceof ServerWorld;
 	}
 	
 	public void startExecuting() {
@@ -51,39 +48,60 @@ public class DestroyNexusGoal extends Goal{
 	}
 	
 	public void tick() {
-		globalBreakingProgress.getAndIncrement();
+		nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
 		
 		
-		// send progress every time i was increased (so every timeToBreak / 10 ticks)
-		int i = (int)((float)globalBreakingProgress.get() / (float)timeToBreak * 10.0F);		
-		if (i != previousBreakProgress) {
-			Baseraids.LOGGER.info("Send Block break progress");
-			
-			entity.world.sendBlockBreakProgress(entity.getEntityId(), nexusPos, i);
-		}
-		previousBreakProgress = i;
+		entity.setAggroed(true);
+		entity.getLookController().setLookPosition(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
+		
+		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
 		
 		
-		synchronized(raidManager) {
-			if (globalBreakingProgress.get() == timeToBreak) {
-				// break the block after timeToBreak ticks (block should stay though)
+		
+		if(entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToAllowBreaking) {
+			globalBreakingProgress.getAndIncrement();
+			entity.swingArm(entity.getActiveHand());
+			// send progress every time i was increased (so every timeToBreak / 10 ticks)
+			int i = (int)((float)globalBreakingProgress.get() / (float)timeToBreak * 10.0F);		
+			if (i != previousBreakProgress.get()) {
+				Baseraids.LOGGER.info("Send Block break progress");
 				
-				Baseraids.LOGGER.info("Break block");
-				globalBreakingProgress.set(0);
-				this.entity.world.sendBlockBreakProgress(-1, nexusPos, -1);
-				//entity.world.removeBlock(nexusPos, false);
-				entity.world.playEvent(1021, nexusPos, 0);
-				entity.world.playEvent(2001, nexusPos, Block.getStateId(entity.world.getBlockState(nexusPos)));
-				// trigger raid end
-				raidManager.loseRaid();
+				entity.world.sendBlockBreakProgress(entity.getEntityId(), nexusPos, i);
+				
+			}
+			previousBreakProgress.set(i);
+			
+			
+			synchronized(raidManager) {
+				if (globalBreakingProgress.get() == timeToBreak) {
+					// break the block after timeToBreak ticks (block should stay though)
+					
+					Baseraids.LOGGER.info("Break block");
+					globalBreakingProgress.set(0);
+					this.entity.world.sendBlockBreakProgress(-1, nexusPos, -1);
+					//entity.world.removeBlock(nexusPos, false);
+					entity.world.playEvent(1021, nexusPos, 0);
+					entity.world.playEvent(2001, nexusPos, Block.getStateId(entity.world.getBlockState(nexusPos)));
+					// trigger raid end
+					raidManager.loseRaid();
+				}
 			}
 		}
+		
+		
 		
 		
 	}
 	
 	public void resetTask() {
-		
+		entity.setAggroed(false);
+		entity.getNavigator().clearPath();
+		if(!raidManager.isRaidActive()) {
+			synchronized(raidManager) {
+				this.entity.world.sendBlockBreakProgress(-1, nexusPos, -1);
+			}
+			previousBreakProgress.set(-1);
+		}
 	}
 	
 }

@@ -3,5 +3,6 @@
 	"block.baseraids.nexus_block":  "Nexus",
 	"entity.baseraids.baseraids_zombie_entity": "Zombie",
 	"entity.baseraids.baseraids_skeleton_entity": "Skelett",
-	"entity.baseraids.baseraids_spider_entity": "Spinne"
+	"entity.baseraids.baseraids_spider_entity": "Spinne",
+	"entity.baseraids.baseraids_phantom_entity": "Phantom"
 }
