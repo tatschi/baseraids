@@ -12,3 +12,6 @@ The mod also removes monster spawning at night (but not in caves).
 Raise your defense, secure your base and nexus, fight! The raids are coming.
 
 // sync with description in the src/main/resources/META-INF/mods.toml
+
+
+For cloning of this project refer to the README_MAY.txt in the baseraids_new_project_template folder.
