@@ -66,6 +66,7 @@ local.properties
 hs_err_pid*
 
 #### COPIED FROM GITIGNORE OF MC FORGE MDK ####
+### adjusted afterwards ###
 # idea 
 out
 *.ipr
@@ -75,7 +76,11 @@ out
 
 # gradle
 build
-.gradle
+*.gradle
+gradle
+*.bat
+gradle.properties
+gradlew
 
 # other
 eclipse
