@@ -1,10 +1,13 @@
 package may.baseraids;
 
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 
 import net.minecraft.block.*;
 import net.minecraft.block.BlockState;
@@ -115,7 +118,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 			 if(blockitem.getBlock() instanceof NexusBlock) {
 				// Reset nexus block reference in the baseraids class
 				 Baseraids.nexusItem = null;
-				 if(event.getPlayer().inventory.hasAny(Set.of(item))) {
+				 if(playerHasNexus(event.getPlayer())) {
 					 // cancel picking up if item already in inventory
 					 event.setCanceled(true);
 					 event.getItem().remove();
@@ -133,7 +136,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 		 
 		 
 		 
-		 if(playerLogOut.inventory.hasAny(Set.of(Baseraids.NEXUS_ITEM.get()))) {
+		 if(playerHasNexus(playerLogOut)) {
 			
 			 Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
 			 if(Baseraids.baseraidsData.placedNexusBlockPos.getX() == -1) {
@@ -174,16 +177,21 @@ public class NexusBlock extends Block implements IForgeBlock{
 	 
 	 // add function for giving a new NexusBlock to a random player
 	 public static void giveNexusToRandomPlayer(List<? extends PlayerEntity> playerList) {
+		 // select random player from list
 		 Random rand = new Random();
 		 int rand_index = rand.nextInt(playerList.size());
 		 PlayerEntity selectedPlayer = playerList.get(rand_index);
-		 if(!selectedPlayer.inventory.hasAny(Set.of(Baseraids.NEXUS_ITEM.get()))) {
+		 
+		 if(!playerHasNexus(selectedPlayer)) {
+			 // give nexus to selected player
 			 selectedPlayer.addItemStackToInventory(new ItemStack(Baseraids.NEXUS_ITEM.get()));
 			 Baseraids.nexusItem = null;
 		 }
 	 }
 	 
-	 
+	 private static boolean playerHasNexus(PlayerEntity player) {
+		return player.inventory.hasAny(Sets.newHashSet(Baseraids.NEXUS_ITEM.get()));
+	 }
 	 
 	 
 }

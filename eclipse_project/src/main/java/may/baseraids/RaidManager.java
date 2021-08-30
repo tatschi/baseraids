@@ -5,6 +5,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -12,6 +13,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jline.utils.Log;
+
+import com.google.common.collect.Sets;
 
 import may.baseraids.entities.*;
 import net.minecraft.block.AbstractBlock;
@@ -88,7 +91,7 @@ public class RaidManager {
 	private boolean deactivateMonsterNightSpawn;
 	
 	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
-	private Set<Integer> warnAllPlayersOfRaidTimes = Set.of(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
+	private Set<Integer> warnAllPlayersOfRaidTimes = Sets.newHashSet(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);;
 	
 	private static final ResourceLocation[] LOOTTABLES = {
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
@@ -100,7 +103,7 @@ public class RaidManager {
 		setDefaultWriteParameters();
 		amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
 		setAmountOfMobsToSpawn();
-		Baseraids.LOGGER.info("RaidManager created");
+		Baseraids.LOGGER.info("RaidManager created");		
 	}
 	
 	
