@@ -1,5 +1,11 @@
 package may.baseraids;
 
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import may.baseraids.NexusBlock.State;
 import may.baseraids.entities.*;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -8,8 +14,6 @@ import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.ZombieEntity;
@@ -17,19 +21,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.loot.LootTable;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -40,12 +41,6 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
-
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("baseraids")
@@ -62,7 +57,7 @@ public class Baseraids
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, Baseraids.MODID);
     
     
-    public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> new NexusBlock());
+    public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> NexusBlock.getInstance());
     public static final RegistryObject<BlockItem> NEXUS_ITEM =
     		ITEMS.register("nexus_block",
     		() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().group(ItemGroup.COMBAT)));
@@ -85,10 +80,9 @@ public class Baseraids
     		() -> EntityType.Builder.<BaseraidsPhantomEntity>create(BaseraidsPhantomEntity::new, EntityClassification.MONSTER).build("baseraids_phantom_entity"));
     
     
-    
+    // TODO remove nexusItem and reference to nexusblockpos in baseraidsData
     public static BaseraidsWorldSavedData baseraidsData;
     //public static RaidManager raidManager;
-    public static ItemEntity nexusItem = null;
     
     
     public Baseraids() {
@@ -142,19 +136,11 @@ public class Baseraids
     		baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
     	}
     	
-    	if(baseraidsData.isNewWorld) {
-    		BlockPos spawnNexus = new BlockPos(event.getWorld().getWorldInfo().getSpawnX(), event.getWorld().getWorldInfo().getSpawnY(), event.getWorld().getWorldInfo().getSpawnZ());
-    		event.getWorld().setBlockState(spawnNexus, NEXUS_BLOCK.get().getDefaultState(), 1);
-    		baseraidsData.setPlacedNexusBlock(spawnNexus);
-    		
-    		
-    		
-    		baseraidsData.isNewWorld = false;
-    		baseraidsData.markDirty();
-    		
-    	}
+    	
     	
     }
+    
+    
 	
     @SubscribeEvent
     public void onWorldSaved(WorldEvent.Save event) {
@@ -180,24 +166,11 @@ public class Baseraids
     	}
     	// ticks in each dimension
     	World world = event.world;
-    	if(baseraidsData.placedNexusBlockPos.getX() == -1) {
+    	if(NexusBlock.getInstance().curState != State.BLOCK) {
     		// if nexus block is not placed
-    		
     		if (world.getGameTime() % 80L == 0L) {
     			addDebuff(world);
         	}
-    		
-    		// check if a dropped nexus is still alive, otherwise give a new nexus to a random player
-    		if (nexusItem != null && !world.isRemote()) {
-    			if(!nexusItem.isAlive()) {
-    				List<? extends PlayerEntity> playerList = world.getPlayers();
-    				 if(playerList.size() < 1) {
-    					 return;
-    				 }
-    				NexusBlock.giveNexusToRandomPlayer(playerList);
-    				nexusItem = null;
-    			}
-    		}
     		
     	}
         	

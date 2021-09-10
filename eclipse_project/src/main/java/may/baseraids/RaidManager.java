@@ -1,26 +1,19 @@
 package may.baseraids;
 
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.jline.utils.Log;
 
 import com.google.common.collect.Sets;
 
-import may.baseraids.entities.*;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
+import may.baseraids.NexusBlock.State;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -28,35 +21,25 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.monster.EndermanEntity;
-import net.minecraft.entity.monster.PhantomEntity;
-import net.minecraft.entity.monster.SkeletonEntity;
-import net.minecraft.entity.monster.SpiderEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 // @Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
@@ -66,6 +49,7 @@ public class RaidManager {
 	// RUNTIME VARIABLES
 	private World world = null;
 	public boolean isInitialized = false;
+	private NexusBlock nexus;
 	
 	private boolean isRaidActive;
 	private int tick = 0;
@@ -98,7 +82,13 @@ public class RaidManager {
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2")
 	};
 	
+	
+	// loot chest spawn position relative to the nexus position
+	Vector3i lootChestPositionRelative = new Vector3i(0, 1, 0);
+	
+	
 	public RaidManager() {
+		nexus = NexusBlock.getInstance();
 		MinecraftForge.EVENT_BUS.register(this);
 		setDefaultWriteParameters();
 		amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
@@ -205,7 +195,7 @@ public class RaidManager {
 	private void raidTick() {
 		// HANDLE SOUND		
 		if(isRaidActive && tick % raidSoundInterval == 0) {
-			world.playSound(null, Baseraids.baseraidsData.placedNexusBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
+			world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
 		}
 		
 		// CHECK IF RAID IS WON
@@ -251,8 +241,7 @@ public class RaidManager {
     	
     	setLastRaidGameTime((int) (world.getGameTime()));
     	
-    	BlockPos nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
-    	if(nexusPos.getX() == -1) {
+    	if(nexus.curState != State.BLOCK) {
     		Baseraids.LOGGER.info("No Nexus placed, skipping raid");
     		return;
     	}
@@ -270,10 +259,9 @@ public class RaidManager {
     }
     
 	private <T extends Entity> MobEntity[] spawnRaidMobs(EntityType<T> entityType, int numMobs) {
-    	BlockPos nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
     	int radius = 50;
     	double angleInterval = 2*Math.PI/100;
-    	BlockPos centerSpawnPos = new BlockPos(nexusPos).add(0, 1, 0);
+    	BlockPos centerSpawnPos = new BlockPos(nexus.curBlockPos).add(0, 1, 0);
     	
     	ILivingEntityData ilivingentitydata = null;
     	MobEntity[] mobs = new MobEntity[numMobs];
@@ -338,7 +326,7 @@ public class RaidManager {
     	Baseraids.sendChatMessage("You have won the raid!");
     	
     	// PLACE LOOT CHEST
-    	BlockPos chestPos = Baseraids.baseraidsData.placedNexusBlockPos.add(0, 1, 0);    	
+    	BlockPos chestPos = nexus.curBlockPos.add(lootChestPositionRelative);   
     	world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
     	if(world.getTileEntity(chestPos) instanceof ChestTileEntity) {
     		ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
@@ -365,7 +353,7 @@ public class RaidManager {
     	setRaidActive(false);
     	spawnedMobs.forEach(mob -> mob.onKillCommand());
     	spawnedMobs.clear();
-    	world.sendBlockBreakProgress(-1, Baseraids.baseraidsData.placedNexusBlockPos, -1); 
+    	world.sendBlockBreakProgress(-1, nexus.curBlockPos, -1); 
     }
     
     public int getTimeUntilRaidInSec() {

@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import may.baseraids.Baseraids;
+import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
 import net.minecraft.block.Block;
 import net.minecraft.entity.MobEntity;
@@ -31,11 +32,12 @@ public class DestroyNexusGoal extends Goal{
 		this.entity = entity;
 		this.raidManager = raidManager;
 		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
-		nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
+		nexusPos = NexusBlock.getInstance().curBlockPos;
 	}
 	
 	
 	public boolean shouldExecute() {
+		nexusPos = NexusBlock.getInstance().curBlockPos;
 		return raidManager.isRaidActive() && entity.isAlive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToTriggerGoal;
 	}
 	
@@ -44,13 +46,10 @@ public class DestroyNexusGoal extends Goal{
 	}
 	
 	public void startExecuting() {
-		
+		nexusPos = NexusBlock.getInstance().curBlockPos;
 	}
 	
-	public void tick() {
-		nexusPos = Baseraids.baseraidsData.placedNexusBlockPos;
-		
-		
+	public void tick() {		
 		entity.setAggroed(true);
 		entity.getLookController().setLookPosition(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
 		

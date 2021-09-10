@@ -1,15 +1,12 @@
 package may.baseraids;
 
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -17,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
@@ -35,163 +33,256 @@ import net.minecraftforge.items.IItemHandler;
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock{
 
-
-    
-    static final Properties properties = Block.Properties.create(Material.ROCK)
+	static final Properties properties = Block.Properties.create(Material.ROCK)
 			.hardnessAndResistance(15f, 30f)
 			.harvestTool(ToolType.PICKAXE).harvestLevel(1)
 			.sound(SoundType.GLASS)
-			.setLightLevel((light) -> {return 12;});
-	
-	
-	public NexusBlock() {
+			.setLightLevel((light) -> {return 15;});
+
+	static NexusBlock instance;
+
+	enum State{
+		BLOCK, ITEM
+	}
+
+	State curState; 
+	public BlockPos curBlockPos;
+
+
+	private NexusBlock() {
 		super(properties);
+
+		instance = this;
 		
 		
 	}
-	
-	
+
+	public static NexusBlock getInstance() {
+		if(instance == null) {
+			instance = new NexusBlock();
+		}
+
+		return instance;
+	}
+
+
 	// Connect to TileEntity NexusEffectsTileEntity
-	 @Override
+	@Override
 	public boolean hasTileEntity(BlockState state){
-		 return true;
-	 }
-	 
-	 @Override
-	 public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		 return new NexusEffectsTileEntity();
-	 }
-	 
-	 
-	 @SubscribeEvent
-	 public static void onBlockPlaced(final BlockEvent.EntityPlaceEvent event) {
-		 if(event.getWorld().isRemote()) return;
-		 if(event.getPlacedBlock().getBlock() instanceof NexusBlock) {
-			 if(Baseraids.baseraidsData.placedNexusBlockPos.getX() != -1) {
-				 Baseraids.LOGGER.info("Removed double nexus block");
-				 event.setCanceled(true);
-				 return;
-			 }
-			 
-			 if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
-				 Baseraids.LOGGER.info("Nexus can only be placed in the overworld");
-				 event.setCanceled(true);
-				 return;
-			 }
-			 
-			 // set block as placed
-			 Baseraids.baseraidsData.setPlacedNexusBlock(event.getPos());
-			 
-		 }
-	 }
-	 
-	 @SubscribeEvent
-	 public static void onBlockDestroyed(final BlockEvent.BreakEvent event) {
-		 if(event.getPlayer().world.isRemote()) return;
-		 if(event.getState().getBlock() instanceof NexusBlock) {
-			 Baseraids.baseraidsData.setPlacedNexusBlock(new BlockPos(-1, -1, -1));
-		 }
-		 
-	 }
-	 
-	 @SubscribeEvent
-	 public static void onItemDropped(final ItemTossEvent event) {
-		 if(event.getPlayer().world.isRemote()) return;
-		 if(event.getEntityItem().getItem().getItem() instanceof BlockItem) {
-			 BlockItem item = (BlockItem) event.getEntityItem().getItem().getItem();
-			 
-			 // Reference dropped nexus block in the baseraids class
-			 if(item.getBlock() instanceof NexusBlock) {
-				 Baseraids.nexusItem = event.getEntityItem();
-				 
-			 }
-		 }
-	 }
-	 
-	 @SubscribeEvent
-	 public static void onItemPickedUp(final EntityItemPickupEvent event) {
-		 if(event.getPlayer().world.isRemote()) return;
-		 
-		 Item item = event.getItem().getItem().getItem();
-		 if(item instanceof BlockItem) {
-			 BlockItem blockitem = (BlockItem) item;
-			 if(blockitem.getBlock() instanceof NexusBlock) {
-				// Reset nexus block reference in the baseraids class
-				 Baseraids.nexusItem = null;
-				 if(playerHasNexus(event.getPlayer())) {
-					 // cancel picking up if item already in inventory
-					 event.setCanceled(true);
-					 event.getItem().remove();
-				 }
-			 }
-		 }
-	 }
-	 
-	 @SubscribeEvent
-	 public static void onPlayerLogOut(final PlayerEvent.PlayerLoggedOutEvent event) {
-		 Baseraids.LOGGER.info("PlayerLoggedOutEvent");
-		 PlayerEntity playerLogOut = event.getPlayer();
-		 World world = playerLogOut.world;
-		 if(world.isRemote()) return;
-		 
-		 
-		 
-		 if(playerHasNexus(playerLogOut)) {
-			
-			 Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
-			 if(Baseraids.baseraidsData.placedNexusBlockPos.getX() == -1) {
-				 // No nexus is placed in the world
-				 
-				 List<? extends PlayerEntity> playerList = world.getPlayers();
-				 playerList.remove(playerLogOut);
-				 if(playerList.size() > 0) {
-					 Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
-					 giveNexusToRandomPlayer(playerList);
-				 }else {
-					 // place Block in world
-					 Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus is placed on player position");
-					 world.setBlockState(playerLogOut.getPosition(), Baseraids.NEXUS_BLOCK.get().getDefaultState());
-					 // necessary or BlockPlacedEvent called anyways?
-					 Baseraids.baseraidsData.setPlacedNexusBlock(playerLogOut.getPosition());
-				 }
-			 }
-			 
+		return true;
+	}
+
+	@Override
+	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+		return new NexusEffectsTileEntity();
+	}
+
+
+
+	@SubscribeEvent
+	public static void onBlockPlaced(final BlockEvent.EntityPlaceEvent event) {
+		if(event.getWorld().isRemote()) return;
+		if(event.getPlacedBlock().getBlock() instanceof NexusBlock) {
+			setState(State.BLOCK);
+			instance.curBlockPos = event.getPos();
+		}
+	}
+
+
+	@SubscribeEvent
+	public static void onBlockBreak(final BlockEvent.BreakEvent event) {
+		if(event.getPlayer().world.isRemote()) return;
+		if(event.getState().getBlock() instanceof NexusBlock) {
+
+			if(Baseraids.baseraidsData.raidManager.isRaidActive()) {
+				event.setCanceled(true);
+				Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
+				Baseraids.sendChatMessage("You cannot remove the nexus during a raid!");
+			}
+			PlayerEntity player = event.getPlayer();
+
+			if(!giveNexusToPlayer(player)) {
+				event.setCanceled(true);
+			}
+
+
+		}
+
+	}
+
+	@SubscribeEvent
+	public static void onItemDropped(final ItemTossEvent event) {
+		if(event.getPlayer().world.isRemote()) return;
+		if(event.getEntityItem().getItem().getItem() instanceof BlockItem) {
+			ItemStack item = event.getEntityItem().getItem();
+
+
+			if(((BlockItem) item.getItem()).getBlock() instanceof NexusBlock) {
+
+				event.setCanceled(true);
+				Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
+				Baseraids.sendChatMessage("You cannot toss away the Nexus. It needs to be placed!");
+
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onItemPickedUp(final EntityItemPickupEvent event) {
+		if(event.getPlayer().world.isRemote()) return;
+
+		ItemStack itemStack = event.getItem().getItem();
+		Item item = itemStack.getItem();
+		if(item instanceof BlockItem) {
+			BlockItem blockitem = (BlockItem) item;
+			if(blockitem.getBlock() instanceof NexusBlock) {
+
+				Baseraids.LOGGER.warn("Nexus PickUp event was triggered");
+
+				setState(State.ITEM);
+
+			}
+		}
+
+	}
+	
+	@SubscribeEvent
+    public static void onPlayerLogIn(final PlayerEvent.PlayerLoggedInEvent event) {
+    	PlayerEntity player = event.getPlayer();
+		World world = player.getEntityWorld(); 
+    	if(world.isRemote()) return;
+    	Baseraids.LOGGER.info("PlayerLoggedInEvent");
+    	if(instance.curState != State.BLOCK && world.getPlayers().size() == 1 && !playerHasNexus(player)) {
+    		// first player to join the world will get the nexus (if it is not placed and the player doesn't already have it)
+    		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
+    		NexusBlock.giveNexusToPlayer(player);
+    	}
+    	
+    }
+
+	@SubscribeEvent
+	public static void onPlayerLogOut(final PlayerEvent.PlayerLoggedOutEvent event) {
+		Baseraids.LOGGER.info("PlayerLoggedOutEvent");
+		PlayerEntity playerLogOut = event.getPlayer();
+		World world = playerLogOut.world;
+
+		// is this correct? will this be called on the server side for every player?
+		if(world.isRemote()) return;
+
+
+
+		if(playerHasNexus(playerLogOut)) {
+
+			Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
+			if(instance.curState != State.ITEM) {
+				// double nexus
+			}else {
+
+				// select 
+				List<? extends PlayerEntity> playerList = world.getPlayers();
+				playerList.remove(playerLogOut);
+				if(playerList.size() > 0) {
+
+					// give nexus to other player
+					Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
+					giveNexusToRandomPlayerFromList(playerList);
+
+
+				}else {
+
+					// place Block in world
+					Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus is placed on player position");
+					world.setBlockState(playerLogOut.getPosition(), Baseraids.NEXUS_BLOCK.get().getDefaultState());
+					// necessary or BlockPlacedEvent called anyways?
+					setState(State.BLOCK);
+					setBlockPos(playerLogOut.getPosition());
+				}
+			}
+
 			// remove all nexus items from the player that is logging out
-			 IItemHandler itemHandler = (IItemHandler) playerLogOut.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
-			 
-			 for(int i = 0; i < itemHandler.getSlots(); i++) {
-				 
-				 if(ItemStack.areItemsEqual(itemHandler.getStackInSlot(i), new ItemStack(Baseraids.NEXUS_ITEM.get()))) {
-					 Baseraids.LOGGER.info("PlayerLoggedOutEvent Found nexus stack, removing...");
-					 itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
-				 }
-			 }
-		 }
-		 
-	 }
-	 
-	 // https://forums.minecraftforge.net/topic/42843-item-despawn-chest/
-	 // ItemExpireEvent
-	 // https://skmedix.github.io/ForgeJavaDocs/javadoc/forge/1.9.4-12.17.0.2051/net/minecraftforge/event/entity/item/ItemExpireEvent.html
-	 // check Entity#isDead() every tick?
-	 
-	 // add function for giving a new NexusBlock to a random player
-	 public static void giveNexusToRandomPlayer(List<? extends PlayerEntity> playerList) {
-		 // select random player from list
-		 Random rand = new Random();
-		 int rand_index = rand.nextInt(playerList.size());
-		 PlayerEntity selectedPlayer = playerList.get(rand_index);
-		 
-		 if(!playerHasNexus(selectedPlayer)) {
-			 // give nexus to selected player
-			 selectedPlayer.addItemStackToInventory(new ItemStack(Baseraids.NEXUS_ITEM.get()));
-			 Baseraids.nexusItem = null;
-		 }
-	 }
-	 
-	 private static boolean playerHasNexus(PlayerEntity player) {
+			IItemHandler itemHandler = (IItemHandler) playerLogOut.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
+
+			for(int i = 0; i < itemHandler.getSlots(); i++) {
+
+				if(ItemStack.areItemsEqual(itemHandler.getStackInSlot(i), new ItemStack(Baseraids.NEXUS_ITEM.get()))) {
+					Baseraids.LOGGER.info("PlayerLoggedOutEvent Found nexus stack, removing...");
+					itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
+				}
+			}
+		}
+
+	}
+
+
+	// https://forums.minecraftforge.net/topic/42843-item-despawn-chest/
+	// ItemExpireEvent
+	// https://skmedix.github.io/ForgeJavaDocs/javadoc/forge/1.9.4-12.17.0.2051/net/minecraftforge/event/entity/item/ItemExpireEvent.html
+	// check Entity#isDead() every tick?
+
+	
+	private static void setState(State state) {
+		instance.curState = state;
+		Baseraids.baseraidsData.markDirty();
+	}
+	
+	private static void setBlockPos(BlockPos pos) {
+		instance.curBlockPos = pos;
+		Baseraids.baseraidsData.markDirty();
+	}
+	
+	static boolean giveNexusToPlayer(PlayerEntity player) {
+		if(!playerHasNexus(player)) {
+
+			// attempt to automatically give block to player 
+			ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
+
+			if(!player.addItemStackToInventory(itemStack)) {
+				Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
+				Baseraids.sendChatMessage("Could not add Nexus to inventory!");
+				return false;
+			}else {
+				Baseraids.LOGGER.info("Successfully added nexus to player's inventory");
+				setState(State.ITEM);
+			}
+
+
+		}else {
+			Baseraids.LOGGER.warn("NexusBlock already exists in player's inventory");
+		}
+		return true;
+	}
+
+
+	private static void giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
+		// select random player from list
+		Random rand = new Random();
+		int rand_index = rand.nextInt(playerList.size());
+		PlayerEntity selectedPlayer = playerList.get(rand_index);
+		giveNexusToPlayer(selectedPlayer);
+	}
+
+	private static boolean playerHasNexus(PlayerEntity player) {
 		return player.inventory.hasAny(Sets.newHashSet(Baseraids.NEXUS_ITEM.get()));
-	 }
-	 
-	 
+	}
+
+	public void readAdditional(CompoundNBT nbt) {
+		curState = State.valueOf(nbt.getString("curState"));
+		curBlockPos = new BlockPos(
+				nbt.getInt("curBlockPosX"),
+				nbt.getInt("curBlockPosY"),
+				nbt.getInt("curBlockPosZ")
+				);
+	}
+	
+	public CompoundNBT writeAdditional() {
+		CompoundNBT nbt = new CompoundNBT();
+		nbt.putString("curState", curState.name());
+		nbt.putInt("curBlockPosX", curBlockPos.getX());
+		nbt.putInt("curBlockPosY", curBlockPos.getY());
+		nbt.putInt("curBlockPosZ", curBlockPos.getZ());
+		
+		return nbt;
+	}
+
+
 }
