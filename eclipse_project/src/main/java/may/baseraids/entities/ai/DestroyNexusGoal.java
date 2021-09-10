@@ -38,11 +38,11 @@ public class DestroyNexusGoal extends Goal{
 	
 	public boolean shouldExecute() {
 		nexusPos = NexusBlock.getInstance().curBlockPos;
-		return raidManager.isRaidActive() && entity.isAlive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToTriggerGoal;
+		return raidManager.isRaidActive() && entity.isAlive() && nexusPos.withinDistance(entity.getPositionVec(), distanceToTriggerGoal);
 	}
 	
 	public boolean shouldContinueExecuting() {
-		return raidManager.isRaidActive() && entity.isAlive() && entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToTriggerGoal && entity.world instanceof ServerWorld;
+		return raidManager.isRaidActive() && entity.isAlive() && nexusPos.withinDistance(entity.getPositionVec(), distanceToTriggerGoal) && entity.world instanceof ServerWorld;
 	}
 	
 	public void startExecuting() {
@@ -57,7 +57,7 @@ public class DestroyNexusGoal extends Goal{
 		
 		
 		
-		if(entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceToAllowBreaking) {
+		if(nexusPos.withinDistance(entity.getPositionVec(), distanceToAllowBreaking)) {
 			globalBreakingProgress.getAndIncrement();
 			entity.swingArm(entity.getActiveHand());
 			// send progress every time i was increased (so every timeToBreak / 10 ticks)
