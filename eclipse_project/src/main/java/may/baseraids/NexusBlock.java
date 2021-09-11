@@ -60,6 +60,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 	public static NexusBlock getInstance() {
 		if(instance == null) {
 			instance = new NexusBlock();
+			instance.curBlockPos = new BlockPos(0, 0, 0);
 		}
 
 		return instance;

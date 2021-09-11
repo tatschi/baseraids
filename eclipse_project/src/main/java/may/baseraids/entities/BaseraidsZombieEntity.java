@@ -36,12 +36,16 @@ public class BaseraidsZombieEntity extends ZombieEntity {
 	
 	@Override
 	protected void registerGoals() {
-		this.goalSelector.addGoal(0, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
 		this.goalSelector.addGoal(0, new DestroyNexusGoal(this, Baseraids.baseraidsData.raidManager));
-		
-		this.goalSelector.addGoal(1, new ZombieAttackGoal(this, 1.0D, false));
-		
 		this.goalSelector.addGoal(1, new BlockBreakGoal(this, Baseraids.baseraidsData.raidManager));
+		
+		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0D, false));
+		this.goalSelector.addGoal(3, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
+		
+		
+		
+		
+		
 		
 		this.targetSelector.addGoal(1, (new HurtByTargetGoal(this)).setCallsForHelp(ZombifiedPiglinEntity.class));
 		this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));

@@ -17,7 +17,7 @@ public class DestroyNexusGoal extends Goal{
 	private MobEntity entity;
 	private RaidManager raidManager;
 	private BlockPos nexusPos;
-	private int distanceToTriggerGoal = 15;
+	private int distanceToTriggerGoal = 2;
 	private int distanceToAllowBreaking = 2;
 	
  	protected static AtomicInteger previousBreakProgress = new AtomicInteger(-1);
@@ -59,7 +59,16 @@ public class DestroyNexusGoal extends Goal{
 		
 		if(nexusPos.withinDistance(entity.getPositionVec(), distanceToAllowBreaking)) {
 			globalBreakingProgress.getAndIncrement();
-			entity.swingArm(entity.getActiveHand());
+			
+			
+			// swing arm at random
+			if (this.entity.getRNG().nextInt(20) == 0) {
+				this.entity.world.playEvent(1019, nexusPos, 0);
+				if (!this.entity.isSwingInProgress) {
+					this.entity.swingArm(this.entity.getActiveHand());
+				}
+			}
+			
 			// send progress every time i was increased (so every timeToBreak / 10 ticks)
 			int i = (int)((float)globalBreakingProgress.get() / (float)timeToBreak * 10.0F);		
 			if (i != previousBreakProgress.get()) {
