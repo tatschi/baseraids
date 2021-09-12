@@ -12,7 +12,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	public NexusBlock nexusBlock;
 	public RaidManager raidManager;
 	
-	public boolean isNewWorld;
 	
 	public BaseraidsWorldSavedData() {
 		this(DATA_NAME);
@@ -20,7 +19,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	public BaseraidsWorldSavedData(String name) {
 		super(name);
 		raidManager = new RaidManager();
-		isNewWorld = true;
 		raidManager.isInitialized = true;
 		nexusBlock = NexusBlock.getInstance();
 	}
@@ -31,14 +29,12 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		this.nexusBlock.readAdditional(nbt.getCompound("nexusBlock"));
 		this.raidManager.readAdditional(nbt.getCompound("raidManager"));
 		
-		isNewWorld = nbt.getBoolean("isNewWorld");
 		this.raidManager.isInitialized = true;
 	}
 	@Override
 	public CompoundNBT write(CompoundNBT nbt) {
 		nbt.put("raidManager", raidManager.writeAdditional());
 		nbt.put("nexusBlock", nexusBlock.writeAdditional());
-		nbt.putBoolean("isNewWorld", isNewWorld);
 		return nbt;
 	
 	}

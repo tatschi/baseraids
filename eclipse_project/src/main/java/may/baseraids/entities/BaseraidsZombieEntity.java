@@ -1,7 +1,9 @@
 package may.baseraids.entities;
 
 import may.baseraids.Baseraids;
-import may.baseraids.entities.ai.*;
+import may.baseraids.entities.ai.BlockBreakGoal;
+import may.baseraids.entities.ai.DestroyNexusGoal;
+import may.baseraids.entities.ai.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtGoal;
@@ -13,10 +15,7 @@ import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.loot.LootTable;
 import net.minecraft.world.World;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)

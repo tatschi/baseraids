@@ -1,10 +1,9 @@
 package may.baseraids.entities;
 
 import may.baseraids.Baseraids;
-import may.baseraids.entities.ai.*;
+import may.baseraids.entities.ai.DestroyNexusGoal;
+import may.baseraids.entities.ai.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.world.World;
 

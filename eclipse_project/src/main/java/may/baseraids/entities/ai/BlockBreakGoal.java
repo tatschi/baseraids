@@ -2,19 +2,15 @@ package may.baseraids.entities.ai;
 
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import may.baseraids.Baseraids;
-import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
 import net.minecraft.block.Block;
-import net.minecraft.block.DoorBlock;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
 public class BlockBreakGoal extends Goal{
