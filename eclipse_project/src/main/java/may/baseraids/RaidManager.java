@@ -13,6 +13,7 @@ import org.jline.utils.Log;
 import com.google.common.collect.Sets;
 
 import may.baseraids.NexusBlock.State;
+import may.baseraids.config.ConfigOptions;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
@@ -29,7 +30,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
@@ -61,30 +61,22 @@ public class RaidManager {
 	
 	
 	// RAID SETTINGS
-	private int maxRaidLevel = 3, minRaidLevel = 1;
-	private int timeBetweenRaids = 24000; // time between to raids in GameTime, 10min is 12000, 1min is 1200
-	private int nightTimeInWorldDayTime = 13000; // defines the world.daytime at which it starts to be night (one day == 24000)
-	private int maxRaidDuration = 3600;
-	private int raidSoundInterval = 60;
+	public static final int MAX_RAID_LEVEL = 3, MIN_RAID_LEVEL = 1;
+	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000; // defines the world.daytime at which it starts to be night (one day == 24000)
+	private static final int RAID_SOUND_INTERVAL = 60;
 	
 	
 	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
 	//private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
 	private HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobsToSpawn;
 	
-	private boolean deactivateMonsterNightSpawn;
-	
 	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
-	private Set<Integer> warnAllPlayersOfRaidTimes = Sets.newHashSet(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);;
+	private Set<Integer> warnAllPlayersOfRaidTimes = Sets.newHashSet(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 	
 	private static final ResourceLocation[] LOOTTABLES = {
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2")
 	};
-	
-	
-	// loot chest spawn position relative to the nexus position
-	Vector3i lootChestPositionRelative = new Vector3i(0, 1, 0);
 	
 	
 	public RaidManager() {
@@ -101,32 +93,28 @@ public class RaidManager {
 	
 	private void setAmountOfMobsToSpawn() {
 		/*
-		 * DEFINES WHAT AND HOW MANY MOBS WILL SPAWN FOR EACH LEVEL
+		 * LOADS WHAT AND HOW MANY MOBS WILL SPAWN FOR EACH LEVEL
 		 */
 		
-		// LEVEL 1
-		HashMap<EntityType<?>, Integer> level1 = new HashMap<EntityType<?>, Integer>();
-		level1.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 3);
-		level1.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 1);
-		level1.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 1);
+		for(int curLevel = 0; curLevel < MAX_RAID_LEVEL; curLevel++) {
+			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
+			int[] configForCurLevel = ConfigOptions.amountOfMobs.get(curLevel).get();
+			if(configForCurLevel.length != MAX_RAID_LEVEL) {
+				Baseraids.LOGGER.warn("Error in config: amountOfMobsLevel" + curLevel + " is not of the right length");
+				Baseraids.sendChatMessage("Error in config: amountOfMobsLevel" + curLevel + " is not of the right length \n using default setting instead");
+				ConfigOptions.amountOfMobs.get(curLevel).set(ConfigOptions.AMOUNT_OF_MOBS_DEFAULT[curLevel]);
+			}
+			for (int curMob = 0; curMob < configForCurLevel.length; curMob++) {
+				hashMapForCurLevel.put(ConfigOptions.ORDER_OF_MOBS_IN_ARRAY[curMob], configForCurLevel[curMob]);
+			}
+			
+			// TODO TEMPORARY
+			if(curLevel == 1) {
+				hashMapForCurLevel.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 1);	
+			}
+			amountOfMobsToSpawn.put(curLevel, hashMapForCurLevel);
+		}
 		
-		// LEVEL 2
-		HashMap<EntityType<?>, Integer> level2 = new HashMap<EntityType<?>, Integer>();
-		level2.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 5);
-		level2.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 2);
-		//level2.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 2);
-		level2.put(Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(), 2);
-		
-		// LEVEL 3
-		HashMap<EntityType<?>, Integer> level3 = new HashMap<EntityType<?>, Integer>();
-		level3.put(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), 8);
-		level3.put(Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), 4);
-		level3.put(Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get(), 4);
-		//level3.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 3);
-		
-		amountOfMobsToSpawn.put(1, level1);
-		amountOfMobsToSpawn.put(2, level2);
-		amountOfMobsToSpawn.put(3, level3);
 	}
 	
 	
@@ -151,8 +139,8 @@ public class RaidManager {
 		tick = tick % 1000;
 		
 		// CHECK FOR RAID
-		if(getTimeSinceRaid() > timeBetweenRaids) {
-			if(event.world.getDayTime() % 24000 >= nightTimeInWorldDayTime) {				
+		if(getTimeSinceRaid() > ConfigOptions.timeBetweenRaids.get()) {
+			if(event.world.getDayTime() % 24000 >= START_OF_NIGHT_IN_WORLD_DAY_TIME) {				
 				initiateRaid();
 			}
 		}
@@ -194,7 +182,7 @@ public class RaidManager {
 	
 	private void raidTick() {
 		// HANDLE SOUND		
-		if(isRaidActive && tick % raidSoundInterval == 0) {
+		if(isRaidActive && tick % RAID_SOUND_INTERVAL == 0) {
 			world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
 		}
 		
@@ -205,7 +193,7 @@ public class RaidManager {
 		}
 		
 		// END RAID AFTER MAX DURATION
-		if(isRaidActive && getTimeSinceRaid() > maxRaidDuration) {
+		if(isRaidActive && getTimeSinceRaid() > ConfigOptions.maxRaidDuration.get()) {
 			Baseraids.LOGGER.info("Raid ended: reached max duration");
 			winRaid();
 		}
@@ -216,7 +204,7 @@ public class RaidManager {
 	@SubscribeEvent
 	public void onMonsterSpawn(WorldEvent.PotentialSpawns event){
 		if(event.getWorld().isRemote()) return;
-		if(deactivateMonsterNightSpawn) {
+		if(ConfigOptions.deactivateMonsterNightSpawn.get()) {
 			if(event.getType() == EntityClassification.MONSTER) {
 				
 				World world = (World) event.getWorld();
@@ -326,7 +314,7 @@ public class RaidManager {
     	Baseraids.sendChatMessage("You have won the raid!");
     	
     	// PLACE LOOT CHEST
-    	BlockPos chestPos = nexus.curBlockPos.add(lootChestPositionRelative);   
+    	BlockPos chestPos = nexus.curBlockPos.add(ConfigOptions.lootChestPositionRelative.get());   
     	world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
     	if(world.getTileEntity(chestPos) instanceof ChestTileEntity) {
     		ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
@@ -359,8 +347,8 @@ public class RaidManager {
     public int getTimeUntilRaidInSec() {
     	// Math.floorMod returns only positive values (for a positive modulus) while % returns the actual remainder
 		return (int) Math.max(
-				(timeBetweenRaids-getTimeSinceRaid()),
-				Math.floorMod(nightTimeInWorldDayTime - (world.getDayTime() % 24000), 24000)
+				(ConfigOptions.timeBetweenRaids.get() - getTimeSinceRaid()),
+				Math.floorMod(START_OF_NIGHT_IN_WORLD_DAY_TIME - (world.getDayTime() % 24000), 24000)
 				) /20;
     }
     
@@ -378,19 +366,18 @@ public class RaidManager {
     
     private void increaseRaidLevel() {
     	curRaidLevel++;
-    	if(curRaidLevel > maxRaidLevel) curRaidLevel = maxRaidLevel;
+    	if(curRaidLevel > MAX_RAID_LEVEL) curRaidLevel = MAX_RAID_LEVEL;
     	markDirty();
     }
     
     private void resetRaidLevel() {
-    	curRaidLevel = minRaidLevel;
+    	curRaidLevel = MIN_RAID_LEVEL;
     	markDirty();
     }
     
     
     public CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
-		nbt.putBoolean("deactivateMonsterNightSpawn", deactivateMonsterNightSpawn);
 		nbt.putInt("curRaidLevel", curRaidLevel);
 		nbt.putInt("lastRaidGameTime", lastRaidGameTime);
 		nbt.putBoolean("isRaidActive", isRaidActive);
@@ -410,7 +397,6 @@ public class RaidManager {
 	
 	public void readAdditional(CompoundNBT nbt) {
 		try {
-			deactivateMonsterNightSpawn = nbt.getBoolean("deactivateMonsterNightSpawn");
 			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
 			curRaidLevel = nbt.getInt("curRaidLevel");
 			isRaidActive = nbt.getBoolean("isRaidActive");
@@ -437,7 +423,6 @@ public class RaidManager {
 	}
 	
 	private void setDefaultWriteParameters() {
-		deactivateMonsterNightSpawn = true;
 		lastRaidGameTime = 0;
 		curRaidLevel = 1;
 		isRaidActive = false;
