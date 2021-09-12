@@ -6,9 +6,20 @@ import may.baseraids.Baseraids;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
-public class StartRaidCommand{
+@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+public class BaseraidsCommands {
 
+	
+	@SubscribeEvent
+ 	public static void onRegisterCommandEvent(RegisterCommandsEvent event) {
+		CommandDispatcher<CommandSource> commandDispatcher = event.getDispatcher();
+		BaseraidsCommands.register(commandDispatcher);
+	}
+	
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 	      dispatcher.register(
 	    		Commands.literal("baseraids")
