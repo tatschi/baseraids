@@ -66,6 +66,9 @@ public class RaidManager {
 	private static final int RAID_SOUND_INTERVAL = 60;
 	
 	
+	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = {{3, 1, 0}, {5, 2, 2}, {8, 4, 4}};
+	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
+	
 	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
 	//private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
 	//private HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobsToSpawn;
@@ -84,37 +87,32 @@ public class RaidManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		setDefaultWriteParameters();
 		//amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-		//setAmountOfMobsToSpawn();
+		setAmountOfMobsToSpawn();
 		Baseraids.LOGGER.info("RaidManager created");		
 	}
 	
 	
 	
-	/*
+	
 	private void setAmountOfMobsToSpawn() {
-		
+		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = {
+				Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(),
+				Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(),
+				Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get()
+			};
 		
 		for(int curLevel = 0; curLevel < MAX_RAID_LEVEL; curLevel++) {
 			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
-			int[] configForCurLevel = ConfigOptions.amountOfMobs.get(curLevel).get();
-			if(configForCurLevel.length != MAX_RAID_LEVEL) {
-				Baseraids.LOGGER.warn("Error in config: amountOfMobsLevel" + curLevel + " is not of the right length");
-				Baseraids.sendChatMessage("Error in config: amountOfMobsLevel" + curLevel + " is not of the right length \n using default setting instead");
-				ConfigOptions.amountOfMobs.get(curLevel).set(ConfigOptions.AMOUNT_OF_MOBS_DEFAULT[curLevel]);
-			}
-			for (int curMob = 0; curMob < configForCurLevel.length; curMob++) {
-				hashMapForCurLevel.put(ConfigOptions.ORDER_OF_MOBS_IN_ARRAY[curMob], configForCurLevel[curMob]);
+			
+			for (int curMob = 0; curMob < ORDER_OF_MOBS_IN_ARRAY.length; curMob++) {
+				hashMapForCurLevel.put(ORDER_OF_MOBS_IN_ARRAY[curMob], AMOUNT_OF_MOBS_DEFAULT[curLevel][curMob]);
 			}
 			
-			// TODO TEMPORARY
-			if(curLevel == 1) {
-				hashMapForCurLevel.put(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get(), 1);	
-			}
-			amountOfMobsToSpawn.put(curLevel, hashMapForCurLevel);
+			amountOfMobs.put(curLevel, hashMapForCurLevel);
 		}
 		
 	}
-	*/
+	
 	
 	
 	@SubscribeEvent
@@ -239,11 +237,11 @@ public class RaidManager {
     	
     	// SPAWNING
     	spawnedMobs.clear();
-    	HashMap<EntityType<?>, Integer> amountOfMobs = ConfigOptions.amountOfMobs.get(curRaidLevel).get();
+    	HashMap<EntityType<?>, Integer> amountOfMobsToSpawn = amountOfMobs.get(curRaidLevel);
     	if(amountOfMobs == null) {
     		Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
     	}
-    	amountOfMobs.forEach(
+    	amountOfMobsToSpawn.forEach(
     			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
     			);
     	/*
@@ -321,7 +319,7 @@ public class RaidManager {
     	Baseraids.sendChatMessage("You have won the raid!");
     	
     	// PLACE LOOT CHEST
-    	BlockPos chestPos = nexus.curBlockPos.add(ConfigOptions.lootChestPositionRelative.get());   
+    	BlockPos chestPos = nexus.curBlockPos.add(ConfigOptions.lootChestPositionRelative);   
     	world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
     	if(world.getTileEntity(chestPos) instanceof ChestTileEntity) {
     		ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
