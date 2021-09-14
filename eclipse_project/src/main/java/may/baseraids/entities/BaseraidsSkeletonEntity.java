@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 
 public class BaseraidsSkeletonEntity extends SkeletonEntity {
 
+	public static final String CONFIG_NAME = "Skeleton";
 	
 	public BaseraidsSkeletonEntity(EntityType<? extends SkeletonEntity> type, World worldIn) {
 		super(type, worldIn);

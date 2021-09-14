@@ -21,6 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsZombieEntity extends ZombieEntity {
 
+	public static final String CONFIG_NAME = "Zombie";
 	
 	public BaseraidsZombieEntity(EntityType<? extends ZombieEntity> type, World worldIn) {
 		super(type, worldIn);

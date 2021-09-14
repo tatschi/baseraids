@@ -1,5 +1,6 @@
 package may.baseraids;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -7,7 +8,10 @@ import org.apache.logging.log4j.Logger;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.Config;
-import may.baseraids.entities.*;
+import may.baseraids.entities.BaseraidsPhantomEntity;
+import may.baseraids.entities.BaseraidsSkeletonEntity;
+import may.baseraids.entities.BaseraidsSpiderEntity;
+import may.baseraids.entities.BaseraidsZombieEntity;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -30,6 +34,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -46,6 +51,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 // The value here should match an entry in the META-INF/mods.toml file
+@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 @Mod("baseraids")
 public class Baseraids
 {
@@ -69,6 +75,8 @@ public class Baseraids
     public static final RegistryObject<TileEntityType<NexusEffectsTileEntity>> NEXUS_TILE_ENTITY_TYPE =
     		TILE_ENTITIES.register("nexus_effects_tile_entity",
     		() -> TileEntityType.Builder.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
+    
+    
     public static final RegistryObject<EntityType<BaseraidsZombieEntity>> BASERAIDS_ZOMBIE_ENTITY_TYPE =
     		ENTITIES.register("baseraids_zombie_entity",
     		() -> EntityType.Builder.<BaseraidsZombieEntity>create(BaseraidsZombieEntity::new, EntityClassification.MONSTER).build("baseraids_zombie_entity"));
@@ -82,6 +90,8 @@ public class Baseraids
     		ENTITIES.register("baseraids_phantom_entity",
     		() -> EntityType.Builder.<BaseraidsPhantomEntity>create(BaseraidsPhantomEntity::new, EntityClassification.MONSTER).build("baseraids_phantom_entity"));
     
+    
+    public static final HashMap<String, EntityType<?>> configRegister = new HashMap<String, EntityType<?>>();
     
     // TODO remove nexusItem and reference to nexusblockpos in baseraidsData
     public static BaseraidsWorldSavedData baseraidsData;
@@ -101,13 +111,23 @@ public class Baseraids
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
         
-        Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
-        
         BLOCKS.register(bus);
         ITEMS.register(bus);
         TILE_ENTITIES.register(bus);
         ENTITIES.register(bus);
         
+        
+        
+        Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
+        
+    }
+    
+    @SubscribeEvent
+    public void registerConfigEntityTypes(final RegistryEvent.Register<EntityType<?>> event) {
+    	configRegister.put(BaseraidsZombieEntity.CONFIG_NAME, BASERAIDS_ZOMBIE_ENTITY_TYPE.get());
+        configRegister.put(BaseraidsSkeletonEntity.CONFIG_NAME, BASERAIDS_SKELETON_ENTITY_TYPE.get());
+        configRegister.put(BaseraidsSpiderEntity.CONFIG_NAME, BASERAIDS_SPIDER_ENTITY_TYPE.get());
+        configRegister.put(BaseraidsPhantomEntity.CONFIG_NAME, BASERAIDS_PHANTOM_ENTITY_TYPE.get());
     }
     
 
@@ -207,5 +227,6 @@ public class Baseraids
 			}
 		}
     }
-
+    
+    
 }

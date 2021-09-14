@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 
 public class BaseraidsPhantomEntity extends PhantomEntity{
 
+	public static final String CONFIG_NAME = "Phantom";
 	
 	public BaseraidsPhantomEntity(EntityType<? extends PhantomEntity> type, World worldIn) {
 		super(type, worldIn);

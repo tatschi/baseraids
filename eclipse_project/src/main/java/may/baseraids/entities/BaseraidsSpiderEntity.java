@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 
 public class BaseraidsSpiderEntity extends SpiderEntity{
 
+	public static final String CONFIG_NAME = "Spider";
 	
 	public BaseraidsSpiderEntity(EntityType<? extends SpiderEntity> type, World worldIn) {
 		super(type, worldIn);

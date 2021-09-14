@@ -39,11 +39,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	
 	}
 	
-//	
-//	public void setPlacedNexusBlock(BlockPos pos) {
-//		this.placedNexusBlockPos = pos;
-//		this.markDirty();
-//	}	
 
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
 		DimensionSavedDataManager manager = world.getSavedData();

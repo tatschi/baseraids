@@ -68,7 +68,7 @@ public class RaidManager {
 	
 	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
 	//private HashMap<Entry<Integer, String>, Integer> amountOfMobsToSpawn = new HashMap<Entry<Integer, String>, Integer>();
-	private HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobsToSpawn;
+	//private HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobsToSpawn;
 	
 	// sets the times (remaining time until raid) for when to warn all players of the coming raid (approximated, in seconds)	
 	private Set<Integer> warnAllPlayersOfRaidTimes = Sets.newHashSet(18000, 6000, 1200, 600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
@@ -83,18 +83,16 @@ public class RaidManager {
 		nexus = NexusBlock.getInstance();
 		MinecraftForge.EVENT_BUS.register(this);
 		setDefaultWriteParameters();
-		amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-		setAmountOfMobsToSpawn();
+		//amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
+		//setAmountOfMobsToSpawn();
 		Baseraids.LOGGER.info("RaidManager created");		
 	}
 	
 	
 	
-	
+	/*
 	private void setAmountOfMobsToSpawn() {
-		/*
-		 * LOADS WHAT AND HOW MANY MOBS WILL SPAWN FOR EACH LEVEL
-		 */
+		
 		
 		for(int curLevel = 0; curLevel < MAX_RAID_LEVEL; curLevel++) {
 			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
@@ -116,6 +114,7 @@ public class RaidManager {
 		}
 		
 	}
+	*/
 	
 	
 	@SubscribeEvent
@@ -240,10 +239,18 @@ public class RaidManager {
     	
     	// SPAWNING
     	spawnedMobs.clear();
+    	HashMap<EntityType<?>, Integer> amountOfMobs = ConfigOptions.amountOfMobs.get(curRaidLevel).get();
+    	if(amountOfMobs == null) {
+    		Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
+    	}
+    	amountOfMobs.forEach(
+    			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
+    			);
+    	/*
     	amountOfMobsToSpawn.get(curRaidLevel).forEach(
     			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
     			);
-    	
+    	*/
     }
     
 	private <T extends Entity> MobEntity[] spawnRaidMobs(EntityType<T> entityType, int numMobs) {
