@@ -170,6 +170,9 @@ public class RaidManager {
 					Baseraids.sendChatMessage("Time until next raid: " + (int) timeUntilRaidInSec / 60 + "min");
 				}else {
 					Baseraids.sendChatMessage("Time until next raid: " + timeUntilRaidInSec + "s");
+					if(timeUntilRaidInSec < 5) {
+						world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1);
+					}
 				}
 			}
 			
@@ -318,6 +321,8 @@ public class RaidManager {
     	Baseraids.LOGGER.info("Raid won");
     	Baseraids.sendChatMessage("You have won the raid!");
     	
+    	
+    	
     	// PLACE LOOT CHEST
     	BlockPos chestPos = nexus.curBlockPos.add(ConfigOptions.lootChestPositionRelative);   
     	world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
@@ -337,6 +342,22 @@ public class RaidManager {
     	// make sure the raid level is adjusted before endRaid() because endRaid() uses the new level
     	increaseRaidLevel();
     	endRaid();
+    	
+    	
+    	// PLAY SOUND EFFECT
+    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
+    	try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
+    	try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 2);
     	
     }
     
