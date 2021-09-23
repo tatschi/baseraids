@@ -389,10 +389,12 @@ public class RaidManager {
 		
 		// spawned mobs
 		ListNBT spawnedMobsList = new ListNBT();
+		int index = 0;
 		for(MobEntity mob : spawnedMobs) {
 			CompoundNBT compound = new CompoundNBT();
-			compound.putUniqueId("ID", mob.getUniqueID());
+			compound.putUniqueId("ID" + index, mob.getUniqueID());
 			spawnedMobsList.add(compound);
+			index++;
 		}
 		
 		nbt.put("spawnedMobs", spawnedMobsList);
@@ -400,15 +402,18 @@ public class RaidManager {
 		return nbt;
 	}
 	
-	public void readAdditional(CompoundNBT nbt) {
+	public void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
 		try {
 			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
 			curRaidLevel = nbt.getInt("curRaidLevel");
 			isRaidActive = nbt.getBoolean("isRaidActive");
+			
+			// spawnedMobs
 			ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
+			int index = 0;
 			for(INBT compound : spawnedMobsList) {
 				CompoundNBT compoundNBT = (CompoundNBT) compound;
-				Entity entity = world.getServer().func_241755_D_().getEntityByUuid(compoundNBT.getUniqueId("ID"));
+				Entity entity = serverWorld.getEntityByUuid(compoundNBT.getUniqueId("ID" + index));
 				if(entity == null) {
 					Log.warn("Could not read entity from data");
 					continue;
@@ -419,6 +424,7 @@ public class RaidManager {
 				}
 				
 				spawnedMobs.add((MobEntity) entity);
+				index++;
 			}
 			
 		}catch(Exception e) {
