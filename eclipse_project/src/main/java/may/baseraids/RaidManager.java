@@ -428,6 +428,7 @@ public class RaidManager {
 			}
 			
 		}catch(Exception e) {
+			Log.warn("Exception while reading data for RaidManager. Setting parameters to default. Exception: " + e);
 			setDefaultWriteParameters();
 			markDirty();
 		}
