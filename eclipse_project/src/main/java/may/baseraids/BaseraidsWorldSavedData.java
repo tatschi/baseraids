@@ -9,7 +9,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 
 	private static final String DATA_NAME = Baseraids.MODID + "_WorldSavedData";
 	
-	public NexusBlock nexusBlock;
 	public RaidManager raidManager;
 	public ServerWorld serverWorld;
 	
@@ -21,13 +20,12 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		super(name);
 		raidManager = new RaidManager();
 		raidManager.isInitialized = true;
-		nexusBlock = NexusBlock.getInstance();
 	}
 	
 	@Override
 	public void read(CompoundNBT nbt) {
 		
-		this.nexusBlock.readAdditional(nbt.getCompound("nexusBlock"));
+		NexusBlock.getInstance().readAdditional(nbt.getCompound("nexusBlock"));
 		this.raidManager.readAdditional(nbt.getCompound("raidManager"), serverWorld);
 		
 		this.raidManager.isInitialized = true;
@@ -35,7 +33,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	@Override
 	public CompoundNBT write(CompoundNBT nbt) {
 		nbt.put("raidManager", raidManager.writeAdditional());
-		nbt.put("nexusBlock", nexusBlock.writeAdditional());
+		nbt.put("nexusBlock", NexusBlock.getInstance().writeAdditional());
 		return nbt;
 	
 	}

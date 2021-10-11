@@ -42,27 +42,32 @@ public class NexusBlock extends Block implements IForgeBlock{
 	static NexusBlock instance;
 
 	enum State{
-		BLOCK, ITEM
+		BLOCK, ITEM, UNINITIALIZED
 	}
 
-	State curState; 
+	private State curState; 
 	public BlockPos curBlockPos;
 
 
+	/**
+	 * 	Initializes the state of the nexus to UNINITIALIZED because
+	 * 	the previous position or state will be loaded by readAdditional,
+	 * 	otherwise a player will receive the nexus upon a PlayerLoggedInEvent (should only be the case on first log in in a world)
+	 */
 	private NexusBlock() {
 		super(properties);
 
 		instance = this;
-		
+		setBlockPos(new BlockPos(0, 0, 0));
+		setState(State.UNINITIALIZED);
 		
 	}
 
+	
 	public static NexusBlock getInstance() {
 		if(instance == null) {
-			instance = new NexusBlock();
-			instance.curBlockPos = new BlockPos(0, 0, 0);
+			return new NexusBlock(); 
 		}
-
 		return instance;
 	}
 
@@ -85,7 +90,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 		if(event.getWorld().isRemote()) return;
 		if(event.getPlacedBlock().getBlock() instanceof NexusBlock) {
 			setState(State.BLOCK);
-			instance.curBlockPos = event.getPos();
+			setBlockPos(event.getPos());
 		}
 	}
 
@@ -102,6 +107,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 			}
 			PlayerEntity player = event.getPlayer();
 
+			// try to give the nexus to the player, if it fails cancel the block breaking (a warning will be given inside the giveNexusToPlayer() method)
 			if(!giveNexusToPlayer(player)) {
 				event.setCanceled(true);
 			}
@@ -147,20 +153,28 @@ public class NexusBlock extends Block implements IForgeBlock{
 
 	}
 	
+	/**
+	 *  if the nexus has not been initialized via readAdditional (this should only be the case in a new world),
+	 *  give the first player to join the world the nexus 
+	 */
 	@SubscribeEvent
     public static void onPlayerLogIn(final PlayerEvent.PlayerLoggedInEvent event) {
     	PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld(); 
     	if(world.isRemote()) return;
     	Baseraids.LOGGER.info("PlayerLoggedInEvent");
-    	if(instance.curState != State.BLOCK && world.getPlayers().size() == 1 && !playerHasNexus(player)) {
-    		// first player to join the world will get the nexus (if it is not placed and the player doesn't already have it)
+    	if(getInstance().curState == State.UNINITIALIZED && world.getPlayers().size() == 1) {
     		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
     		NexusBlock.giveNexusToPlayer(player);
+    		
     	}
     	
     }
 
+	/**
+	 * if a player tries to log out with the Nexus in his inventory, cancel the event and send a chat message about it
+	 * 
+	 */
 	@SubscribeEvent
 	public static void onPlayerLogOut(final PlayerEvent.PlayerLoggedOutEvent event) {
 		Baseraids.LOGGER.info("PlayerLoggedOutEvent");
@@ -175,16 +189,21 @@ public class NexusBlock extends Block implements IForgeBlock{
 		if(playerHasNexus(playerLogOut)) {
 
 			Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
+			event.setCanceled(false);
+			Baseraids.sendChatMessage("You cannot log out with the Nexus in your inventory!");
+			
+			/*
+			
 			if(instance.curState != State.ITEM) {
-				// double nexus
+				// TODO: double nexus
+				return;
 			}else {
 
 				// select 
 				List<? extends PlayerEntity> playerList = world.getPlayers();
 				playerList.remove(playerLogOut);
 				if(playerList.size() > 0) {
-
-					// give nexus to other player
+					// give nexus to other player (if he is not the only player
 					Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
 					giveNexusToRandomPlayerFromList(playerList);
 
@@ -209,7 +228,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 					Baseraids.LOGGER.info("PlayerLoggedOutEvent Found nexus stack, removing...");
 					itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
 				}
-			}
+			}*/
 		}
 
 	}
@@ -222,15 +241,28 @@ public class NexusBlock extends Block implements IForgeBlock{
 
 	
 	private static void setState(State state) {
-		instance.curState = state;
+		getInstance().curState = state;
 		Baseraids.baseraidsData.markDirty();
+	}
+	
+	public static State getState() {
+		return getInstance().curState;
 	}
 	
 	private static void setBlockPos(BlockPos pos) {
-		instance.curBlockPos = pos;
+		getInstance().curBlockPos = pos;
 		Baseraids.baseraidsData.markDirty();
 	}
 	
+	public static BlockPos getBlockPos() {
+		return getInstance().curBlockPos;
+	}
+	
+	/**
+	 * Attempts to give the nexus to the specified player. If not successful, sends a chat message and returns false.
+	 * @param player that the nexus should be given to
+	 * @return flag whether the method was successful
+	 */
 	static boolean giveNexusToPlayer(PlayerEntity player) {
 		if(!playerHasNexus(player)) {
 

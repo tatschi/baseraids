@@ -49,7 +49,6 @@ public class RaidManager {
 	// RUNTIME VARIABLES
 	private World world = null;
 	public boolean isInitialized = false;
-	private NexusBlock nexus;
 	
 	private boolean isRaidActive;
 	private int tick = 0;
@@ -83,7 +82,6 @@ public class RaidManager {
 	
 	
 	public RaidManager() {
-		nexus = NexusBlock.getInstance();
 		MinecraftForge.EVENT_BUS.register(this);
 		setDefaultWriteParameters();
 		//amountOfMobsToSpawn = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
@@ -171,7 +169,7 @@ public class RaidManager {
 				}else {
 					Baseraids.sendChatMessage("Time until next raid: " + timeUntilRaidInSec + "s");
 					if(timeUntilRaidInSec < 5) {
-						world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1);
+						world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1);
 					}
 				}
 			}
@@ -183,7 +181,7 @@ public class RaidManager {
 	private void raidTick() {
 		// HANDLE SOUND		
 		if(isRaidActive && tick % RAID_SOUND_INTERVAL == 0) {
-			world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
+			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
 		}
 		
 		// CHECK IF RAID IS WON
@@ -229,7 +227,7 @@ public class RaidManager {
     	
     	setLastRaidGameTime((int) (world.getGameTime()));
     	
-    	if(nexus.curState != State.BLOCK) {
+    	if(NexusBlock.getState() != State.BLOCK) {
     		Baseraids.LOGGER.info("No Nexus placed, skipping raid");
     		return;
     	}
@@ -257,7 +255,7 @@ public class RaidManager {
 	private <T extends Entity> MobEntity[] spawnRaidMobs(EntityType<T> entityType, int numMobs) {
     	int radius = 50;
     	double angleInterval = 2*Math.PI/100;
-    	BlockPos centerSpawnPos = new BlockPos(nexus.curBlockPos).add(0, 1, 0);
+    	BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
     	
     	ILivingEntityData ilivingentitydata = null;
     	MobEntity[] mobs = new MobEntity[numMobs];
@@ -324,7 +322,7 @@ public class RaidManager {
     	
     	
     	// PLACE LOOT CHEST
-    	BlockPos chestPos = nexus.curBlockPos.add(ConfigOptions.lootChestPositionRelative);   
+    	BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.lootChestPositionRelative);   
     	world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
     	if(world.getTileEntity(chestPos) instanceof ChestTileEntity) {
     		ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
@@ -345,19 +343,19 @@ public class RaidManager {
     	
     	
     	// PLAY SOUND EFFECT
-    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
+    	world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
     	try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
+    	world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
     	try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-    	world.playSound(null, nexus.curBlockPos, SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 2);
+    	world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 2);
     	
     }
     
@@ -367,7 +365,7 @@ public class RaidManager {
     	setRaidActive(false);
     	spawnedMobs.forEach(mob -> mob.onKillCommand());
     	spawnedMobs.clear();
-    	world.sendBlockBreakProgress(-1, nexus.curBlockPos, -1); 
+    	world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1); 
     }
     
     public int getTimeUntilRaidInSec() {

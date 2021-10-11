@@ -182,10 +182,6 @@ public class Baseraids
     	}
     }
 	
-
-    @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
-    }
     
     
     @SubscribeEvent
@@ -195,8 +191,9 @@ public class Baseraids
     	}
     	// ticks in each dimension
     	World world = event.world;
-    	if(NexusBlock.getInstance().curState != State.BLOCK) {
-    		// if nexus block is not placed
+    	
+    	// as long as the nexus block is not placed, regularly add a debuff to all players in the world
+    	if(NexusBlock.getState() != State.BLOCK) {
     		if (world.getGameTime() % 80L == 0L) {
     			addDebuff(world);
         	}
@@ -213,8 +210,11 @@ public class Baseraids
 		}
     }
     
+    /**
+     * Adds a slowness debuff of duration 200 to all players in the world
+     * @param world
+     */
     private void addDebuff(World world) {
-    	// Add permanent slowness debuff
     	Effect effect = Effects.SLOWNESS;
 		if (!world.isRemote) {
 			int amplifier = 0;
