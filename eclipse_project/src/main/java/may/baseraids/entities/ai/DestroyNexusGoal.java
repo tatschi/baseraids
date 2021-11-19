@@ -32,12 +32,12 @@ public class DestroyNexusGoal extends Goal{
 		this.entity = entity;
 		this.raidManager = raidManager;
 		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 	}
 	
 	
 	public boolean shouldExecute() {
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 		return raidManager.isRaidActive() && entity.isAlive() && nexusPos.withinDistance(entity.getPositionVec(), distanceToTriggerGoal);
 	}
 	
@@ -46,7 +46,7 @@ public class DestroyNexusGoal extends Goal{
 	}
 	
 	public void startExecuting() {
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 	}
 	
 	public void tick() {		
