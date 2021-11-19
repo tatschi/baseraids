@@ -22,12 +22,12 @@ public class MoveTowardsNexusGoal extends Goal{
 		this.entity = entity;
 		this.raidManager = raidManager;
 		this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE));
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 	}
 	
 	
 	public boolean shouldExecute() {
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 		Path path = entity.getNavigator().getPath();
 		return entity.getAttackTarget() == null
 				&& raidManager.isRaidActive()
@@ -36,7 +36,7 @@ public class MoveTowardsNexusGoal extends Goal{
 	}
 	
 	public boolean shouldContinueExecuting() {
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 		Path path = entity.getNavigator().getPath();;
 		return raidManager.isRaidActive()
 				&& entity.world instanceof ServerWorld
@@ -45,7 +45,7 @@ public class MoveTowardsNexusGoal extends Goal{
 	}
 	
 	public void startExecuting() {
-		nexusPos = NexusBlock.getInstance().curBlockPos;
+		nexusPos = NexusBlock.getBlockPos();
 	}
 	
 	public void tick() {		
