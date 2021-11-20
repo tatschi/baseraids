@@ -92,9 +92,7 @@ public class Baseraids
     
     public static final HashMap<String, EntityType<?>> configRegister = new HashMap<String, EntityType<?>>();
     
-    // TODO remove nexusItem and reference to nexusblockpos in baseraidsData
     public static BaseraidsWorldSavedData baseraidsData;
-    //public static RaidManager raidManager;
     
     
     public Baseraids() {
@@ -202,7 +200,10 @@ public class Baseraids
         
     }
 
-    
+    /**
+     * Sends a string message in the in game chat to all players on the server. 
+     * @param message
+     */
     public static void sendChatMessage(String message) {
     	for(PlayerEntity player : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
 			player.sendMessage(new StringTextComponent(message), null);
@@ -210,7 +211,7 @@ public class Baseraids
     }
     
     /**
-     * Adds a slowness debuff of duration 200 to all players in the world
+     * Adds a slowness debuff of the duration that is specified in the method to all players in the world
      * @param world
      */
     private void addDebuff(World world) {

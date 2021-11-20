@@ -21,6 +21,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.extensions.IForgeBlock;
+import net.minecraftforge.event.entity.item.ItemEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -147,12 +148,13 @@ public class NexusBlock extends Block implements IForgeBlock{
     	PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld(); 
     	if(world.isRemote()) return;
-    	Baseraids.LOGGER.info("PlayerLoggedInEvent");
+    	Baseraids.LOGGER.info("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
     	if(curState == State.UNINITIALIZED && world.getPlayers().size() == 1) {
     		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
     		NexusBlock.giveNexusToPlayer(player);
     		
     	}
+    	
     	
     }
 
@@ -174,7 +176,8 @@ public class NexusBlock extends Block implements IForgeBlock{
 		if(playerHasNexus(playerLogOut)) {
 
 			Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
-			event.setCanceled(false);
+			// TODO: cannot cancel event
+			//event.setCanceled(false);
 			Baseraids.sendChatMessage("You cannot log out with the Nexus in your inventory!");
 			
 			/*
