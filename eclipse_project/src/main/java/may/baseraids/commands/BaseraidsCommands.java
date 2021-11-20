@@ -3,12 +3,15 @@ package may.baseraids.commands;
 import com.mojang.brigadier.CommandDispatcher;
 
 import may.baseraids.Baseraids;
+import may.baseraids.NexusBlock;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsCommands {
@@ -37,10 +40,19 @@ public class BaseraidsCommands {
 	      						.executes((commandSource) -> {return getTimeUntilRaid(commandSource.getSource());}))
 	      				.then(Commands.literal("level")
 	      						.executes((commandSource) -> {return getRaidLevel(commandSource.getSource());}))
-	      		));
+	      		)
+	      		.then(Commands.literal("give")
+	      				.then(Commands.literal("nexus")
+	      						.then(Commands.argument("target", EntityArgument.players())
+	      								.executes((commandSource) -> {return giveNexusToPlayer(commandSource.getSource(), EntityArgument.getPlayer(commandSource, "target"));})))
+	    		 ));
 	}
 
 	
+	private static int giveNexusToPlayer(CommandSource source, ServerPlayerEntity target) {
+		return NexusBlock.giveNexusToPlayer(target) ? 0 : 1;
+	}
+
 	private static int winRaid(CommandSource source) {
 		Baseraids.baseraidsData.raidManager.winRaid();
 		return 0;

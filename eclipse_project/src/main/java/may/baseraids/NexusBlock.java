@@ -114,7 +114,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 				event.setCanceled(true);
 				Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
 				Baseraids.sendChatMessage("You cannot toss away the Nexus. It needs to be placed!");
-
+				giveNexusToPlayer(event.getPlayer());
 			}
 		}
 	}
@@ -245,10 +245,10 @@ public class NexusBlock extends Block implements IForgeBlock{
 	
 	/**
 	 * Attempts to give the nexus to the specified player. If not successful, sends a chat message and returns false.
-	 * @param player that the nexus should be given to
+	 * @param the player that the nexus should be given to
 	 * @return flag whether the method was successful
 	 */
-	static boolean giveNexusToPlayer(PlayerEntity player) {
+	public static boolean giveNexusToPlayer(PlayerEntity player) {
 		if(!playerHasNexus(player)) {
 
 			// attempt to automatically give block to player 
