@@ -143,7 +143,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 	
 	/**
 	 *  if the nexus has not been initialized via readAdditional (this should only be the case in a new world),
-	 *  give the first player to join the world the nexus 
+	 *  give the player that just joined the world the nexus 
 	 */
 	@SubscribeEvent
     public static void onPlayerLogIn(final PlayerEvent.PlayerLoggedInEvent event) {
@@ -151,7 +151,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 		World world = player.getEntityWorld(); 
     	if(world.isRemote()) return;
     	Baseraids.LOGGER.info("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
-    	if(curState == State.UNINITIALIZED && world.getPlayers().size() == 1) {
+    	if(curState == State.UNINITIALIZED) {
     		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
     		NexusBlock.giveNexusToPlayer(player);
     		
