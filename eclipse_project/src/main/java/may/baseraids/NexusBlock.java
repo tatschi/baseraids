@@ -28,6 +28,8 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.CapabilityItemHandler;
 
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock{
@@ -172,41 +174,29 @@ public class NexusBlock extends Block implements IForgeBlock{
 		if(world.isRemote()) return;
 
 
-
 		if(playerHasNexus(playerLogOut)) {
 
 			Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
-			// TODO: cannot cancel event
-			//event.setCanceled(false);
-			Baseraids.sendChatMessage("You cannot log out with the Nexus in your inventory!");
 			
-			/*
-			
-			if(instance.curState != State.ITEM) {
-				// TODO: double nexus
-				return;
-			}else {
-
-				// select 
-				List<? extends PlayerEntity> playerList = world.getPlayers();
-				playerList.remove(playerLogOut);
-				if(playerList.size() > 0) {
-					// give nexus to other player (if he is not the only player
-					Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
-					giveNexusToRandomPlayerFromList(playerList);
-
-
-				}else {
-
-					// place Block in world
-					Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus is placed on player position");
-					world.setBlockState(playerLogOut.getPosition(), Baseraids.NEXUS_BLOCK.get().getDefaultState());
-					// necessary or BlockPlacedEvent called anyways?
-					setState(State.BLOCK);
-					setBlockPos(playerLogOut.getPosition());
+			// if there is another player on the server, give him the nexus
+			List<? extends PlayerEntity> playerList = world.getPlayers();
+			playerList.remove(playerLogOut);
+			if(playerList.size() > 0) {
+				Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
+				if(giveNexusToRandomPlayerFromList(playerList)) {
+					return;
 				}
 			}
-
+			
+			/*
+			// place Block in world
+			Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus is placed on player position");
+			world.setBlockState(playerLogOut.getPosition(), Baseraids.NEXUS_BLOCK.get().getDefaultState());
+			// necessary or BlockPlacedEvent called anyways?
+			setState(State.BLOCK);
+			setBlockPos(playerLogOut.getPosition());
+			*/
+			
 			// remove all nexus items from the player that is logging out
 			IItemHandler itemHandler = (IItemHandler) playerLogOut.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
 
@@ -216,7 +206,7 @@ public class NexusBlock extends Block implements IForgeBlock{
 					Baseraids.LOGGER.info("PlayerLoggedOutEvent Found nexus stack, removing...");
 					itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
 				}
-			}*/
+			}
 		}
 
 	}
@@ -248,8 +238,8 @@ public class NexusBlock extends Block implements IForgeBlock{
 	
 	/**
 	 * Attempts to give the nexus to the specified player. If not successful, sends a chat message and returns false.
-	 * @param the player that the nexus should be given to
-	 * @return flag whether the method was successful
+	 * @param player	the player that the nexus should be given to
+	 * @return a flag whether the method was successful
 	 */
 	public static boolean giveNexusToPlayer(PlayerEntity player) {
 		if(!playerHasNexus(player)) {
@@ -269,17 +259,32 @@ public class NexusBlock extends Block implements IForgeBlock{
 
 		}else {
 			Baseraids.LOGGER.warn("NexusBlock already exists in player's inventory");
+			// in some situations, the nexus could be in the inventory and the state could be State.BLOCK at the same time
+			// in any case, we should set the state to State.ITEM here to stay consistent
+			setState(State.ITEM);
 		}
 		return true;
 	}
 
-
-	private static void giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
-		// select random player from list
+	/**
+	 * Attempts to give the nexus to a random player from a specified list of players.
+	 * As long as it's not successfull, it selects a new random player from the remaining list.
+	 * @param playerList	list of players to choose from
+	 * @return a flag whether the method was successful
+	 */
+	private static boolean giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
+		
 		Random rand = new Random();
-		int rand_index = rand.nextInt(playerList.size());
-		PlayerEntity selectedPlayer = playerList.get(rand_index);
-		giveNexusToPlayer(selectedPlayer);
+		do {
+			int rand_index = rand.nextInt(playerList.size());
+			PlayerEntity selectedPlayer = playerList.get(rand_index);
+			playerList.remove(selectedPlayer);
+			if(giveNexusToPlayer(selectedPlayer)) {
+				return true;
+			}
+		}
+		while(playerList.size() <= 0);
+		return false;
 	}
 
 	private static boolean playerHasNexus(PlayerEntity player) {
