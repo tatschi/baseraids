@@ -1,6 +1,7 @@
 package may.baseraids.entities;
 
 import may.baseraids.Baseraids;
+import may.baseraids.entities.ai.BlockBreakGoal;
 import may.baseraids.entities.ai.DestroyNexusGoal;
 import may.baseraids.entities.ai.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
@@ -33,8 +34,10 @@ public class BaseraidsSkeletonEntity extends SkeletonEntity {
 	
 	@Override
 	protected void registerGoals() {
-		this.goalSelector.addGoal(0, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
+		
 		this.goalSelector.addGoal(0, new DestroyNexusGoal(this, Baseraids.baseraidsData.raidManager));
+		this.goalSelector.addGoal(1, new BlockBreakGoal(this, Baseraids.baseraidsData.raidManager));
+		this.goalSelector.addGoal(2, new MoveTowardsNexusGoal(this, Baseraids.baseraidsData.raidManager));
 		
 		this.goalSelector.addGoal(2, new RestrictSunGoal(this));
 	    this.goalSelector.addGoal(3, new FleeSunGoal(this, 1.0D));

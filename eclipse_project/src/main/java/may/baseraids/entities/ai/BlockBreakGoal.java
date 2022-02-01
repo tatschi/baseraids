@@ -27,40 +27,74 @@ public class BlockBreakGoal extends Goal{
  	
  	// time to break the block in ticks
  	protected int timeToBreak = 200;
+ 	
+ 	
+ 	final static Vector3i[] focusableBlocksAroundEntity = {
+ 			
+ 			new Vector3i(0, 0, 0),
+ 			new Vector3i(0, 0, 1),
+ 			new Vector3i(0, 0, -1),
+ 			
+ 			new Vector3i(0, 1, 0),
+ 			new Vector3i(0, 1, 1),
+ 			new Vector3i(0, 1, -1),
+ 			
+ 			new Vector3i(0, -1, 0),
+ 			new Vector3i(0, -1, 1),
+ 			new Vector3i(0, -1, -1),
+ 			
+ 			new Vector3i(1, 0, 0),
+ 			new Vector3i(1, 0, 1),
+ 			new Vector3i(1, 0, -1),
+ 			
+ 			new Vector3i(1, 1, 0),
+ 			new Vector3i(1, 1, 1),
+ 			new Vector3i(1, 1, -1),
+ 			
+ 			new Vector3i(1, -1, 0),
+ 			new Vector3i(1, -1, 1),
+ 			new Vector3i(1, -1, -1),
+ 			
+ 			new Vector3i(-1, 0, 0),
+ 			new Vector3i(-1, 0, 1),
+ 			new Vector3i(-1, 0, -1),
+ 			
+ 			new Vector3i(-1, 1, 0),
+ 			new Vector3i(-1, 1, 1),
+ 			new Vector3i(-1, 1, -1),
+ 			
+ 			new Vector3i(-1, -1, 0),
+ 			new Vector3i(-1, -1, 1),
+ 			new Vector3i(-1, -1, -1)
+ 			
+ 	};    
 	
  	
  	public BlockBreakGoal(MobEntity entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
-		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
+		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET));
 		curFocusedBlock = new BlockPos(0, 0, 0);
 	}
  	
 	@Override
 	public boolean shouldExecute() {
 		if(!raidManager.isRaidActive()) return false;
-		Path path = entity.getNavigator().getPath();
-		if(path != null) {
-			
-			if(!path.reachesTarget() && !path.isFinished() && this.entity.collidedHorizontally) {
-				Baseraids.LOGGER.info("BlockBreakGoal#shouldExecute inside conditions");
-				
-				// !! copied and adjusted from InteractDoorGoal
-				for(int i = 0; i < Math.min(path.getCurrentPathIndex() + 2, path.getCurrentPathLength()); ++i) {
-					PathPoint pathpoint = path.getPathPointFromIndex(i);
-			        curFocusedBlock = new BlockPos(pathpoint.x, pathpoint.y + 1, pathpoint.z);	
-			        if (!(this.entity.getDistanceSq((double)curFocusedBlock.getX(), this.entity.getPosY(), (double)curFocusedBlock.getZ()) > maxDistance)) {
-			        	Baseraids.LOGGER.info("BlockBreakGoal#shouldExecute block within distance " + entity.world.getBlockState(curFocusedBlock));
-			        	return entity.world.getBlockState(curFocusedBlock).isSolid();
-		            }
-				}
-			}
-			
-		}
 		
-		Vector3i lookDirection = new Vector3i(Math.round(entity.getLookVec().getX()), Math.round(entity.getLookVec().getY()), Math.round(entity.getLookVec().getZ()));
-		curFocusedBlock = this.entity.getPosition().up().add(lookDirection);
-		return entity.world.getBlockState(curFocusedBlock).isSolid();
+		if(entity.getAIMoveSpeed() > 0) {
+			// cycle through possible blocks to destroy around the entity
+			BlockPos defaultFocusedBlock = this.entity.getPosition();
+			curFocusedBlock = defaultFocusedBlock;
+			
+			for(Vector3i vec : focusableBlocksAroundEntity){
+				curFocusedBlock = curFocusedBlock.add(vec);
+				if(entity.world.getBlockState(curFocusedBlock).isSolid()) {
+					return true;
+				}
+				curFocusedBlock = defaultFocusedBlock;
+			}
+		}
+		return false;
 		
 	}
 	

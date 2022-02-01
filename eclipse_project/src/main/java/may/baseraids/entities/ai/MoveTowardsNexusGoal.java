@@ -49,7 +49,7 @@ public class MoveTowardsNexusGoal extends Goal{
 	}
 	
 	public void tick() {		
-		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);		
+		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
 		
 	}
 	
