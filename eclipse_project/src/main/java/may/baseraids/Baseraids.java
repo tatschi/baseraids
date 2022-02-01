@@ -8,11 +8,13 @@ import org.apache.logging.log4j.Logger;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.Config;
+import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsPhantomEntity;
 import may.baseraids.entities.BaseraidsSkeletonEntity;
 import may.baseraids.entities.BaseraidsSpiderEntity;
 import may.baseraids.entities.BaseraidsZombieEntity;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
@@ -195,10 +197,28 @@ public class Baseraids
     			addDebuff(world);
         	}
     		
-    	}
-        	
+    	}   	
         
     }
+    
+    @SubscribeEvent
+	public void onMonsterSpawn(WorldEvent.PotentialSpawns event){
+		if(event.getWorld().isRemote()) return;
+		if(ConfigOptions.deactivateMonsterNightSpawn.get()) {
+			if(event.getType() == EntityClassification.MONSTER) {
+				
+				World world = (World) event.getWorld();
+				if(world.getBlockState(event.getPos()) != Blocks.CAVE_AIR.getDefaultState()) {
+					if(event.isCancelable()) {
+						// Cancel Spawn if not in cave
+						event.setCanceled(true);
+					}
+					
+				}
+				
+			}
+		}
+ 	}
 
     /**
      * Sends a string message in the in game chat to all players on the server. 
@@ -227,6 +247,8 @@ public class Baseraids
 			}
 		}
     }
+    
+    
     
     
 }
