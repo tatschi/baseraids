@@ -4,7 +4,10 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.fml.common.Mod;
 
+//@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
+@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsWorldSavedData extends WorldSavedData{
 
 	private static final String DATA_NAME = Baseraids.MODID + "_WorldSavedData";
@@ -30,6 +33,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 		
 		this.raidManager.isInitialized = true;
 	}
+	
 	@Override
 	public CompoundNBT write(CompoundNBT nbt) {
 		nbt.put("raidManager", raidManager.writeAdditional());
@@ -38,11 +42,11 @@ public class BaseraidsWorldSavedData extends WorldSavedData{
 	
 	}
 	
-
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
 		DimensionSavedDataManager manager = world.getSavedData();
 		BaseraidsWorldSavedData worldSavedDataInstance = manager.getOrCreate(() -> new BaseraidsWorldSavedData(world), DATA_NAME);
 		
 		return worldSavedDataInstance;
 	}
+	
 }

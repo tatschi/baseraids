@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -60,12 +61,12 @@ public class RaidManager {
 	
 	
 	// RAID SETTINGS
-	public static final int MAX_RAID_LEVEL = 3, MIN_RAID_LEVEL = 1;
+	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
 	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000; // defines the world.daytime at which it starts to be night (one day == 24000)
 	private static final int RAID_SOUND_INTERVAL = 60;
 	
 	
-	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = {{3, 1, 0}, {5, 2, 2}, {8, 4, 4}};
+	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = {{4, 0, 0}, {2, 4, 0}, {3, 3, 4}, {8, 4, 4}, {12, 6, 4}};
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
 	
 	// stores the amount of mobs to spawn for each raid level and mob using <amount, Entry<raidlevel, mobname>>
@@ -77,7 +78,10 @@ public class RaidManager {
 	
 	private static final ResourceLocation[] LOOTTABLES = {
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2")
+			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2"),
+			new ResourceLocation(Baseraids.MODID, "chests/raid_level_3"),
+			new ResourceLocation(Baseraids.MODID, "chests/raid_level_4"),
+			new ResourceLocation(Baseraids.MODID, "chests/raid_level_5")
 	};
 	
 	
@@ -88,8 +92,6 @@ public class RaidManager {
 		setAmountOfMobsToSpawn();
 		Baseraids.LOGGER.info("RaidManager created");		
 	}
-	
-	
 	
 	
 	private void setAmountOfMobsToSpawn() {
@@ -106,7 +108,7 @@ public class RaidManager {
 				hashMapForCurLevel.put(ORDER_OF_MOBS_IN_ARRAY[curMob], AMOUNT_OF_MOBS_DEFAULT[curLevel][curMob]);
 			}
 			
-			amountOfMobs.put(curLevel, hashMapForCurLevel);
+			amountOfMobs.put(curLevel+1, hashMapForCurLevel);
 		}
 		
 	}
@@ -199,24 +201,7 @@ public class RaidManager {
 	
 	
 	
-	@SubscribeEvent
-	public void onMonsterSpawn(WorldEvent.PotentialSpawns event){
-		if(event.getWorld().isRemote()) return;
-		if(ConfigOptions.deactivateMonsterNightSpawn.get()) {
-			if(event.getType() == EntityClassification.MONSTER) {
-				
-				World world = (World) event.getWorld();
-				if(world.getBlockState(event.getPos()) != Blocks.CAVE_AIR.getDefaultState()) {
-					if(event.isCancelable()) {
-						// Cancel Spawn if not in cave
-						event.setCanceled(true);
-					}
-					
-				}
-				
-			}
-		}
- 	}
+
 	
     
     public void initiateRaid() {
@@ -245,6 +230,7 @@ public class RaidManager {
     	amountOfMobsToSpawn.forEach(
     			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
     			);
+    	Baseraids.LOGGER.info("Spawned all entities for the raid");
     	/*
     	amountOfMobsToSpawn.get(curRaidLevel).forEach(
     			(type, num) -> spawnedMobs.addAll(Arrays.asList(spawnRaidMobs(type, num)))
@@ -412,6 +398,7 @@ public class RaidManager {
 		for(MobEntity mob : spawnedMobs) {
 			CompoundNBT compound = new CompoundNBT();
 			compound.putUniqueId("ID" + index, mob.getUniqueID());
+			Baseraids.LOGGER.debug("writing UUID " + mob.getUniqueID());
 			spawnedMobsList.add(compound);
 			index++;
 		}
@@ -427,29 +414,36 @@ public class RaidManager {
 			curRaidLevel = nbt.getInt("curRaidLevel");
 			isRaidActive = nbt.getBoolean("isRaidActive");
 			
-			// spawnedMobs
-			ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
-			int index = 0;
-			for(INBT compound : spawnedMobsList) {
-				CompoundNBT compoundNBT = (CompoundNBT) compound;
-				Entity entity = serverWorld.getEntityByUuid(compoundNBT.getUniqueId("ID" + index));
-				if(entity == null) {
-					Log.warn("Could not read entity from data");
-					continue;
-				}
-				if(!(entity instanceof MobEntity)) {
-					Log.warn("Error while reading data for RaidManager: Read entity not of type MobEntity");
-					continue;
-				}
-				
-				spawnedMobs.add((MobEntity) entity);
-				index++;
-			}
+			Minecraft.getInstance().enqueue(() -> readSpawnedMobsList(nbt, serverWorld));			
+			
+			Baseraids.LOGGER.debug("Finished loading RaidManager");
+			
 			
 		}catch(Exception e) {
 			Log.warn("Exception while reading data for RaidManager. Setting parameters to default. Exception: " + e);
 			setDefaultWriteParameters();
 			markDirty();
+		}
+	}
+	
+	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
+		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
+		spawnedMobs.clear();
+		int index = 0;
+		for(INBT compound : spawnedMobsList) {
+			CompoundNBT compoundNBT = (CompoundNBT) compound;
+			Entity entity = serverWorld.getEntityByUuid(compoundNBT.getUniqueId("ID" + index));
+			if(entity == null) {
+				Log.warn("Could not read entity from data");
+				continue;
+			}
+			if(!(entity instanceof MobEntity)) {
+				Log.warn("Error while reading data for RaidManager: Read entity not of type MobEntity");
+				continue;
+			}
+			
+			spawnedMobs.add((MobEntity) entity);
+			index++;
 		}
 	}
 	
