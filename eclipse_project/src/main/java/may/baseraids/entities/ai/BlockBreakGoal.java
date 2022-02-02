@@ -8,8 +8,6 @@ import may.baseraids.RaidManager;
 import net.minecraft.block.Block;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 
@@ -20,7 +18,6 @@ public class BlockBreakGoal extends Goal{
 	
 	
  	protected BlockPos curFocusedBlock;
-	private float maxDistance = 2.25f;
  	
  	protected static ConcurrentHashMap<BlockPos, Integer> globalBreakingProgress = new ConcurrentHashMap<BlockPos, Integer>();
  	protected static ConcurrentHashMap<BlockPos, Integer> previousBreakProgress = new ConcurrentHashMap<BlockPos, Integer>();
@@ -106,8 +103,6 @@ public class BlockBreakGoal extends Goal{
 		entity.setAggroed(true);
 		entity.getLookController().setLookPosition(curFocusedBlock.getX(), curFocusedBlock.getY(), curFocusedBlock.getZ());
 		
-		//entity.getNavigator().tryMoveToXYZ(curFocusedBlock.getX(), curFocusedBlock.getY(), curFocusedBlock.getZ(), 1);
-		
 		// swing arm at random
 		if (this.entity.getRNG().nextInt(20) == 0) {
 			
@@ -129,9 +124,7 @@ public class BlockBreakGoal extends Goal{
 		int i = (int)((float)globalBreakingProgress.get(curFocusedBlock) / (float)timeToBreak * 10.0F);		
 		if (i != previousBreakProgress.getOrDefault(curFocusedBlock, -1)) {
 			Baseraids.LOGGER.info("BlockBreakGoal#tick Send Block break progress");
-			if(i % 150 == 0) {
-				this.entity.world.playEvent(1019, curFocusedBlock, 0);
-			}
+			// TODO sound design
 			entity.world.sendBlockBreakProgress(entity.getEntityId(), curFocusedBlock, i);
 
 		}
@@ -146,9 +139,10 @@ public class BlockBreakGoal extends Goal{
 				globalBreakingProgress.remove(curFocusedBlock);
 				this.entity.world.sendBlockBreakProgress(-1, curFocusedBlock, -1);
 				entity.world.removeBlock(curFocusedBlock, false);
-				// TODO change played sound
+				// TODO sound design
 				entity.world.playEvent(1021, curFocusedBlock, 0);
 				entity.world.playEvent(2001, curFocusedBlock, Block.getStateId(entity.world.getBlockState(curFocusedBlock)));
+				
 				entity.getNavigator().clearPath();
 			}
 		}

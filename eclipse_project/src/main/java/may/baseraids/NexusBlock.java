@@ -6,6 +6,7 @@ import java.util.Random;
 
 import com.google.common.collect.Sets;
 
+import may.baseraids.NexusBlock.State;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -15,13 +16,16 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.Effect;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.extensions.IForgeBlock;
-import net.minecraftforge.event.entity.item.ItemEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -45,15 +49,16 @@ public class NexusBlock extends Block implements IForgeBlock{
 		BLOCK, ITEM, UNINITIALIZED
 	}
 
-	private static State curState = State.UNINITIALIZED; 
-	public static BlockPos curBlockPos = new BlockPos(0, 0, 0);
-
-
-	/**
+	/*
 	 * 	Initializes the state of the nexus to UNINITIALIZED because
 	 * 	the previous position or state will be loaded by readAdditional,
 	 * 	otherwise a player will receive the nexus upon a PlayerLoggedInEvent (should only be the case on first log in in a world)
 	 */
+	private static State curState = State.UNINITIALIZED; 
+	public static BlockPos curBlockPos = new BlockPos(0, 0, 0);
+
+
+	
 	public NexusBlock() {
 		super(properties);
 		
@@ -72,6 +77,23 @@ public class NexusBlock extends Block implements IForgeBlock{
 	}
 
 
+	@SubscribeEvent
+    public void onWorldTick(TickEvent.WorldTickEvent event) {
+    	if(event.phase != TickEvent.Phase.START){
+    		return;
+    	}
+    	// ticks in each dimension
+    	World world = event.world;
+    	
+    	// as long as the nexus block is not placed, regularly add a debuff to all players in the world
+    	if(NexusBlock.getState() != State.BLOCK) {
+    		if (world.getGameTime() % 80L == 0L) {
+    			addDebuff(world);
+        	}
+    		
+    	}   	
+        
+    }
 
 	@SubscribeEvent
 	public static void onBlockPlaced(final BlockEvent.EntityPlaceEvent event) {
@@ -188,15 +210,6 @@ public class NexusBlock extends Block implements IForgeBlock{
 				}
 			}
 			
-			/*
-			// place Block in world
-			Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus is placed on player position");
-			world.setBlockState(playerLogOut.getPosition(), Baseraids.NEXUS_BLOCK.get().getDefaultState());
-			// necessary or BlockPlacedEvent called anyways?
-			setState(State.BLOCK);
-			setBlockPos(playerLogOut.getPosition());
-			*/
-			
 			// remove all nexus items from the player that is logging out
 			IItemHandler itemHandler = (IItemHandler) playerLogOut.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
 
@@ -210,12 +223,6 @@ public class NexusBlock extends Block implements IForgeBlock{
 		}
 
 	}
-
-
-	// https://forums.minecraftforge.net/topic/42843-item-despawn-chest/
-	// ItemExpireEvent
-	// https://skmedix.github.io/ForgeJavaDocs/javadoc/forge/1.9.4-12.17.0.2051/net/minecraftforge/event/entity/item/ItemExpireEvent.html
-	// check Entity#isDead() every tick?
 
 	
 	private static void setState(State state) {
@@ -266,6 +273,24 @@ public class NexusBlock extends Block implements IForgeBlock{
 		return true;
 	}
 
+	/**
+     * Adds a slowness debuff of the duration that is specified in the method to all players in the world
+     * @param world
+     */
+    private void addDebuff(World world) {
+    	Effect effect = Effects.SLOWNESS;
+		if (!world.isRemote) {
+			int amplifier = 0;
+			int duration = 200;
+			
+			List<? extends PlayerEntity> list = world.getPlayers();
+	
+			for(PlayerEntity playerentity : list) {
+				playerentity.addPotionEffect(new EffectInstance(effect, duration, amplifier, true, true));
+			}
+		}
+    }
+	
 	/**
 	 * Attempts to give the nexus to a random player from a specified list of players.
 	 * As long as it's not successfull, it selects a new random player from the remaining list.
