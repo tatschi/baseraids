@@ -52,15 +52,5 @@ public class BaseraidsZombieEntity extends ZombieEntity {
 		this.targetSelector.addGoal(5, new NearestAttackableTargetGoal<>(this, TurtleEntity.class, 10, true, false, TurtleEntity.TARGET_DRY_BABY));
 		
 	}
-	
-	/*
-	@SubscribeEvent
-	public void addLootTable(LootTableLoadEvent event){
-		
-		if(event.getName().toString().matches(Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get().getLootTable().toString())) {
-			event.setTable(new LootTable(EntityType.ZOMBIE.getLootTable()));
-		}
-		
-	}*/
 
 }

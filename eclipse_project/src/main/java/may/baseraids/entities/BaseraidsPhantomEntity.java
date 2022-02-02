@@ -45,12 +45,6 @@ public class BaseraidsPhantomEntity extends PhantomEntity {
 		this.targetSelector.addGoal(1, new BaseraidsPhantomEntity.AttackPlayerGoal());
 	}
 
-	/*
-	 * public static AttributeModifierMap.MutableAttribute registerAttributes() {
-	 * return PhantomEntity.registerAttributes().createMutableAttribute(Attributes.
-	 * FOLLOW_RANGE); }
-	 */
-
 	class AttackPlayerGoal extends Goal {
 		private final EntityPredicate field_220842_b = (new EntityPredicate()).setDistance(64.0D);
 		private int tickDelay = 20;
