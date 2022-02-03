@@ -6,4 +6,6 @@ The mod is currently developed for Minecraft Version 1.16.4 and uses Forge Versi
 WARNING: This mod is in early development. Please backup your save files before using it and don't expect it to work without bugs.
 
 
+As of now, the latest code is in the branch "first-release" and the builds are in the "main" branch under "builds".
+
 For cloning of this project refer to the README_MAY.txt in the baseraids_new_project_template folder.
