@@ -103,7 +103,8 @@ public class Baseraids {
 	public static BaseraidsWorldSavedData baseraidsData;
 
 	/**
-	 * Registers all registries, the mod event bus and loads the config file using the class <code>Config</code>.
+	 * Registers all registries, the mod event bus and loads the config file using
+	 * the class <code>Config</code>.
 	 */
 	public Baseraids() {
 
@@ -127,8 +128,13 @@ public class Baseraids {
 	}
 
 	/**
-	 * Registers the entity types during the <code>RegistryEvent.Register<EntityType<?>></code> to be usable in the class <code>ConfigOptions</code>.
-	 * @param event		the event of type <code>RegistryEvent.Register<EntityType<?>></code> that calls this function
+	 * Registers the entity types during the
+	 * <code>RegistryEvent.Register<EntityType<?>></code> to be usable in the class
+	 * <code>ConfigOptions</code>.
+	 * 
+	 * @param event the event of type
+	 *              <code>RegistryEvent.Register<EntityType<?>></code> that calls
+	 *              this function
 	 */
 	@SubscribeEvent
 	public void onRegisterEntityTypes_registerConfigEntityTypes(final RegistryEvent.Register<EntityType<?>> event) {
@@ -139,15 +145,20 @@ public class Baseraids {
 	}
 
 	/**
-	 * Registers the attributes for the custom entity types and registers the renderers for the custom entity types.
-	 * Called through the <code>FMLCommonSetupEvent</code>.
-	 * @param event		the event of type <code>FMLCommonSetupEvent</code> that calls this function
+	 * Registers the attributes for the custom entity types and registers the
+	 * renderers for the custom entity types. Called through the
+	 * <code>FMLCommonSetupEvent</code>.
+	 * 
+	 * @param event the event of type <code>FMLCommonSetupEvent</code> that calls
+	 *              this function
 	 */
 	@SuppressWarnings("unchecked")
 	private void onFMLCommonSetup_registerEntityAttributesAndRenderers(final FMLCommonSetupEvent event) {
 
-		// Connects attributes of custom entity types to those of the inherited vanilla entity types.
-		// If custom attributes are desired, find the function in the inherited entitity type (for example ZombieEntity#func_234342_eQ_()), mimic that function
+		// Connects attributes of custom entity types to those of the inherited vanilla
+		// entity types.
+		// If custom attributes are desired, find the function in the inherited entitity
+		// type (for example ZombieEntity#func_234342_eQ_()), mimic that function
 		// and call it here instead.
 		GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
 		GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_ENTITY_TYPE.get(),
@@ -173,8 +184,11 @@ public class Baseraids {
 	}
 
 	/**
-	 * Initiates the loading process for this mod using the class <code>BaseraidsWorldSavedData</code> when the world is loaded. 
-	 * @param event		the event of type <code>WorldEvent.Load</code> that calls this function
+	 * Initiates the loading process for this mod using the class
+	 * <code>BaseraidsWorldSavedData</code> when the world is loaded.
+	 * 
+	 * @param event the event of type <code>WorldEvent.Load</code> that calls this
+	 *              function
 	 */
 	@SubscribeEvent
 	public void onWorldLoaded_loadBaseraidsWorldSavedData(WorldEvent.Load event) {
@@ -188,8 +202,11 @@ public class Baseraids {
 	}
 
 	/**
-	 * Initiates the saving process for this mod using the class <code>BaseraidsWorldSavedData</code> when the world is saved. 
-	 * @param event		the event of type <code>WorldEvent.Save</code> that calls this function
+	 * Initiates the saving process for this mod using the class
+	 * <code>BaseraidsWorldSavedData</code> when the world is saved.
+	 * 
+	 * @param event the event of type <code>WorldEvent.Save</code> that calls this
+	 *              function
 	 */
 	@SubscribeEvent
 	public void onWorldSaved_saveBaseraidsWorldSavedData(WorldEvent.Save event) {
@@ -201,44 +218,50 @@ public class Baseraids {
 	}
 
 	/**
-	 * Cancels a monster spawning event, if it is not inside a cave and the config option <code>ConfigOptions.deactivateMonsterNightSpawn</code> is true.
-	 * @param event		the event of type <code>WorldEvent.PotentialSpawns</code> that calls this function
+	 * Cancels a monster spawning event, if it is not inside a cave and the config
+	 * option <code>ConfigOptions.deactivateMonsterNightSpawn</code> is true.
+	 * 
+	 * @param event the event of type <code>WorldEvent.PotentialSpawns</code> that
+	 *              calls this function
 	 */
-	// TODO	check if this also disables monsters in the nether and end which would not be desired
+	// TODO check if this also disables monsters in the nether and end which would
+	// not be desired
 	@SubscribeEvent
 	public void onMonsterSpawnOutsideCave_cancelSpawning(WorldEvent.PotentialSpawns event) {
 		World world = (World) event.getWorld();
 		if (world.isRemote())
 			return;
-		
+
 		if (!ConfigOptions.deactivateMonsterNightSpawn.get())
 			return;
 
 		if (event.getType() == EntityClassification.MONSTER)
 			return;
-		
+
 		if (world.getBlockState(event.getPos()) != Blocks.CAVE_AIR.getDefaultState())
 			return;
-		
+
 		if (event.isCancelable()) {
 			event.setCanceled(true);
-		}				
+		}
 	}
 
 	/**
 	 * Sends a string message in the in-game chat to all players on the server.
-	 * @param message		the string that is sent in the chat
+	 * 
+	 * @param message the string that is sent in the chat
 	 */
 	public static void sendChatMessage(String message) {
 		for (PlayerEntity player : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
 			player.sendMessage(new StringTextComponent(message), null);
 		}
 	}
-	
+
 	/**
 	 * Sends a string message in the in-game chat to a specific player.
-	 * @param message		the string that is sent in the chat
-	 * @param player		the player that the message is sent to
+	 * 
+	 * @param message the string that is sent in the chat
+	 * @param player  the player that the message is sent to
 	 */
 	public static void sendChatMessage(String message, PlayerEntity player) {
 		player.sendMessage(new StringTextComponent(message), null);
