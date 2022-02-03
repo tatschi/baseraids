@@ -81,7 +81,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 * which now contains the loaded data.
 	 * 
 	 * @param world the world for which data should be loaded
-	 * @return	an instance of this class which contains the loaded data
+	 * @return an instance of this class which contains the loaded data
 	 */
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
 		Baseraids.LOGGER.info("loading baseraidsSavedData");
