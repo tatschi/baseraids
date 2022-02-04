@@ -191,7 +191,7 @@ public class Baseraids {
 	 *              function
 	 */
 	@SubscribeEvent
-	public void onWorldLoaded_loadBaseraidsWorldSavedData(WorldEvent.Load event) {
+	public void onWorldLoaded_loadBaseraidsWorldSavedData(final WorldEvent.Load event) {
 		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
 			return;
 
@@ -209,7 +209,7 @@ public class Baseraids {
 	 *              function
 	 */
 	@SubscribeEvent
-	public void onWorldSaved_saveBaseraidsWorldSavedData(WorldEvent.Save event) {
+	public void onWorldSaved_saveBaseraidsWorldSavedData(final WorldEvent.Save event) {
 		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
 			return;
 		if (event.getWorld() instanceof ServerWorld) {
@@ -227,7 +227,7 @@ public class Baseraids {
 	// TODO check if this also disables monsters in the nether and end which would
 	// not be desired
 	@SubscribeEvent
-	public void onMonsterSpawnOutsideCave_cancelSpawning(WorldEvent.PotentialSpawns event) {
+	public void onMonsterSpawnOutsideCave_cancelSpawning(final WorldEvent.PotentialSpawns event) {
 		World world = (World) event.getWorld();
 		if (world.isRemote())
 			return;
