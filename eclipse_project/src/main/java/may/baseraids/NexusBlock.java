@@ -45,9 +45,10 @@ import net.minecraftforge.items.CapabilityItemHandler;
  * attempted to give the nexus to another player on the server and remove it
  * from the player that is logging out. @see onPlayerLogOut
  * <li>When the nexus is not placed as a block, a debuff is added to every
- * player in the world. @see onWorldTick, @see addDebuff
+ * player in the world. @see onWorldTick_addDebuff
  * <li>When the nexus is block is broken by a player, the item is not dropped
- * but directly added to the players inventory. @see onBlockBreak
+ * but directly added to the players inventory. @see
+ * onBlockBreak_giveNexusOrCancelEvent
  * <li>The nexus cannot be tossed out of the inventory. @see onItemDropped
  * </ul>
  * 
@@ -95,35 +96,72 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	// Connect to TileEntity NexusEffectsTileEntity
+	/**
+	 * Overrides the inherited method to always return true, because this block has
+	 * a <code>TileEntity</code> connected in any state.
+	 * 
+	 * @param state the <code>BlockState</code> that is checked for having a
+	 *              <code>TileEntity</code>
+	 * @return always true
+	 */
 	@Override
 	public boolean hasTileEntity(BlockState state) {
 		return true;
 	}
 
+	/**
+	 * Creates a <code>NexusEffectsTileEntity</code> and returns it. This entity
+	 * will be connected to the block.
+	 * 
+	 * @param state the <code>BlockState</code> for which the entity is created
+	 * @param world the world in which the block is
+	 * @returns the created <code>TileEntity</code>
+	 */
 	@Override
 	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
 		return new NexusEffectsTileEntity();
 	}
 
+	/**
+	 * Adds a debuff with properties specified in the inner class
+	 * <code>Debuff</code> to all players, if the nexus is not placed. This is done
+	 * in all dimensions.
+	 * 
+	 * @param event the event of type <code>TickEvent.WorldTickEvent</code> that
+	 *              triggers this method
+	 */
 	@SubscribeEvent
-	public void onWorldTick(TickEvent.WorldTickEvent event) {
+	public static void onWorldTick_addDebuff(final TickEvent.WorldTickEvent event) {
+		World world = event.world;
+		if (world.isRemote) {
+			return;
+		}
 		if (event.phase != TickEvent.Phase.START) {
 			return;
 		}
-		// ticks in each dimension
-		World world = event.world;
+		if (NexusBlock.getState() == State.BLOCK) {
+			return;
+		}
+		// only apply debuff every time half the duration of the effect has passed
+		if (world.getGameTime() % (Debuff.DURATION / 2) != 0L) {
+			return;
+		}
 
-		// as long as the nexus block is not placed, regularly add a debuff to all
-		// players in the world
-		if (NexusBlock.getState() != State.BLOCK) {
-			if (world.getGameTime() % 80L == 0L) {
-				addDebuff(world);
-			}
+		for (PlayerEntity playerentity : world.getPlayers()) {
+			playerentity
+					.addPotionEffect(new EffectInstance(Debuff.EFFECT, Debuff.DURATION, Debuff.AMPLIFIER, false, true));
 		}
 	}
 
+	/**
+	 * Sets the state to <code>State.BLOCK</code> and the new position of the nexus,
+	 * when a nexus block is placed.
+	 * 
+	 * @param event the event of type <code>BlockEvent.EntityPlaceEvent</code> that
+	 *              triggers this method
+	 */
 	@SubscribeEvent
-	public static void onBlockPlaced(final BlockEvent.EntityPlaceEvent event) {
+	public static void onBlockPlaced_setStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
 		if (event.getWorld().isRemote())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
@@ -132,27 +170,30 @@ public class NexusBlock extends Block implements IForgeBlock {
 		}
 	}
 
+	/**
+	 * Attempts to directly give the nexus to the player that broke the block, when
+	 * a nexus block is broken. If it is not successful or the event happens during
+	 * a raid, the breaking event is cancelled.
+	 * 
+	 * @param event the event of type <code>BlockEvent.BreakEvent</code> that
+	 *              triggers this method
+	 */
 	@SubscribeEvent
-	public static void onBlockBreak(final BlockEvent.BreakEvent event) {
+	public static void onBlockBreak_giveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
-		if (event.getState().getBlock() instanceof NexusBlock) {
-
-			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				event.setCanceled(true);
-				Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
-				Baseraids.sendChatMessage("You cannot remove the nexus during a raid!");
-			}
-			PlayerEntity player = event.getPlayer();
-
-			// try to give the nexus to the player, if it fails cancel the block breaking (a
-			// warning will be given inside the giveNexusToPlayer() method)
-			if (!giveNexusToPlayer(player)) {
-				event.setCanceled(true);
-			}
-
+		if (!(event.getState().getBlock() instanceof NexusBlock)) {
+			return;
 		}
-
+		if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
+			event.setCanceled(true);
+			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
+			Baseraids.sendChatMessage("You cannot remove the nexus during a raid!", event.getPlayer());
+			return;
+		}
+		if (!giveNexusToPlayer(event.getPlayer())) {
+			event.setCanceled(true);
+		}
 	}
 
 	@SubscribeEvent
@@ -308,25 +349,6 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Adds a slowness debuff to all players in the world.
-	 * 
-	 * @param world the world in which the debuff is added
-	 */
-	private void addDebuff(World world) {
-		Effect effect = Effects.SLOWNESS;
-		if (!world.isRemote) {
-			int amplifier = 0;
-			int duration = 200;
-
-			List<? extends PlayerEntity> list = world.getPlayers();
-
-			for (PlayerEntity playerentity : list) {
-				playerentity.addPotionEffect(new EffectInstance(effect, duration, amplifier, true, true));
-			}
-		}
-	}
-
-	/**
 	 * Attempts to give the nexus to a random player from a specified list of
 	 * players. As long as it's not successfull, it selects a new random player from
 	 * the remaining list. If the remaining list is empty, it returns false.
@@ -367,4 +389,13 @@ public class NexusBlock extends Block implements IForgeBlock {
 		return nbt;
 	}
 
+	/**
+	 * This class specifies the properties of the slowness debuff that will be added
+	 * to all players, if there is no nexus placed in the world.
+	 */
+	private static class Debuff {
+		final static Effect EFFECT = Effects.SLOWNESS;
+		final static int AMPLIFIER = 0;
+		final static int DURATION = 200;
+	}
 }
