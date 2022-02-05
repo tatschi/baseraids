@@ -40,16 +40,17 @@ import net.minecraftforge.items.CapabilityItemHandler;
  * Details on the behavior:
  * <ul>
  * <li>When a player joins a world and the nexus is still uninitialized, he is
- * given a nexus. @see onPlayerLogIn
+ * given a nexus. @see onPlayerLogInAndStateUNINITIALZED_giveNexus
  * <li>When a player exits a world and has the nexus in his inventory, it is
  * attempted to give the nexus to another player on the server and remove it
- * from the player that is logging out. @see onPlayerLogOut
+ * from the player that is logging out. @see onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore
  * <li>When the nexus is not placed as a block, a debuff is added to every
  * player in the world. @see onWorldTick_addDebuff
  * <li>When the nexus is block is broken by a player, the item is not dropped
  * but directly added to the players inventory. @see
- * onBlockBreak_giveNexusOrCancelEvent
- * <li>The nexus cannot be tossed out of the inventory. @see onItemDropped
+ * onNexusBreak_giveNexusOrCancelEvent
+ * <li>The nexus cannot be tossed out of the inventory. @see
+ * onNexusDropped_cancelEventAndGiveNexusBack
  * </ul>
  * 
  * @author Natascha May
@@ -161,7 +162,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onBlockPlaced_setStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
+	public static void onNexusPlaced_setStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
 		if (event.getWorld().isRemote())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
@@ -179,7 +180,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onBlockBreak_giveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
+	public static void onNexusBreak_giveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
 		if (!(event.getState().getBlock() instanceof NexusBlock)) {
@@ -196,106 +197,109 @@ public class NexusBlock extends Block implements IForgeBlock {
 		}
 	}
 
+	/**
+	 * When a nexus item is tossed out of an inventory, cancels the tossing event
+	 * and gives the nexus back to the player that tossed it.
+	 * 
+	 * @param event the event of type <code>ItemTossEvent</code> that triggers this
+	 *              method
+	 */
 	@SubscribeEvent
-	public static void onItemDropped(final ItemTossEvent event) {
+	public static void onNexusDropped_cancelEventAndGiveNexusBack(final ItemTossEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
-		if (event.getEntityItem().getItem().getItem() instanceof BlockItem) {
-			ItemStack item = event.getEntityItem().getItem();
-
-			if (((BlockItem) item.getItem()).getBlock() instanceof NexusBlock) {
-
-				event.setCanceled(true);
-				Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
-				Baseraids.sendChatMessage("You cannot toss away the Nexus. It needs to be placed!");
-				giveNexusToPlayer(event.getPlayer());
-			}
-		}
-	}
-
-	@SubscribeEvent
-	public static void onItemPickedUp(final EntityItemPickupEvent event) {
-		if (event.getPlayer().world.isRemote())
+		Item item = event.getEntityItem().getItem().getItem();
+		if (!(item instanceof BlockItem)) {
 			return;
-
-		ItemStack itemStack = event.getItem().getItem();
-		Item item = itemStack.getItem();
-		if (item instanceof BlockItem) {
-			BlockItem blockitem = (BlockItem) item;
-			if (blockitem.getBlock() instanceof NexusBlock) {
-
-				Baseraids.LOGGER.warn("Nexus PickUp event was triggered");
-
-				setState(State.ITEM);
-
-			}
 		}
+		if (!(((BlockItem) item).getBlock() instanceof NexusBlock)) {
+			return;
+		}
+		event.setCanceled(true);
+		Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
+		Baseraids.sendChatMessage("You cannot toss away the Nexus. It needs to be placed!");
+		// Canceling the event means that the item is not dropped by is still removed
+		// from the inventory.
+		// Therefore, give it the nexus to the player again.
+		giveNexusToPlayer(event.getPlayer());
 
 	}
 
 	/**
-	 * if the nexus has not been initialized via readAdditional (this should only be
-	 * the case in a new world), give the player that just joined the world the
-	 * nexus
+	 * Sets the state of <code>NexusBlock</code> to <code>State.ITEM</code> when a
+	 * nexus is picked up.
+	 * 
+	 * @param event the event of type <code>EntityItemPickupEvent</code> that
+	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onPlayerLogIn(final PlayerEvent.PlayerLoggedInEvent event) {
+	public static void onNexusPickedUp_setStateToITEM(final EntityItemPickupEvent event) {
+		if (event.getPlayer().world.isRemote())
+			return;
+		Item item = event.getItem().getItem().getItem();
+		if (!(item instanceof BlockItem)) {
+			return;
+		}
+		BlockItem blockitem = (BlockItem) item;
+		if (!(blockitem.getBlock() instanceof NexusBlock)) {
+			return;
+		}
+		setState(State.ITEM);
+	}
+
+	/**
+	 * Gives a nexus to the player when a player logs in and the state of the
+	 * <code>NexusBlock</code> is <code>State.UNINITIALIZED</code>. This should only
+	 * occur in a world where the mod was not active yet.
+	 * 
+	 * @param event the event of type <code>PlayerEvent.PlayerLoggedInEvent</code>
+	 *              that triggers this method
+	 */
+	@SubscribeEvent
+	public static void onPlayerLogInAndStateUNINITIALZED_giveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
 		PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld();
 		if (world.isRemote())
 			return;
 		Baseraids.LOGGER
-				.info("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
-		if (curState == State.UNINITIALIZED) {
-			Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
-			NexusBlock.giveNexusToPlayer(player);
-
+				.debug("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
+		if (curState != State.UNINITIALIZED) {
+			return;
 		}
-
+		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
+		NexusBlock.giveNexusToPlayer(player);
 	}
 
 	/**
-	 * if a player tries to log out with the Nexus in his inventory, cancel the
-	 * event and send a chat message about it
+	 * Attempts to transfer the nexus to another player when a player logs out with the nexus in his inventory.
+	 * If there are not other players on the server or the transfer was not successful, this method allows the log out with the nexus.
 	 * 
+	 * @param event the event of type <code>PlayerEvent.PlayerLoggedOutEvent</code>
+	 *              that triggers this method
 	 */
 	@SubscribeEvent
-	public static void onPlayerLogOut(final PlayerEvent.PlayerLoggedOutEvent event) {
-		Baseraids.LOGGER.info("PlayerLoggedOutEvent");
+	public static void onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore(final PlayerEvent.PlayerLoggedOutEvent event) {
 		PlayerEntity playerLogOut = event.getPlayer();
 		World world = playerLogOut.world;
-
-		// is this correct? will this be called on the server side for every player?
 		if (world.isRemote())
 			return;
+		if (!playerHasNexus(playerLogOut)) {
+			return;
+		}
+		
+		Baseraids.LOGGER.debug("PlayerLoggedOutEvent Player has nexus");
 
-		if (playerHasNexus(playerLogOut)) {
-
-			Baseraids.LOGGER.info("PlayerLoggedOutEvent Player has nexus");
-
-			// if there is another player on the server, give him the nexus
-			List<? extends PlayerEntity> playerList = world.getPlayers();
-			playerList.remove(playerLogOut);
-			if (playerList.size() > 0) {
+		// If there are other players on the server, randomly gives the nexus to one of the other players.
+		// Otherwise, this allows the log out with the nexus.
+		List<? extends PlayerEntity> playerList = world.getPlayers();
+		playerList.remove(playerLogOut);
+		if (playerList.size() > 0) {
+			if (giveNexusToRandomPlayerFromList(playerList)) {
 				Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
-				if (giveNexusToRandomPlayerFromList(playerList)) {
-					return;
-				}
-			}
-
-			// remove all nexus items from the player that is logging out
-			IItemHandler itemHandler = (IItemHandler) playerLogOut
-					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
-
-			for (int i = 0; i < itemHandler.getSlots(); i++) {
-
-				if (ItemStack.areItemsEqual(itemHandler.getStackInSlot(i), new ItemStack(Baseraids.NEXUS_ITEM.get()))) {
-					Baseraids.LOGGER.info("PlayerLoggedOutEvent Found nexus stack, removing...");
-					itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
-				}
+				removeNexusFromPlayer(playerLogOut);
+				return;
 			}
 		}
-
 	}
 
 	private static void setState(State state) {
@@ -324,30 +328,25 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * @return a flag whether the method was successful
 	 */
 	public static boolean giveNexusToPlayer(PlayerEntity player) {
-		if (!playerHasNexus(player)) {
-
-			// attempt to automatically give block to player
-			ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
-
-			if (!player.addItemStackToInventory(itemStack)) {
-				Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
-				Baseraids.sendChatMessage("Could not add Nexus to inventory!");
-				return false;
-			} else {
-				Baseraids.LOGGER.info("Successfully added nexus to player's inventory");
-				setState(State.ITEM);
-			}
-
-		} else {
+		if (playerHasNexus(player)) {
+			// In some situations, the nexus could be in the inventory and the state could
+			// be State.BLOCK at the same time.
+			// In any case, we should make sure the state is set to State.ITEM here to stay consistent.
 			Baseraids.LOGGER.warn("NexusBlock already exists in player's inventory");
-			// in some situations, the nexus could be in the inventory and the state could
-			// be State.BLOCK at the same time
-			// in any case, we should set the state to State.ITEM here to stay consistent
 			setState(State.ITEM);
+			return true;
 		}
+		ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
+		if (!player.addItemStackToInventory(itemStack)) {
+			Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
+			Baseraids.sendChatMessage("Error: Could not add Nexus to inventory!");
+			return false;
+		}
+		Baseraids.LOGGER.debug("Successfully added nexus to player's inventory");
+		setState(State.ITEM);	
 		return true;
 	}
-
+	
 	/**
 	 * Attempts to give the nexus to a random player from a specified list of
 	 * players. As long as it's not successfull, it selects a new random player from
@@ -357,7 +356,6 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * @return a flag whether the method was successful
 	 */
 	private static boolean giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
-
 		Random rand = new Random();
 		do {
 			int rand_index = rand.nextInt(playerList.size());
@@ -369,23 +367,58 @@ public class NexusBlock extends Block implements IForgeBlock {
 		} while (playerList.size() <= 0);
 		return false;
 	}
+	
+	/**
+	 * Removes all nexus items from the player's inventory and returns a flag whether it was successful.
+	 * 
+	 * @param player the player to remove the items from
+	 * @return a flag whether the method was successful
+	 */
+	private static boolean removeNexusFromPlayer(PlayerEntity player) {
+		IItemHandler itemHandler = (IItemHandler) player
+				.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
+		ItemStack nexusItemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
+		boolean successful = false;
+		for (int i = 0; i < itemHandler.getSlots(); i++) {
+			ItemStack stackInSlot = itemHandler.getStackInSlot(i);
+			if (ItemStack.areItemsEqual(stackInSlot, nexusItemStack)) {
+				itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
+				Baseraids.LOGGER.debug("PlayerLoggedOutEvent Found and removed nexus stack");
+				successful = true;
+				// don't return to make sure we remove all nexus items
+			}
+		}
+		return successful;
+	}
 
 	private static boolean playerHasNexus(PlayerEntity player) {
 		return player.inventory.hasAny(Sets.newHashSet(Baseraids.NEXUS_ITEM.get()));
 	}
 
+	/**
+	 * Reads the data stored in the given <code>CompoundNBT</code>. This function
+	 * assumes that the nbt was previously written by this class or to be precise,
+	 * that the nbt includes certain elements.
+	 * 
+	 * @param nbt the nbt that will be read out. It is assumed to include certain
+	 *            elements.
+	 */
 	public static void readAdditional(CompoundNBT nbt) {
 		curState = State.valueOf(nbt.getString("curState"));
 		curBlockPos = new BlockPos(nbt.getInt("curBlockPosX"), nbt.getInt("curBlockPosY"), nbt.getInt("curBlockPosZ"));
 	}
 
+	/**
+	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the <code>CompoundNBT</code> object.
+	 * 
+	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 */
 	public static CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.putString("curState", curState.name());
 		nbt.putInt("curBlockPosX", curBlockPos.getX());
 		nbt.putInt("curBlockPosY", curBlockPos.getY());
 		nbt.putInt("curBlockPosZ", curBlockPos.getZ());
-
 		return nbt;
 	}
 
