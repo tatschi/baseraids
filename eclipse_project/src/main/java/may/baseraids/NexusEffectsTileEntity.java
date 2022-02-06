@@ -26,7 +26,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	final static EffectInstance REGEN_EFFECT_AFTER_RAID_WIN = new EffectInstance(Effects.REGENERATION, 100, 0, false,
 			true);
 
-	final static RepeatingSoundEffect NEXUS_AMBIENT_SOUND = new RepeatingSoundEffect(SoundEvents.BLOCK_BEACON_AMBIENT,
+	final static SoundEffect NEXUS_AMBIENT_SOUND = new SoundEffect(SoundEvents.BLOCK_BEACON_AMBIENT,
 			SoundCategory.BLOCKS, 2.0F, 0.5F, 80);
 
 	public NexusEffectsTileEntity() {

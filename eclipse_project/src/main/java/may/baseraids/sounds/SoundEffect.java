@@ -16,7 +16,7 @@ import net.minecraft.world.World;
  * @author Natascha May
  * @since 1.16.4-0.1.1
  */
-public class RepeatingSoundEffect {
+public class SoundEffect {
 
 	SoundEvent soundEvent;
 	SoundCategory soundCategory;
@@ -24,7 +24,7 @@ public class RepeatingSoundEffect {
 	float pitch;
 	public int intervalInTicks;
 
-	public RepeatingSoundEffect(SoundEvent soundEvent, SoundCategory soundCategory, float volume, float pitch,
+	public SoundEffect(SoundEvent soundEvent, SoundCategory soundCategory, float volume, float pitch,
 			int intervalInTicks) {
 		this.soundEvent = soundEvent;
 		this.soundCategory = soundCategory;
