@@ -30,7 +30,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 */
 	public BaseraidsWorldSavedData(ServerWorld world) {
 		super(DATA_NAME);
-		raidManager = new RaidManager();
+		raidManager = new RaidManager(world);
 		raidManager.isInitialized = true;
 		this.serverWorld = world;
 	}
