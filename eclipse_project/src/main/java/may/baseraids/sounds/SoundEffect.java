@@ -9,9 +9,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
- * This class characterizes a repeating sound effect with it's properties like
- * volume, pitch and interval between the sound. It can be used to easily define
- * fixed sound effects.
+ * This class characterizes a sound effect with it's properties like volume,
+ * pitch and for repeating sound effects the interval between the sound. It can
+ * be used to easily define fixed sound effects.
  * 
  * @author Natascha May
  * @since 1.16.4-0.1.1

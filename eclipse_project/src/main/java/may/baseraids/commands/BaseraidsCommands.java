@@ -64,12 +64,8 @@ public class BaseraidsCommands {
 	}
 
 	private static int getTimeUntilRaid(CommandSource source) {
+		source.sendFeedback(new StringTextComponent("Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()), true);
 		int timeUntilRaid = Baseraids.baseraidsData.raidManager.getTimeUntilRaidInSec();
-		if(timeUntilRaid > 60) {
-			source.sendFeedback(new StringTextComponent("Time until next raid: " + (int) timeUntilRaid / 60 + "min " + timeUntilRaid % 60 + "s"), true);
-		}else {
-			source.sendFeedback(new StringTextComponent("Time left: " + timeUntilRaid + "s"), true);
-		}
 		return timeUntilRaid;
 	}
 	
