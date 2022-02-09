@@ -96,7 +96,6 @@ public class NexusBlock extends Block implements IForgeBlock {
 		super(properties);
 	}
 
-	// Connect to TileEntity NexusEffectsTileEntity
 	/**
 	 * Overrides the inherited method to always return true, because this block has
 	 * a <code>TileEntity</code> connected in any state.

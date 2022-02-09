@@ -1,14 +1,13 @@
 package may.baseraids;
 
 import java.util.List;
-import may.baseraids.sounds.*;
+
+import may.baseraids.sounds.NexusNoRaidSound;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
@@ -26,18 +25,14 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	final static EffectInstance REGEN_EFFECT_AFTER_RAID_WIN = new EffectInstance(Effects.REGENERATION, 100, 0, false,
 			true);
 
-	final static SoundEffect NEXUS_AMBIENT_SOUND = new SoundEffect(SoundEvents.BLOCK_BEACON_AMBIENT,
-			SoundCategory.BLOCKS, 2.0F, 0.5F, 80);
 
 	public NexusEffectsTileEntity() {
 		super(Baseraids.NEXUS_TILE_ENTITY_TYPE.get());
+		new NexusNoRaidSound(this);
 	}
 
 	public void tick() {
 		addEffectsToPlayers();
-		if (world.getGameTime() % (NEXUS_AMBIENT_SOUND.intervalInTicks - 5) == 0L) {
-			NEXUS_AMBIENT_SOUND.playSound(world, null, pos);
-		}
 	}
 
 	/**

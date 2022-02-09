@@ -8,12 +8,15 @@ import com.google.common.collect.Sets;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
+import may.baseraids.sounds.RaidWinSound;
 import may.baseraids.sounds.SoundEffect;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
@@ -39,11 +42,11 @@ public class RaidManager {
 	private World world = null;
 	public boolean isInitialized = false;
 
-	private boolean isRaidActive;
+	private Boolean isRaidActive;
 	private int tick = 0;
 	private int timeUntilRaidInLastWarnPlayersOfRaidRun = -1;
-	private int curRaidLevel;
-	private int lastRaidGameTime;
+	private int curRaidLevel = -1;
+	private int lastRaidGameTime = -1;
 
 	// RAID SETTINGS
 	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
@@ -62,17 +65,12 @@ public class RaidManager {
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_3"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_4"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_5") };
-
-	private static final SoundEffect SOUND_DURING_RAID = new SoundEffect(SoundEvents.BLOCK_BELL_USE,
-			SoundCategory.AMBIENT, 5.0F, 0.1F, 60);
-	private static final SoundEffect SOUND_RAID_WARNING = new SoundEffect(SoundEvents.BLOCK_NOTE_BLOCK_BIT,
-			SoundCategory.AMBIENT, 5.0F, 1, 0);
-
+	
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
-		setDefaultWriteParameters();
+		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
 
@@ -118,7 +116,7 @@ public class RaidManager {
 		}
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
-			SOUND_RAID_WARNING.playSound(world, null, NexusBlock.getBlockPos());
+			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1F);
 		}
 	}
 
@@ -138,9 +136,6 @@ public class RaidManager {
 	private void activeRaidTick() {
 		if (!isRaidActive) {
 			return;
-		}
-		if (tick % SOUND_DURING_RAID.intervalInTicks == 0) {
-			SOUND_DURING_RAID.playSound(world, null, NexusBlock.getBlockPos());
 		}
 
 		if (raidSpawningMng.areAllSpawnedMobsDead()) {
@@ -209,24 +204,7 @@ public class RaidManager {
 		increaseRaidLevel();
 		endRaid();
 
-		// PLAY SOUND EFFECT
-		world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F,
-				1.5F);
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F,
-				1.5F);
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F,
-				2);
-
+		new RaidWinSound();
 	}
 
 	private void endRaid() {
@@ -275,15 +253,14 @@ public class RaidManager {
 	}
 
 	private void increaseRaidLevel() {
-		curRaidLevel++;
-		if (curRaidLevel > MAX_RAID_LEVEL)
-			curRaidLevel = MAX_RAID_LEVEL;
-		markDirty();
+		int new_level = curRaidLevel + 1;
+		if (new_level > MAX_RAID_LEVEL)
+			new_level = MAX_RAID_LEVEL;
+		setRaidLevel(new_level);
 	}
 
 	private void resetRaidLevel() {
-		curRaidLevel = MIN_RAID_LEVEL;
-		markDirty();
+		setRaidLevel(MIN_RAID_LEVEL);
 	}
 
 	public CompoundNBT writeAdditional() {
@@ -311,15 +288,20 @@ public class RaidManager {
 
 		} catch (Exception e) {
 			Log.warn("Exception while reading data for RaidManager. Setting parameters to default. Exception: " + e);
-			setDefaultWriteParameters();
-			markDirty();
+			setDefaultWriteParametersIfNotSet();
 		}
 	}
 
-	private void setDefaultWriteParameters() {
-		lastRaidGameTime = 0;
-		curRaidLevel = 1;
-		isRaidActive = false;
+	private void setDefaultWriteParametersIfNotSet() {
+		if(lastRaidGameTime == -1) {
+			lastRaidGameTime = 0;
+		}
+		if(curRaidLevel == -1) {
+			curRaidLevel = 1;	
+		}
+		if(isRaidActive == null) {
+			isRaidActive = false;
+		}
 	}
 
 	private void setLastRaidGameTime(int time) {
@@ -327,16 +309,16 @@ public class RaidManager {
 		markDirty();
 	}
 
+	public boolean isRaidActive() {
+		return isRaidActive;
+	}
+	
 	public void setRaidActive(boolean active) {
 		isRaidActive = active;
 		markDirty();
 	}
 
-	public boolean isRaidActive() {
-		return isRaidActive;
-	}
-
-	public void markDirty() {
+	private void markDirty() {
 		Baseraids.baseraidsData.markDirty();
 	}
 
@@ -346,6 +328,11 @@ public class RaidManager {
 		return (int) (world.getGameTime()) - lastRaidGameTime;
 	}
 
+	private void setRaidLevel(int level) {
+		curRaidLevel = level;
+		markDirty();
+	}
+	
 	public int getRaidLevel() {
 		return curRaidLevel;
 	}
