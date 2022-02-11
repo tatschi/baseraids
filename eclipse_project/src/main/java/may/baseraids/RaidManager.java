@@ -51,20 +51,24 @@ public class RaidManager {
 	private int curRaidLevel;
 	private int lastRaidGameTime;
 
-	// RAID SETTINGS
 	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
-	// defines the world.daytime at which it starts to be night (one day == 24000)
+	/**
+	 * defines the world.daytime at which it starts to be night (one day == 24000)
+	 */
 	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000;
 	private static final int RAID_SOUND_INTERVAL = 60;
 
-	// sets the times (remaining time until raid) for when to warn all players of
-	// the coming raid (approximated, in seconds)
-	private Set<Integer> warnAllPlayersOfRaidTimes = Sets.newHashSet(2400, 1800, 1200, 900, 600, 300, 60, 30, 10, 5, 4,
-			3, 2, 1);
+	/**
+	 * Sets the times (remaining time until raid) for when to warn all players of
+	 * the coming raid (approximated, in seconds), @see warnPlayersOfRaid().
+	 */
+	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(2400, 1800, 1200, 900, 600, 300,
+			60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
-	
-	private static final ResourceLocation[] LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
+
+	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = {
+			new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_3"),
 			new ResourceLocation(Baseraids.MODID, "chests/raid_level_4"),
@@ -78,6 +82,13 @@ public class RaidManager {
 		Baseraids.LOGGER.info("RaidManager created");
 	}
 
+	/**
+	 * Controls everything that happens every tick like warning of raids, starting
+	 * raids and calling the <code>activeRaidTick()</code> during a raid.
+	 * 
+	 * @param event the event of type <code>TickEvent.WorldTickEvent</code> that
+	 *              triggers this function
+	 */
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.WorldTickEvent event) {
 		if (!isInitialized)
@@ -88,6 +99,7 @@ public class RaidManager {
 			return;
 		if (!world.getDimensionKey().equals(World.OVERWORLD))
 			return;
+
 		if (world.getDifficulty() == Difficulty.PEACEFUL) {
 			if (isRaidActive()) {
 				endRaid();
@@ -106,24 +118,37 @@ public class RaidManager {
 		tick = (tick + 1) % 1000;
 	}
 
-	// warn players at specified times
+	/**
+	 * Warns all players in the world of an upcoming raid via chat messages and
+	 * sounds. The times at which to warn are specified in the field
+	 * <code>TIMES_TO_WARN_PLAYERS_OF_RAID</code>.
+	 */
 	private void warnPlayersOfRaid() {
 		int timeUntilRaidInSec = getTimeUntilRaidInSec();
-		// remember and control for the last used time in order to avoid multiple messages for the same time
-		if(timeUntilRaidInLastWarnPlayersOfRaidRun == timeUntilRaidInSec) {
+		// remember and control for the last used time in order to avoid multiple
+		// messages for the same time
+		if (timeUntilRaidInLastWarnPlayersOfRaidRun == timeUntilRaidInSec) {
 			return;
 		}
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
-		
-		if (!warnAllPlayersOfRaidTimes.stream().anyMatch(time -> time == timeUntilRaidInSec)) {
+
+		if (!TIMES_TO_WARN_PLAYERS_OF_RAID.stream().anyMatch(time -> time == timeUntilRaidInSec)) {
 			return;
 		}
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
-			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1);
+			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
+					5.0F, 1F);
 		}
 	}
 
+	/**
+	 * Checks and returns whether a raid should start. A raid should start whenever
+	 * the specified time between raids has passed and it is night and the nexus is
+	 * placed.
+	 * 
+	 * @return a flag whether a raid should start or not
+	 */
 	private boolean shouldStartRaid() {
 		if (getTimeSinceRaid() < ConfigOptions.timeBetweenRaids.get()) {
 			return false;
@@ -137,6 +162,9 @@ public class RaidManager {
 		return true;
 	}
 
+	/**
+	 * Ticks during raids and checks if the raid is won.
+	 */
 	private void activeRaidTick() {
 		if (!isRaidActive) {
 			return;
@@ -148,12 +176,12 @@ public class RaidManager {
 		if (raidSpawningMng.areAllSpawnedMobsDead()) {
 			Baseraids.LOGGER.info("Raid ended: all mobs are dead");
 			winRaid();
+			return;
 		}
-		
-		// END RAID AFTER MAX DURATION
 		if (isMaxRaidDurationOver()) {
 			Baseraids.LOGGER.info("Raid ended: reached max duration");
 			winRaid();
+			return;
 		}
 	}
 	
@@ -201,7 +229,7 @@ public class RaidManager {
 		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
 			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
 
-			chestEntity.setLootTable(LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
+			chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
 			chestEntity.fillWithLoot(null);
 
 			Baseraids.LOGGER.info("Added loot to loot chest");
@@ -241,11 +269,12 @@ public class RaidManager {
 	}
 
 	// in ticks
-	// raw time means that the night time is not considered which is required for a raid to actually start
+	// raw time means that the night time is not considered which is required for a
+	// raid to actually start
 	private int getRawTimeUntilRaid() {
 		return ConfigOptions.timeBetweenRaids.get() - getTimeSinceRaid();
 	}
-	
+
 	// in ticks
 	private int getTimeUntilRaid() {
 		// Math.floorMod returns only positive values (for a positive modulus) while %
@@ -255,15 +284,15 @@ public class RaidManager {
 	}
 
 	public int getTimeUntilRaidInSec() {
-		return getTimeUntilRaid()  / 20;
+		return getTimeUntilRaid() / 20;
 	}
-	
+
 	public String getTimeUntilRaidInDisplayString() {
 		int timeUntilRaidInSec = getTimeUntilRaidInSec();
 
 		int displayTimeMin = (int) timeUntilRaidInSec / 60;
 		int displayTimeSec = timeUntilRaidInSec % 60;
-		
+
 		String displayTime = "";
 		if (displayTimeMin > 0) {
 			displayTime += displayTimeMin + "min";
@@ -295,7 +324,7 @@ public class RaidManager {
 		nbt.putInt("curRaidLevel", curRaidLevel);
 		nbt.putInt("lastRaidGameTime", lastRaidGameTime);
 		nbt.putBoolean("isRaidActive", isRaidActive);
-		
+
 		CompoundNBT raidSpawning = raidSpawningMng.writeAdditional();
 		nbt.put("raidSpawningManager", raidSpawning);
 
@@ -320,10 +349,17 @@ public class RaidManager {
 			markDirty();
 		}
 	}
-	private void setDefaultWriteParameters() {
-		lastRaidGameTime = 0;
-		curRaidLevel = 1;
-		isRaidActive = false;
+
+	private void setDefaultWriteParametersIfNotSet() {
+		if (lastRaidGameTime == -1) {
+			lastRaidGameTime = 0;
+		}
+		if (curRaidLevel == -1) {
+			curRaidLevel = 1;
+		}
+		if (isRaidActive == null) {
+			isRaidActive = false;
+		}
 	}
 
 	
@@ -331,7 +367,11 @@ public class RaidManager {
 		lastRaidGameTime = time;
 		markDirty();
 	}
-	
+
+	public boolean isRaidActive() {
+		return isRaidActive;
+	}
+
 	public void setRaidActive(boolean active) {
 		isRaidActive = active;
 		markDirty();
@@ -351,6 +391,10 @@ public class RaidManager {
 		return (int) (world.getGameTime()) -lastRaidGameTime;
 	}
 
+	private void setRaidLevel(int level) {
+		curRaidLevel = level;
+		markDirty();
+	}
 
 	public int getRaidLevel() {
 		return curRaidLevel;
