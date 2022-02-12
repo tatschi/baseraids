@@ -188,6 +188,10 @@ public class RaidManager {
 	
 	
 
+	/**
+	 * Initiates a raid, that means it sets the <code>lastRaidGameTime</code> and
+	 * the <code>isRaidActive</code> and calls the spawning of the mobs.
+	 */
 	public void startRaid() {
 		if (world == null) {
 			Baseraids.LOGGER.warn("Could not start raid because world == null");
@@ -205,6 +209,10 @@ public class RaidManager {
 		raidSpawningMng.spawnRaidMobs();
 	}
 
+	/**
+	 * Takes care of everything that happens when a raid is lost. This includes
+	 * resetting the raid level and calling <code>endRaid()</code>.
+	 */
 	public void loseRaid() {
 		if (world == null)
 			return;
@@ -217,26 +225,18 @@ public class RaidManager {
 
 	}
 
+	/**
+	 * Takes care of everything that happens when a raid is lost. This includes
+	 * increasing the raid level, placing a reward chest, calling
+	 * <code>endRaid()</code> and playing the <code>RaidWinSound</code>.
+	 */
 	public void winRaid() {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
 		Baseraids.sendChatMessage("You have won the raid!");
 
-		// PLACE LOOT CHEST
-		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.lootChestPositionRelative);
-		world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
-		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
-			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
-
-			chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
-			chestEntity.fillWithLoot(null);
-
-			Baseraids.LOGGER.info("Added loot to loot chest");
-		} else {
-			Baseraids.LOGGER.error("Could not add loot to loot chest");
-		}
-
+		spawnAndFillRewardChest();
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		increaseRaidLevel();
@@ -261,6 +261,10 @@ public class RaidManager {
 
 	}
 
+	/**
+	 * Ends a raid by setting <code>isRaidActive</code> to false and killing all
+	 * mobs spawned by the raid.
+	 */
 	private void endRaid() {
 		Baseraids.sendChatMessage("Your next raid will have level " + curRaidLevel);
 		setRaidActive(false);
@@ -268,17 +272,49 @@ public class RaidManager {
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 	}
 
-	// in ticks
-	// raw time means that the night time is not considered which is required for a
-	// raid to actually start
+	/**
+	 * Spawns a chest at the position specified by
+	 * <code>ConfigOptions.lootChestPositionRelative</code> relative form the nexus
+	 * and fills it with loot defined in the loottables referenced in the field
+	 * <code>REWARD_CHEST_LOOTTABLES</code>.
+	 */
+	private void spawnAndFillRewardChest() {
+		// spawn chest
+		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.lootChestPositionRelative);
+		world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
+
+		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
+			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
+			// fill chest
+			chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
+			chestEntity.fillWithLoot(null);
+			Baseraids.LOGGER.info("Added loot to loot chest");
+		} else {
+			Baseraids.LOGGER.error("Could not add loot to loot chest");
+		}
+	}
+
+	/**
+	 * Gets the time in ticks until the next raid with considering only the
+	 * <code>ConfigOptions.timeBetweenRaids</code> and not the night time which is
+	 * required for a raid.
+	 * 
+	 * @return the raw number of ticks until the next raid according to
+	 *         <code>ConfigOptions.timeBetweenRaids</code>
+	 */
 	private int getRawTimeUntilRaid() {
 		return ConfigOptions.timeBetweenRaids.get() - getTimeSinceRaid();
 	}
 
-	// in ticks
+	/**
+	 * Gets the actual time in ticks until the next raid considering all
+	 * requirements for a raid.
+	 * 
+	 * @return the number of ticks until the next raid
+	 */
 	private int getTimeUntilRaid() {
 		// Math.floorMod returns only positive values (for a positive modulus) while %
-		// returns the actual remainder
+		// returns the actual remainder.
 		long timeUntilNightTime = Math.floorMod(START_OF_NIGHT_IN_WORLD_DAY_TIME - (world.getDayTime() % 24000), 24000);
 		return (int) Math.max(getRawTimeUntilRaid(), timeUntilNightTime);
 	}
@@ -287,6 +323,14 @@ public class RaidManager {
 		return getTimeUntilRaid() / 20;
 	}
 
+	/**
+	 * Converts the time until the next raid into a string that can be used for all
+	 * displaying purposes. The format is "<code>M</code>min<code>S</code>s" for
+	 * <code>M</code> the remaining minutes and <code>S</code> the remaining seconds
+	 * for <code>M>0</code> otherwise "<code>S</code>s".
+	 * 
+	 * @return a formatted String showing the time until the next raid
+	 */
 	public String getTimeUntilRaidInDisplayString() {
 		int timeUntilRaidInSec = getTimeUntilRaidInSec();
 
@@ -307,6 +351,10 @@ public class RaidManager {
 		return getTimeSinceRaid() > ConfigOptions.maxRaidDuration.get();
 	}
 
+	/**
+	 * Increases the raid level by one, unless <code>MAX_RAID_LEVEL</code> is
+	 * reached.
+	 */
 	private void increaseRaidLevel() {
 		curRaidLevel++;
 		if (curRaidLevel > MAX_RAID_LEVEL)
@@ -314,28 +362,51 @@ public class RaidManager {
 		markDirty();
 	}
 
+	/**
+	 * Resets the raid level to <code>MIN_RAID_LEVEL</code>.
+	 */
 	private void resetRaidLevel() {
 		curRaidLevel = MIN_RAID_LEVEL;
 		markDirty();
 	}
 
+	/**
+	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the
+	 * <code>CompoundNBT</code> object.
+	 * 
+	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 */
 	public CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
+		nbt.putBoolean("isRaidActive", isRaidActive);
 		nbt.putInt("curRaidLevel", curRaidLevel);
 		nbt.putInt("lastRaidGameTime", lastRaidGameTime);
-		nbt.putBoolean("isRaidActive", isRaidActive);
 
 		CompoundNBT raidSpawning = raidSpawningMng.writeAdditional();
 		nbt.put("raidSpawningManager", raidSpawning);
 
 		return nbt;
 	}
-	
+
+	/**
+	 * Reads the data stored in the given <code>CompoundNBT</code>. This function
+	 * assumes that the nbt was previously written by this class or to be precise,
+	 * that the nbt includes certain elements. If an exception was thrown during the
+	 * reading process (this could very well happen for incompatible versions), the
+	 * parameters that were not set are given a default value using
+	 * <code>setDefaultWriteParametersIfNotSet()</code>.
+	 * 
+	 * @param nbt         the nbt that will be read out. It is assumed to include
+	 *                    certain elements.
+	 * @param serverWorld the world that is loaded. It is used in the
+	 *                    <code>RaidSpawningManager</code> to get references to
+	 *                    previously spawned mobs.
+	 */
 	public void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
 		try {
-			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
-			curRaidLevel = nbt.getInt("curRaidLevel");
 			isRaidActive = nbt.getBoolean("isRaidActive");
+			curRaidLevel = nbt.getInt("curRaidLevel");
+			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
 
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
@@ -350,6 +421,10 @@ public class RaidManager {
 		}
 	}
 
+	/**
+	 * Gives the parameters that are normally saved and loaded a default value if they
+	 * have not been successfully loaded.
+	 */
 	private void setDefaultWriteParametersIfNotSet() {
 		if (lastRaidGameTime == -1) {
 			lastRaidGameTime = 0;
