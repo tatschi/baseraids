@@ -39,70 +39,13 @@ public class BaseraidsSpiderEntity extends SpiderEntity{
 
 		this.goalSelector.addGoal(1, new SwimGoal(this));
 		this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
-		this.goalSelector.addGoal(2, new BaseraidsSpiderEntity.AttackGoal(this));
+		this.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(this));
 		this.goalSelector.addGoal(6, new LookAtGoal(this, PlayerEntity.class, 8.0F));
 		this.goalSelector.addGoal(6, new LookRandomlyGoal(this));
 		this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-		this.targetSelector.addGoal(2, new BaseraidsSpiderEntity.TargetGoal<>(this, PlayerEntity.class));
-		this.targetSelector.addGoal(3, new BaseraidsSpiderEntity.TargetGoal<>(this, IronGolemEntity.class));
+		this.targetSelector.addGoal(2, new SpiderEntity.TargetGoal<>(this, PlayerEntity.class));
+		this.targetSelector.addGoal(3, new SpiderEntity.TargetGoal<>(this, IronGolemEntity.class));
 		
 	}
 	
-	/**
-	 * 
-	 * AttackGoal copied from SpiderEntity (because of visibility)!
-	 *
-	 */
-	static class AttackGoal extends MeleeAttackGoal {
-	      public AttackGoal(SpiderEntity spider) {
-	         super(spider, 1.0D, true);
-	      }
-
-	      /**
-	       * Returns whether execution should begin. You can also read and cache any state necessary for execution in this
-	       * method as well.
-	       */
-	      public boolean shouldExecute() {
-	         return super.shouldExecute() && !this.attacker.isBeingRidden();
-	      }
-
-	      /**
-	       * Returns whether an in-progress EntityAIBase should continue executing
-	       */
-	      public boolean shouldContinueExecuting() {
-	         float f = this.attacker.getBrightness();
-	         if (f >= 0.5F && this.attacker.getRNG().nextInt(100) == 0) {
-	            this.attacker.setAttackTarget((LivingEntity)null);
-	            return false;
-	         } else {
-	            return super.shouldContinueExecuting();
-	         }
-	      }
-
-	      protected double getAttackReachSqr(LivingEntity attackTarget) {
-	         return (double)(4.0F + attackTarget.getWidth());
-	      }
-	   }
-
-	/**
-	 * 
-	 * TargetGoal copied from SpiderEntity (because of visibility)!
-	 *
-	 */
-	
-	static class TargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
-	      public TargetGoal(SpiderEntity spider, Class<T> classTarget) {
-	         super(spider, classTarget, true);
-	      }
-
-	      /**
-	       * Returns whether execution should begin. You can also read and cache any state necessary for execution in this
-	       * method as well.
-	       */
-	      public boolean shouldExecute() {
-	         float f = this.goalOwner.getBrightness();
-	         return f >= 0.5F ? false : super.shouldExecute();
-	      }
-	   }
-
 }
