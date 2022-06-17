@@ -1,11 +1,5 @@
 package may.baseraids;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import org.jline.utils.Log;
@@ -37,19 +31,18 @@ import net.minecraftforge.fml.common.Mod;
  * @since 1.16.4-0.1
  */
 // @Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
-@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RaidManager {
 
-	
 	// RUNTIME VARIABLES
 	private World world = null;
 	public boolean isInitialized = false;
-	
-	private boolean isRaidActive;
+
+	private Boolean isRaidActive;
 	private int tick = 0;
 	private int timeUntilRaidInLastWarnPlayersOfRaidRun = -1;
-	private int curRaidLevel;
-	private int lastRaidGameTime;
+	private int curRaidLevel = -1;
+	private int lastRaidGameTime = -1;
 
 	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
 	/**
@@ -78,7 +71,7 @@ public class RaidManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
-		setDefaultWriteParameters();
+		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
 
@@ -170,7 +163,8 @@ public class RaidManager {
 			return;
 		}
 		if (tick % RAID_SOUND_INTERVAL == 0) {
-			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F);	
+			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F,
+					0.1F);
 		}
 
 		if (raidSpawningMng.areAllSpawnedMobsDead()) {
@@ -184,9 +178,6 @@ public class RaidManager {
 			return;
 		}
 	}
-	
-	
-	
 
 	/**
 	 * Initiates a raid, that means it sets the <code>lastRaidGameTime</code> and
@@ -250,8 +241,9 @@ public class RaidManager {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-    	world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F, 1.5F);
-    	try {
+		world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT, 5.0F,
+				1.5F);
+		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -356,18 +348,15 @@ public class RaidManager {
 	 * reached.
 	 */
 	private void increaseRaidLevel() {
-		curRaidLevel++;
-		if (curRaidLevel > MAX_RAID_LEVEL)
-			curRaidLevel = MAX_RAID_LEVEL;
-		markDirty();
+		int new_level = Math.min(curRaidLevel + 1, MAX_RAID_LEVEL);
+		setRaidLevel(new_level);
 	}
 
 	/**
 	 * Resets the raid level to <code>MIN_RAID_LEVEL</code>.
 	 */
 	private void resetRaidLevel() {
-		curRaidLevel = MIN_RAID_LEVEL;
-		markDirty();
+		setRaidLevel(MIN_RAID_LEVEL);
 	}
 
 	/**
@@ -412,18 +401,16 @@ public class RaidManager {
 			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
 
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
-			
-			
-		}catch(Exception e) {
+
+		} catch (Exception e) {
 			Log.warn("Exception while reading data for RaidManager. Setting parameters to default. Exception: " + e);
-			setDefaultWriteParameters();
-			markDirty();
+			setDefaultWriteParametersIfNotSet();
 		}
 	}
 
 	/**
-	 * Gives the parameters that are normally saved and loaded a default value if they
-	 * have not been successfully loaded.
+	 * Gives the parameters that are normally saved and loaded a default value if
+	 * they have not been successfully loaded.
 	 */
 	private void setDefaultWriteParametersIfNotSet() {
 		if (lastRaidGameTime == -1) {
@@ -437,7 +424,6 @@ public class RaidManager {
 		}
 	}
 
-	
 	private void setLastRaidGameTime(int time) {
 		lastRaidGameTime = time;
 		markDirty();
@@ -451,19 +437,15 @@ public class RaidManager {
 		isRaidActive = active;
 		markDirty();
 	}
-    
-	public boolean isRaidActive() {
-		return isRaidActive;
-	}
-	
+
 	public void markDirty() {
 		Baseraids.baseraidsData.markDirty();
 	}
 
-
 	public int getTimeSinceRaid() {
-		if(world == null) return -1;
-		return (int) (world.getGameTime()) -lastRaidGameTime;
+		if (world == null)
+			return -1;
+		return (int) (world.getGameTime()) - lastRaidGameTime;
 	}
 
 	private void setRaidLevel(int level) {
