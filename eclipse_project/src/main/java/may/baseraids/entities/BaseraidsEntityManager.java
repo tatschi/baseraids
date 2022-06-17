@@ -52,7 +52,12 @@ public class BaseraidsEntityManager {
 	}
 
 	public void setupPhantomGoals(PhantomEntity entity) {
-
+		// 
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(PhantomEntity.OrbitPointGoal.class);
+		removeGoalsFromList(entity, goalClassesToRemove);
+		
+		entity.goalSelector.addGoal(0, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 	}
 	
 	/**
