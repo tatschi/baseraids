@@ -64,52 +64,29 @@ public class RaidSpawningManager {
 			Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
 		}
 		amountOfMobsToSpawn.forEach((type, num) -> {
-			
+
 			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, num);
-			
+
 			// remove nulls and convert to collection
 			Collection<MobEntity> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
-				.filter((entity) -> entity != null)
-				.collect(Collectors.toList());
-			
+					.filter((entity) -> entity != null).collect(Collectors.toList());
+
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
-			
+
 		});
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
 
 	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
-		int radius = 50;
-		double angleInterval = 2 * Math.PI / 100;
-		BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
 
 		ILivingEntityData ilivingentitydata = null;
 		MobEntity[] mobs = new MobEntity[numMobs];
 		for (int i = 0; i < numMobs; i++) {
 
-			// find random coordinates in a circle around the nexus to spawn the current mob
-			Random r = new Random();
-			int randomAngle = r.nextInt(100);
-			double angle = randomAngle * angleInterval;
-
-			int x = (int) (radius * Math.cos(angle));
-			int z = (int) (radius * Math.sin(angle));
-			BlockPos spawnPosXZ = centerSpawnPos.add(x, 0, z);
-
-			// find the right height
-			BlockPos spawnPos;
-			if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
-					.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
-				spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
-			} else {
-				spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ);
-			}
-
-			Baseraids.LOGGER.debug(
-					"Spawn " + entityType.getName().getString() + " at radius " + radius + " and angle " + angle);
+			BlockPos spawnPos = findSpawnPos(entityType);
 
 			if (EntitySpawnPlacementRegistry.canSpawnEntity(entityType, (IServerWorld) world, SpawnReason.MOB_SUMMONED,
-					spawnPos, r)) {
+					spawnPos, new Random())) {
 
 				if (entityType.equals(EntityType.PHANTOM)) {
 					mobs[i] = EntityType.PHANTOM.create(world);
@@ -131,9 +108,38 @@ public class RaidSpawningManager {
 		return mobs;
 	}
 
+	private BlockPos findSpawnPos(EntityType<?> entityType) {
+		int radius = 50;
+		double angleInterval = 2 * Math.PI / 100;
+		BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
+
+		// find random coordinates in a circle around the nexus to spawn the current mob
+		Random r = new Random();
+		int randomAngle = r.nextInt(100);
+		double angle = randomAngle * angleInterval;
+
+		int x = (int) (radius * Math.cos(angle));
+		int z = (int) (radius * Math.sin(angle));
+		BlockPos spawnPosXZ = centerSpawnPos.add(x, 0, z);
+
+		// find the right height
+		BlockPos spawnPos;
+		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
+				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
+			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
+		} else {
+			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ);
+		}
+
+		Baseraids.LOGGER
+				.debug("Spawn " + entityType.getName().getString() + " at radius " + radius + " and angle " + angle);
+		return spawnPos;
+	}
+
 	boolean areAllSpawnedMobsDead() {
-		if (spawnedMobs.isEmpty()) return false;
-		
+		if (spawnedMobs.isEmpty())
+			return false;
+
 		for (MobEntity mob : spawnedMobs) {
 			if (mob.isAlive()) {
 				return false;
