@@ -2,9 +2,12 @@ package may.baseraids;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jline.utils.Log;
 
@@ -60,7 +63,18 @@ public class RaidSpawningManager {
 		if (amountOfMobs == null) {
 			Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
 		}
-		amountOfMobsToSpawn.forEach((type, num) -> spawnedMobs.addAll(Arrays.asList(spawnSpecificEntities(type, num))));
+		amountOfMobsToSpawn.forEach((type, num) -> {
+			
+			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, num);
+			
+			// remove nulls and convert to collection
+			Collection<MobEntity> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
+				.filter((entity) -> entity != null)
+				.collect(Collectors.toList());
+			
+			spawnedMobs.addAll(spawnedMobsNonNullCollection);
+			
+		});
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
 
