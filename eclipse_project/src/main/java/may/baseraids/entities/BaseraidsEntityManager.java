@@ -41,7 +41,13 @@ public class BaseraidsEntityManager {
 	}
 
 	public void setupSkeletonGoals(SkeletonEntity entity) {
-
+		// remove unwanted goals
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookRandomlyGoal.class);
+		removeGoalsFromList(entity, goalClassesToRemove);
+		
+		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(2, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 	}
 
 	public void setupPhantomGoals(PhantomEntity entity) {
