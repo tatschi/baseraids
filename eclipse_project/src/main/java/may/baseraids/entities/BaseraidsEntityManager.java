@@ -37,6 +37,7 @@ public class BaseraidsEntityManager {
 		
 		entity.goalSelector.addGoal(0, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));		
 	}
 
