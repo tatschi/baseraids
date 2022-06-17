@@ -77,7 +77,7 @@ public class BaseraidsCommands {
 
 
 	private static int startRaid(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.initiateRaid();
+		Baseraids.baseraidsData.raidManager.startRaid();
 		return 0;
 	}
 }

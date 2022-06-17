@@ -54,7 +54,8 @@ public class RaidManager {
 	// RAID SETTINGS
 	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
 	// defines the world.daytime at which it starts to be night (one day == 24000)
-	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000; 
+	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000;
+	private static final int RAID_SOUND_INTERVAL = 60;
 
 	// sets the times (remaining time until raid) for when to warn all players of
 	// the coming raid (approximated, in seconds)
