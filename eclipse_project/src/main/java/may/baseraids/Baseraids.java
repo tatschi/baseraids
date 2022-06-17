@@ -5,21 +5,13 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import may.baseraids.config.*;
-import may.baseraids.entities.*;
+import may.baseraids.config.Config;
+import may.baseraids.config.ConfigOptions;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
-import net.minecraft.entity.monster.AbstractSkeletonEntity;
-import net.minecraft.entity.monster.SkeletonEntity;
-import net.minecraft.entity.monster.SpiderEntity;
-import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -29,7 +21,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -77,27 +68,6 @@ public class Baseraids {
 			.register("nexus_effects_tile_entity", () -> TileEntityType.Builder
 					.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
 
-	public static final RegistryObject<EntityType<BaseraidsZombieEntity>> BASERAIDS_ZOMBIE_ENTITY_TYPE = ENTITIES
-			.register("baseraids_zombie_entity",
-					() -> EntityType.Builder
-							.<BaseraidsZombieEntity>create(BaseraidsZombieEntity::new, EntityClassification.MONSTER)
-							.build("baseraids_zombie_entity"));
-	public static final RegistryObject<EntityType<BaseraidsSkeletonEntity>> BASERAIDS_SKELETON_ENTITY_TYPE = ENTITIES
-			.register("baseraids_skeleton_entity",
-					() -> EntityType.Builder
-							.<BaseraidsSkeletonEntity>create(BaseraidsSkeletonEntity::new, EntityClassification.MONSTER)
-							.build("baseraids_skeleton_entity"));
-	public static final RegistryObject<EntityType<BaseraidsSpiderEntity>> BASERAIDS_SPIDER_ENTITY_TYPE = ENTITIES
-			.register("baseraids_spider_entity",
-					() -> EntityType.Builder
-							.<BaseraidsSpiderEntity>create(BaseraidsSpiderEntity::new, EntityClassification.MONSTER)
-							.build("baseraids_spider_entity"));
-	public static final RegistryObject<EntityType<BaseraidsPhantomEntity>> BASERAIDS_PHANTOM_ENTITY_TYPE = ENTITIES
-			.register("baseraids_phantom_entity",
-					() -> EntityType.Builder
-							.<BaseraidsPhantomEntity>create(BaseraidsPhantomEntity::new, EntityClassification.MONSTER)
-							.build("baseraids_phantom_entity"));
-
 	public static final HashMap<String, EntityType<?>> configRegister = new HashMap<>();
 
 	public static BaseraidsWorldSavedData baseraidsData;
@@ -112,7 +82,7 @@ public class Baseraids {
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		// Register the setup method for modloading
-		bus.addListener(this::onFMLCommonSetup_registerEntityAttributesAndRenderers);
+		bus.addListener(this::onFMLCommonSetup);
 
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
@@ -127,22 +97,6 @@ public class Baseraids {
 
 	}
 
-	/**
-	 * Registers the entity types during the
-	 * <code>RegistryEvent.Register<EntityType<?>></code> to be usable in the class
-	 * <code>ConfigOptions</code>.
-	 * 
-	 * @param event the event of type
-	 *              <code>RegistryEvent.Register<EntityType<?>></code> that calls
-	 *              this function
-	 */
-	@SubscribeEvent
-	public void onRegisterEntityTypes_registerConfigEntityTypes(final RegistryEvent.Register<EntityType<?>> event) {
-		configRegister.put(BaseraidsZombieEntity.CONFIG_NAME, BASERAIDS_ZOMBIE_ENTITY_TYPE.get());
-		configRegister.put(BaseraidsSkeletonEntity.CONFIG_NAME, BASERAIDS_SKELETON_ENTITY_TYPE.get());
-		configRegister.put(BaseraidsSpiderEntity.CONFIG_NAME, BASERAIDS_SPIDER_ENTITY_TYPE.get());
-		configRegister.put(BaseraidsPhantomEntity.CONFIG_NAME, BASERAIDS_PHANTOM_ENTITY_TYPE.get());
-	}
 
 	/**
 	 * Registers the attributes for the custom entity types and registers the
@@ -152,36 +106,10 @@ public class Baseraids {
 	 * @param event the event of type <code>FMLCommonSetupEvent</code> that calls
 	 *              this function
 	 */
-	@SuppressWarnings("unchecked")
-	private void onFMLCommonSetup_registerEntityAttributesAndRenderers(final FMLCommonSetupEvent event) {
+	private void onFMLCommonSetup(final FMLCommonSetupEvent event) {
 
-		// Connects attributes of custom entity types to those of the inherited vanilla
-		// entity types.
-		// If custom attributes are desired, find the function in the inherited entitity
-		// type (for example ZombieEntity#func_234342_eQ_()), mimic that function
-		// and call it here instead.
-		GlobalEntityTypeAttributes.put(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), ZombieEntity.func_234342_eQ_().create());
-		GlobalEntityTypeAttributes.put(BASERAIDS_SKELETON_ENTITY_TYPE.get(),
-				AbstractSkeletonEntity.registerAttributes().create());
-		GlobalEntityTypeAttributes.put(BASERAIDS_SPIDER_ENTITY_TYPE.get(), SpiderEntity.func_234305_eI_().create());
-		GlobalEntityTypeAttributes.put(BASERAIDS_PHANTOM_ENTITY_TYPE.get(), LivingEntity.registerAttributes().create());
-
-		EntityRendererManager renderManager = Minecraft.getInstance().getRenderManager();
-
-		// Adds renderers from the vanilla entity types to the custom entity types
-		EntityRenderer<ZombieEntity> zombieRenderer = (EntityRenderer<ZombieEntity>) renderManager.renderers
-				.get(EntityType.ZOMBIE);
-		renderManager.register(BASERAIDS_ZOMBIE_ENTITY_TYPE.get(), zombieRenderer);
-		EntityRenderer<SkeletonEntity> skeletonRenderer = (EntityRenderer<SkeletonEntity>) renderManager.renderers
-				.get(EntityType.SKELETON);
-		renderManager.register(BASERAIDS_SKELETON_ENTITY_TYPE.get(), skeletonRenderer);
-		EntityRenderer<BaseraidsSpiderEntity> spiderRenderer = (EntityRenderer<BaseraidsSpiderEntity>) renderManager.renderers
-				.get(EntityType.SPIDER);
-		renderManager.register(BASERAIDS_SPIDER_ENTITY_TYPE.get(), spiderRenderer);
-		EntityRenderer<BaseraidsPhantomEntity> phantomRenderer = (EntityRenderer<BaseraidsPhantomEntity>) renderManager.renderers
-				.get(EntityType.PHANTOM);
-		renderManager.register(BASERAIDS_PHANTOM_ENTITY_TYPE.get(), phantomRenderer);
 	}
+	
 
 	/**
 	 * Initiates the loading process for this mod using the class

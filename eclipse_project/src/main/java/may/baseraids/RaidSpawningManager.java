@@ -29,20 +29,19 @@ public class RaidSpawningManager {
 	private World world;
 	private RaidManager raidManager;
 	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
-	
+
 	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 4, 0, 0 }, { 2, 4, 0 }, { 3, 3, 4 }, { 8, 4, 4 },
 			{ 12, 6, 4 } };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-	
+
 	public RaidSpawningManager(RaidManager raidManager, World world) {
 		this.raidManager = raidManager;
 		this.world = world;
 		setAmountOfMobsToSpawn();
 	}
-	
+
 	void setAmountOfMobsToSpawn() {
-		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(),
-				Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get() };
+		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER };
 
 		for (int curLevel = 0; curLevel < RaidManager.MAX_RAID_LEVEL; curLevel++) {
 			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
@@ -55,16 +54,16 @@ public class RaidSpawningManager {
 		}
 
 	}
-	
+
 	void spawnRaidMobs() {
 		HashMap<EntityType<?>, Integer> amountOfMobsToSpawn = amountOfMobs.get(raidManager.getRaidLevel());
 		if (amountOfMobs == null) {
 			Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
 		}
 		amountOfMobsToSpawn.forEach((type, num) -> spawnedMobs.addAll(Arrays.asList(spawnSpecificEntities(type, num))));
-		Baseraids.LOGGER.info("Spawned all entities for the raid");		
+		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
-	
+
 	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 		int radius = 50;
 		double angleInterval = 2 * Math.PI / 100;
@@ -98,7 +97,7 @@ public class RaidSpawningManager {
 			if (EntitySpawnPlacementRegistry.canSpawnEntity(entityType, (IServerWorld) world, SpawnReason.MOB_SUMMONED,
 					spawnPos, r)) {
 
-				if (entityType.equals(Baseraids.BASERAIDS_PHANTOM_ENTITY_TYPE.get())) {
+				if (entityType.equals(EntityType.PHANTOM)) {
 					mobs[i] = EntityType.PHANTOM.create(world);
 					mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
 					ilivingentitydata = mobs[i].onInitialSpawn((IServerWorld) world,
@@ -117,10 +116,10 @@ public class RaidSpawningManager {
 		}
 		return mobs;
 	}
-	
+
 	boolean areAllSpawnedMobsDead() {
-		if (spawnedMobs.isEmpty())
-			return false;
+		if (spawnedMobs.isEmpty()) return false;
+		
 		for (MobEntity mob : spawnedMobs) {
 			if (mob.isAlive()) {
 				return false;
@@ -128,7 +127,7 @@ public class RaidSpawningManager {
 		}
 		return true;
 	}
-	
+
 	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
@@ -149,10 +148,10 @@ public class RaidSpawningManager {
 			index++;
 		}
 	}
-	
+
 	CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
-		
+
 		ListNBT spawnedMobsList = new ListNBT();
 		int index = 0;
 		for (MobEntity mob : spawnedMobs) {
@@ -162,7 +161,7 @@ public class RaidSpawningManager {
 			spawnedMobsList.add(compound);
 			index++;
 		}
-		
+
 		nbt.put("spawnedMobs", spawnedMobsList);
 		return nbt;
 	}
