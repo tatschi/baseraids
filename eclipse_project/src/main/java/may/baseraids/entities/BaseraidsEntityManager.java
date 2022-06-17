@@ -7,11 +7,11 @@ import may.baseraids.Baseraids;
 import may.baseraids.entities.ai.BlockBreakGoal;
 import may.baseraids.entities.ai.DestroyNexusGoal;
 import may.baseraids.entities.ai.MoveTowardsNexusGoal;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.LookRandomlyGoal;
 import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
-import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
@@ -52,7 +52,7 @@ public class BaseraidsEntityManager {
 	}
 
 	public void setupPhantomGoals(PhantomEntity entity) {
-		// 
+		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(PhantomEntity.OrbitPointGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		
@@ -66,7 +66,7 @@ public class BaseraidsEntityManager {
 	 * @param entity              the entity from which to remove the goals
 	 * @param goalClassesToRemove a list of classes of the types of goals to remove
 	 */
-	private void removeGoalsFromList(MonsterEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
+	private void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
 		entity.goalSelector.getRunningGoals().filter((goal) -> goalClassesToRemove.contains(goal.getClass()))
 				.forEach((goal) -> entity.goalSelector.removeGoal(goal));
 	}
