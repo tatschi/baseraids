@@ -85,9 +85,7 @@ public class RaidSpawningManager {
 
 			BlockPos spawnPos = findSpawnPos(entityType);
 
-			if (EntitySpawnPlacementRegistry.canSpawnEntity(entityType, (IServerWorld) world, SpawnReason.MOB_SUMMONED,
-					spawnPos, new Random())) {
-
+			
 				if (entityType.equals(EntityType.PHANTOM)) {
 					mobs[i] = EntityType.PHANTOM.create(world);
 					mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
@@ -100,9 +98,6 @@ public class RaidSpawningManager {
 							SpawnReason.MOB_SUMMONED, false, false);
 				}
 
-			} else {
-				Baseraids.LOGGER.error("Couldn't spawn entity");
-			}
 
 		}
 		return mobs;
@@ -128,7 +123,7 @@ public class RaidSpawningManager {
 				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
 			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
 		} else {
-			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ);
+			spawnPos = world.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), spawnPosXZ);
 		}
 
 		Baseraids.LOGGER

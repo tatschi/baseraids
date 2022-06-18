@@ -7,11 +7,13 @@ import org.apache.logging.log4j.Logger;
 
 import may.baseraids.config.Config;
 import may.baseraids.config.ConfigOptions;
+import may.baseraids.entities.BaseraidsEntityManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -21,6 +23,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -97,7 +101,6 @@ public class Baseraids {
 
 	}
 
-
 	/**
 	 * Registers the attributes for the custom entity types and registers the
 	 * renderers for the custom entity types. Called through the
@@ -107,9 +110,8 @@ public class Baseraids {
 	 *              this function
 	 */
 	private void onFMLCommonSetup(final FMLCommonSetupEvent event) {
-
+		BaseraidsEntityManager.registerSetups();
 	}
-	
 
 	/**
 	 * Initiates the loading process for this mod using the class
@@ -146,6 +148,20 @@ public class Baseraids {
 	}
 
 	/**
+	 * 
+	 * @param event the event of type <code>WorldEvent.PotentialSpawns</code> that
+	 *              calls this function
+	 */
+	@SubscribeEvent
+	public void onMonsterSpawn(final WorldEvent.PotentialSpawns event) {
+		World world = (World) event.getWorld();
+		if (world.isRemote())
+			return;
+
+		onMonsterSpawnOutsideCave_cancelSpawning(event);
+	}
+
+	/**
 	 * Cancels a monster spawning event, if it is not inside a cave and the config
 	 * option <code>ConfigOptions.deactivateMonsterNightSpawn</code> is true.
 	 * 
@@ -154,11 +170,7 @@ public class Baseraids {
 	 */
 	// TODO check if this also disables monsters in the nether and end which would
 	// not be desired
-	@SubscribeEvent
-	public void onMonsterSpawnOutsideCave_cancelSpawning(final WorldEvent.PotentialSpawns event) {
-		World world = (World) event.getWorld();
-		if (world.isRemote())
-			return;
+	private void onMonsterSpawnOutsideCave_cancelSpawning(final WorldEvent.PotentialSpawns event) {
 
 		if (!ConfigOptions.deactivateMonsterNightSpawn.get())
 			return;
@@ -166,12 +178,26 @@ public class Baseraids {
 		if (event.getType() == EntityClassification.MONSTER)
 			return;
 
-		if (world.getBlockState(event.getPos()) != Blocks.CAVE_AIR.getDefaultState())
+		if (event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState()))
 			return;
 
 		if (event.isCancelable()) {
 			event.setCanceled(true);
 		}
+	}
+
+	@SubscribeEvent
+	public void onMonsterSpawnDuringRaid_setupGoals(final EntityJoinWorldEvent event) {
+		if (!baseraidsData.raidManager.isRaidActive())
+			return;
+		if (!(event.getEntity() instanceof MobEntity))
+			return;
+
+		MobEntity mobEntity = (MobEntity) event.getEntity();
+
+		// unsupported entities are handled in the setupGoals method
+
+		BaseraidsEntityManager.setupGoals(mobEntity);
 	}
 
 	/**
