@@ -194,6 +194,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
 		}
+		Baseraids.baseraidsData.serverWorld.getTileEntity(getBlockPos()).remove();
 	}
 
 	/**

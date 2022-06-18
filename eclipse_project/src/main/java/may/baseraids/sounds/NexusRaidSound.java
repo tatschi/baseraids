@@ -8,12 +8,12 @@ public class NexusRaidSound extends NexusSound {
 
 	public NexusRaidSound(NexusEffectsTileEntity entity) {
 		super(SoundEvents.BLOCK_BELL_USE, SoundCategory.AMBIENT, 5.0F, 0.1F, entity);
-		this.repeat = true;
-	    this.repeatDelay = 60;
+	    this.repeatDelay = 0;
 	}
 	
 	@Override
 	protected boolean shouldSwitchSound() {
+		hasSwitchedSound = true;
 		return !raidManager.isRaidActive();
 	}
 }

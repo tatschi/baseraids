@@ -24,47 +24,68 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 
+/**
+ * This class controls everything concerning the spawning during raids: what and
+ * how many mobs to spawn, where to spawn, despawning, saving and loading
+ * spawned mobs and more.
+ * 
+ * @author Natascha May
+ * @since 1.16.4-0.1.1
+ */
 public class RaidSpawningManager {
 
 	private World world;
 	private RaidManager raidManager;
-	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
-	
+	/**
+	 * Contains all mobs currently spawned by this manager.
+	 */
+	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();;
+	private boolean hasFinishedSpawning = false;
+
+	// the distinction between AMOUNT_OF_MOBS_DEFAULT and amountOfMobs is because this is planned to be configurable
 	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 4, 0, 0 }, { 2, 4, 0 }, { 3, 3, 4 }, { 8, 4, 4 },
 			{ 12, 6, 4 } };
+	/**
+	 * Defines in which order the amounts in AMOUNT_OF_MOBS_DEFAULT are defined (i.e. which amount corresponds to which EntityType).
+	 */
+	private static final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(),
+			Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get() };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-	
+
 	public RaidSpawningManager(RaidManager raidManager, World world) {
 		this.raidManager = raidManager;
 		this.world = world;
 		setAmountOfMobsToSpawn();
 	}
-	
-	void setAmountOfMobsToSpawn() {
-		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { Baseraids.BASERAIDS_ZOMBIE_ENTITY_TYPE.get(),
-				Baseraids.BASERAIDS_SKELETON_ENTITY_TYPE.get(), Baseraids.BASERAIDS_SPIDER_ENTITY_TYPE.get() };
 
+	/** 
+	 * Fills the hashmap amountOfMobs according to the setting in AMOUNT_OF_MOBS_DEFAULT.
+	 * This extra step is currently unnecessary but will be useful if the amount of mobs is configurable (which is planned). 
+	 */
+	private void setAmountOfMobsToSpawn() {
 		for (int curLevel = 0; curLevel < RaidManager.MAX_RAID_LEVEL; curLevel++) {
 			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
-
 			for (int curMob = 0; curMob < ORDER_OF_MOBS_IN_ARRAY.length; curMob++) {
 				hashMapForCurLevel.put(ORDER_OF_MOBS_IN_ARRAY[curMob], AMOUNT_OF_MOBS_DEFAULT[curLevel][curMob]);
 			}
-
 			amountOfMobs.put(curLevel + 1, hashMapForCurLevel);
 		}
-
 	}
-	
-	void spawnRaidMobs() {
+
+	/**
+	 * Starts the spawning process of raid mobs using the <code>amountOfMobs</code> and enters the spawned mobs into <code>spawnedMobs</code>.
+	 */
+	void spawnRaidMobs() {		
 		HashMap<EntityType<?>, Integer> amountOfMobsToSpawn = amountOfMobs.get(raidManager.getRaidLevel());
 		if (amountOfMobs == null) {
 			Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
+			return;
 		}
+		
 		amountOfMobsToSpawn.forEach((type, num) -> spawnedMobs.addAll(Arrays.asList(spawnSpecificEntities(type, num))));
-		Baseraids.LOGGER.info("Spawned all entities for the raid");		
+		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
-	
+
 	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 		int radius = 50;
 		double angleInterval = 2 * Math.PI / 100;
@@ -117,10 +138,10 @@ public class RaidSpawningManager {
 		}
 		return mobs;
 	}
-	
+
 	boolean areAllSpawnedMobsDead() {
 		if (spawnedMobs.isEmpty())
-			return false;
+			return true;
 		for (MobEntity mob : spawnedMobs) {
 			if (mob.isAlive()) {
 				return false;
@@ -128,7 +149,7 @@ public class RaidSpawningManager {
 		}
 		return true;
 	}
-	
+
 	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
@@ -149,10 +170,10 @@ public class RaidSpawningManager {
 			index++;
 		}
 	}
-	
+
 	CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
-		
+
 		ListNBT spawnedMobsList = new ListNBT();
 		int index = 0;
 		for (MobEntity mob : spawnedMobs) {
@@ -162,8 +183,10 @@ public class RaidSpawningManager {
 			spawnedMobsList.add(compound);
 			index++;
 		}
-		
+
 		nbt.put("spawnedMobs", spawnedMobsList);
+		
+		//nbt.putBoolean("hasFinishedSpawning", hasFinishedSpawning);
 		return nbt;
 	}
 

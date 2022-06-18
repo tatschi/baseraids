@@ -7,14 +7,16 @@ import net.minecraft.util.SoundEvents;
 public class NexusNoRaidSound extends NexusSound {
 
 	public NexusNoRaidSound(NexusEffectsTileEntity entity) {
-		super(SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 2.0F, 0.5F, entity);
-	      this.repeat = true;
-	      this.repeatDelay = 0;
+		super(SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.AMBIENT, 2.0F, 0.5F, entity);
+		this.repeatDelay = 0;
 	}
 
 	@Override
 	protected boolean shouldSwitchSound() {
+		hasSwitchedSound = true;
 		return raidManager.isRaidActive();
 	}
+
+	
 
 }
