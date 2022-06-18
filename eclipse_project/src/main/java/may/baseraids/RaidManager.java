@@ -125,9 +125,10 @@ public class RaidManager {
 		}
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
 
-		if (!TIMES_TO_WARN_PLAYERS_OF_RAID.stream().anyMatch(time -> time == timeUntilRaidInSec)) {
+		if (TIMES_TO_WARN_PLAYERS_OF_RAID.stream().noneMatch(time -> time == timeUntilRaidInSec)) {
 			return;
 		}
+		
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
 			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
