@@ -125,9 +125,10 @@ public class RaidManager {
 		}
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
 
-		if (!TIMES_TO_WARN_PLAYERS_OF_RAID.stream().anyMatch(time -> time == timeUntilRaidInSec)) {
+		if (TIMES_TO_WARN_PLAYERS_OF_RAID.stream().noneMatch(time -> time == timeUntilRaidInSec)) {
 			return;
 		}
+		
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
 			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
@@ -168,7 +169,6 @@ public class RaidManager {
 			winRaid();
 			return;
 		}
-
 		if (isMaxRaidDurationOver()) {
 			Baseraids.LOGGER.info("Raid ended: reached max duration");
 			winRaid();
@@ -328,9 +328,7 @@ public class RaidManager {
 	 * reached.
 	 */
 	private void increaseRaidLevel() {
-		int new_level = curRaidLevel + 1;
-		if (new_level > MAX_RAID_LEVEL)
-			new_level = MAX_RAID_LEVEL;
+		int new_level = Math.min(curRaidLevel + 1, MAX_RAID_LEVEL);
 		setRaidLevel(new_level);
 	}
 
@@ -391,8 +389,8 @@ public class RaidManager {
 	}
 
 	/**
-	 * Gives the parameters that are normally saved and loaded a default value if they
-	 * have not been successfully loaded.
+	 * Gives the parameters that are normally saved and loaded a default value if
+	 * they have not been successfully loaded.
 	 */
 	private void setDefaultWriteParametersIfNotSet() {
 		if (lastRaidGameTime == -1) {
