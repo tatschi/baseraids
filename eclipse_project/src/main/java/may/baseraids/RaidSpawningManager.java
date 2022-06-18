@@ -84,20 +84,18 @@ public class RaidSpawningManager {
 		for (int i = 0; i < numMobs; i++) {
 
 			BlockPos spawnPos = findSpawnPos(entityType);
-
 			
-				if (entityType.equals(EntityType.PHANTOM)) {
-					mobs[i] = EntityType.PHANTOM.create(world);
-					mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
-					ilivingentitydata = mobs[i].onInitialSpawn((IServerWorld) world,
-							world.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata,
-							(CompoundNBT) null);
-					((IServerWorld) world).func_242417_l(mobs[i]);
-				} else {
-					mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos,
-							SpawnReason.MOB_SUMMONED, false, false);
-				}
-
+			if (entityType.equals(EntityType.PHANTOM)) {
+				mobs[i] = EntityType.PHANTOM.create(world);
+				mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
+				ilivingentitydata = mobs[i].onInitialSpawn((IServerWorld) world,
+						world.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata,
+						(CompoundNBT) null);
+				((IServerWorld) world).func_242417_l(mobs[i]);
+			} else {
+				mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos,
+						SpawnReason.MOB_SUMMONED, false, false);
+			}
 
 		}
 		return mobs;
@@ -186,7 +184,7 @@ public class RaidSpawningManager {
 	}
 
 	void killAllMobs() {
-		spawnedMobs.forEach(mob -> mob.onKillCommand());
+		spawnedMobs.forEach(mob ->{ mob.remove();});
 		spawnedMobs.clear();
 	}
 
