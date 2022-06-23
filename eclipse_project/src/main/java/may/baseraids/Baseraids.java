@@ -19,6 +19,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -35,6 +36,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -206,9 +208,7 @@ public class Baseraids {
 	 * @param message the string that is sent in the chat
 	 */
 	public static void sendChatMessage(String message) {
-		for (PlayerEntity player : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
-			player.sendMessage(new StringTextComponent(message), null);
-		}
+		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(player -> sendChatMessage(message, player));
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class Baseraids {
 	 * @param player  the player that the message is sent to
 	 */
 	public static void sendChatMessage(String message, PlayerEntity player) {
-		player.sendMessage(new StringTextComponent(message), null);
+		player.sendMessage(new StringTextComponent(message), Util.DUMMY_UUID);
 	}
 
 }
