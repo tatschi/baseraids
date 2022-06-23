@@ -7,7 +7,7 @@ import net.minecraft.util.SoundEvents;
 public class NexusNoRaidSound extends NexusSound {
 
 	public NexusNoRaidSound(NexusEffectsTileEntity entity) {
-		super(SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.AMBIENT, 2.0F, 0.5F, entity);
+		super(SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.AMBIENT, 0.5F, 0.5F, entity);
 		this.repeatDelay = 0;
 	}
 
