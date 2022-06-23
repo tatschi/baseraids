@@ -55,7 +55,7 @@ public class RaidManager {
 	 * Sets the times (remaining time until raid) for when to warn all players of
 	 * the coming raid (approximated, in seconds), @see warnPlayersOfRaid().
 	 */
-	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(2400, 1800, 1200, 900, 600, 300,
+	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900, 600, 300,
 			60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;

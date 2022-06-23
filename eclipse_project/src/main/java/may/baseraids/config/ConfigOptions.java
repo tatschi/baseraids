@@ -26,7 +26,7 @@ public class ConfigOptions {
 		
 		timeBetweenRaids = builder
 				.comment("Time between two raids in ticks. 10min is 12000, 1min is 1200.")
-				.defineInRange(Baseraids.MODID + ".timeBetweenRaids", 24000, 0, (int) 1e7);
+				.defineInRange(Baseraids.MODID + ".timeBetweenRaids", 48000, 0, (int) 1e7);
 		
 		maxRaidDuration = builder
 				.comment("Maximum time a raid can last in ticks. When this limit is reached, the raid is won, because the nexus survived! 1min is 1200")

@@ -3,7 +3,6 @@ package may.baseraids;
 import java.util.List;
 
 import may.baseraids.sounds.NexusNoRaidSound;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
