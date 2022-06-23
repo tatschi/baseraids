@@ -180,6 +180,9 @@ public class Baseraids {
 
 		if (event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState()))
 			return;
+		
+		if(event.getWorld().canSeeSky(event.getPos()))
+			return;
 
 		if (event.isCancelable()) {
 			event.setCanceled(true);
