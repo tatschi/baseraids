@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.jline.utils.Log;
 
+import may.baseraids.entities.BaseraidsEntityManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -95,7 +96,10 @@ public class RaidSpawningManager {
 				mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos,
 						SpawnReason.MOB_SUMMONED, false, false);
 			}
-
+			
+			if(mobs[i] != null) {
+				BaseraidsEntityManager.setupGoals(mobs[i]);
+			}
 		}
 		return mobs;
 	}

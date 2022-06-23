@@ -189,20 +189,6 @@ public class Baseraids {
 		}
 	}
 
-	@SubscribeEvent
-	public void onMonsterSpawnDuringRaid_setupGoals(final EntityJoinWorldEvent event) {
-		if (!baseraidsData.raidManager.isRaidActive())
-			return;
-		if (!(event.getEntity() instanceof MobEntity))
-			return;
-
-		MobEntity mobEntity = (MobEntity) event.getEntity();
-
-		// unsupported entities are handled in the setupGoals method
-
-		BaseraidsEntityManager.setupGoals(mobEntity);
-	}
-
 	/**
 	 * Sends a string message in the in-game chat to all players on the server.
 	 * 
