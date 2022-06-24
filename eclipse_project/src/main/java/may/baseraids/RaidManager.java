@@ -50,6 +50,7 @@ public class RaidManager {
 	 * defines the world.daytime at which it starts to be night (one day == 24000)
 	 */
 	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000;
+	private static final int START_OF_DAY_IN_WORLD_DAY_TIME = 23000;
 
 	/**
 	 * Sets the times (remaining time until raid) for when to warn all players of
@@ -147,6 +148,10 @@ public class RaidManager {
 		if (getTimeSinceRaid() < ConfigOptions.timeBetweenRaids.get()) {
 			return false;
 		}
+		if(START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % 24000) {
+			return false;
+		}
+		
 		if (world.getDayTime() % 24000 < START_OF_NIGHT_IN_WORLD_DAY_TIME) {
 			return false;
 		}
@@ -285,10 +290,17 @@ public class RaidManager {
 	 * @return the number of ticks until the next raid
 	 */
 	private int getTimeUntilRaid() {
-		// Math.floorMod returns only positive values (for a positive modulus) while %
-		// returns the actual remainder.
-		long timeUntilNightTime = Math.floorMod(START_OF_NIGHT_IN_WORLD_DAY_TIME - (world.getDayTime() % 24000), 24000);
-		return (int) Math.max(getRawTimeUntilRaid(), timeUntilNightTime);
+		long curTime = world.getDayTime();
+		int rawTimeUntilRaid = getRawTimeUntilRaid();
+		
+		long rawTimeOfNextRaid = curTime + rawTimeUntilRaid;
+		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % 24000;
+		
+		if(START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid && rawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME) {
+			return (int) (rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid - curTime);
+		}	
+		
+		return rawTimeUntilRaid;
 	}
 
 	public int getTimeUntilRaidInSec() {
