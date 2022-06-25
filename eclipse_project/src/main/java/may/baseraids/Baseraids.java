@@ -175,13 +175,13 @@ public class Baseraids {
 		if (!ConfigOptions.deactivateMonsterNightSpawn.get())
 			return;
 
-		if (event.getType() == EntityClassification.MONSTER)
+		if (event.getType() != EntityClassification.MONSTER)
 			return;
 
 		if (event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState()))
 			return;
 		
-		if(event.getWorld().canSeeSky(event.getPos()))
+		if(!event.getWorld().canSeeSky(event.getPos()))
 			return;
 
 		if (event.isCancelable()) {
