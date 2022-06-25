@@ -210,7 +210,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid lost");
-		Baseraids.sendChatMessage("You have lost the raid!");
+		Baseraids.sendChatMessage("You lost the raid!");
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		resetRaidLevel();
@@ -227,7 +227,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
-		Baseraids.sendChatMessage("You have won the raid!");
+		Baseraids.sendChatMessage("You won the raid!");
 
 		spawnAndFillRewardChest();
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
