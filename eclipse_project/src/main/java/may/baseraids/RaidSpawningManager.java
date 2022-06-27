@@ -163,6 +163,8 @@ public class RaidSpawningManager {
 			spawnedMobs.add((MobEntity) entity);
 			index++;
 		}
+		
+		spawnedMobs.forEach(mob -> BaseraidsEntityManager.setupGoals(mob));		
 	}
 
 	CompoundNBT writeAdditional() {
