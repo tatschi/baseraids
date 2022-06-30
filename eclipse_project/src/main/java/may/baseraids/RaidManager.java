@@ -8,7 +8,8 @@ import com.google.common.collect.Sets;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
-import may.baseraids.sounds.RaidWinSound;
+import may.baseraids.networking.BaseraidsPacketHandler;
+import may.baseraids.networking.BaseraidsRaidEndPacket;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ChestTileEntity;
@@ -23,6 +24,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 /**
  * This class controls everything concerning raids: spawning, timers, ending a
@@ -215,7 +217,7 @@ public class RaidManager {
 		// the new level
 		resetRaidLevel();
 		endRaid();
-
+		BaseraidsPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new BaseraidsRaidEndPacket(false));
 	}
 
 	/**
@@ -234,8 +236,7 @@ public class RaidManager {
 		// the new level
 		increaseRaidLevel();
 		endRaid();
-
-		new RaidWinSound();
+		BaseraidsPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new BaseraidsRaidEndPacket(true));
 	}
 
 	/**
@@ -247,6 +248,7 @@ public class RaidManager {
 		setRaidActive(false);
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
+		
 	}
 
 	/**

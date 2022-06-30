@@ -8,11 +8,12 @@ import org.apache.logging.log4j.Logger;
 import may.baseraids.config.Config;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
+import may.baseraids.networking.BaseraidsPacketHandler;
+import may.baseraids.networking.BaseraidsRaidEndPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -23,7 +24,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -57,7 +57,7 @@ public class Baseraids {
 	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
 			Baseraids.MODID);
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Baseraids.MODID);
-	private static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister
+	public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister
 			.create(ForgeRegistries.TILE_ENTITIES, Baseraids.MODID);
 	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES,
 			Baseraids.MODID);
@@ -75,6 +75,8 @@ public class Baseraids {
 	public static final HashMap<String, EntityType<?>> configRegister = new HashMap<>();
 
 	public static BaseraidsWorldSavedData baseraidsData;
+	
+	public static int packetMsgId = 0;
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
@@ -98,6 +100,11 @@ public class Baseraids {
 		ENTITIES.register(bus);
 
 		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
+		
+		// networking
+		BaseraidsPacketHandler.INSTANCE.registerMessage(packetMsgId++, BaseraidsRaidEndPacket.class,
+				(msg, buff) -> msg.writePacketData(buff), (buff) -> new BaseraidsRaidEndPacket(buff),
+				(msg, ctx) -> BaseraidsRaidEndPacket.handle(msg, ctx));
 
 	}
 

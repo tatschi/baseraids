@@ -2,12 +2,17 @@ package may.baseraids;
 
 import java.util.List;
 
-import may.baseraids.sounds.NexusNoRaidSound;
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 
 /**
@@ -25,18 +30,34 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	final static EffectInstance REGEN_EFFECT_AFTER_RAID_WIN = new EffectInstance(Effects.REGENERATION, 100, 0, false,
 			true);
 
-
 	public NexusEffectsTileEntity() {
 		super(Baseraids.NEXUS_TILE_ENTITY_TYPE.get());
-		new NexusNoRaidSound(this);
 	}
 
 	public void tick() {
+		if(world.isRemote) return;
 		addEffectsToPlayers();
+
+		
+		if (this.world.getGameTime() % 80L == 0L) {
+
+			this.addEffectsToPlayers();
+			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
+				this.playSound(SoundEvents.BLOCK_BELL_USE, 2.0F, 0.1F);
+			} else {								
+				this.playSound(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
+			}
+
+		}
+	}
+
+	public void playSound(SoundEvent sound, float volume, float pitch) {
+		this.world.playSound((PlayerEntity) null, this.pos, sound, SoundCategory.BLOCKS, volume, pitch);
 	}
 
 	/**
-	 * Adds the effect <code>curEffect</code> to all players in the distance <code>effectDistance</code>.
+	 * Adds the effect <code>curEffect</code> to all players in the distance
+	 * <code>effectDistance</code>.
 	 */
 	private void addEffectsToPlayers() {
 		if (world.isRemote) {
@@ -56,6 +77,32 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 		for (PlayerEntity playerentity : list) {
 			playerentity.addPotionEffect(curEffect);
 		}
+	}
+
+	/**
+	 * Retrieves packet to send to the client whenever this Tile Entity is resynced
+	 * via World.notifyBlockUpdate. For modded TE's, this packet comes back to you
+	 * clientside in {@link #onDataPacket}
+	 */
+	@Override
+	@Nullable
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		return new SUpdateTileEntityPacket(this.pos, 3, this.getUpdateTag());
+	}
+
+	/**
+	 * Called when you receive a TileEntityData packet for the location this
+	 * TileEntity is currently in. On the client, the NetworkManager will always be
+	 * the remote server. On the server, it will be whomever is responsible for
+	 * sending the packet.
+	 *
+	 * @param net The NetworkManager the packet originated from
+	 * @param pkt The data packet
+	 */
+	@Override
+	public void onDataPacket(net.minecraft.network.NetworkManager net,
+			net.minecraft.network.play.server.SUpdateTileEntityPacket pkt) {
+
 	}
 
 }

@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.jline.utils.Log;
 
 import may.baseraids.entities.BaseraidsEntityManager;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
@@ -33,8 +32,8 @@ public class RaidSpawningManager {
 	private RaidManager raidManager;
 	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
 
-	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 3, 3, 2 }, { 5, 3, 4 },
-			{ 8, 6, 4 } };
+	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 10, 3, 2 }, { 12, 5, 4 },
+			{ 15, 6, 5 } };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
 
 	public RaidSpawningManager(RaidManager raidManager, World world) {
@@ -185,7 +184,7 @@ public class RaidSpawningManager {
 	}
 
 	void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
-		Minecraft.getInstance().enqueue(() -> readSpawnedMobsList(nbt, serverWorld));
+		readSpawnedMobsList(nbt, serverWorld);
 	}
 
 	void killAllMobs() {
