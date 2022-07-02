@@ -4,5 +4,6 @@
 	"entity.baseraids.baseraids_zombie_entity": "Zombie",
 	"entity.baseraids.baseraids_skeleton_entity": "Skeleton",
 	"entity.baseraids.baseraids_spider_entity": "Spider",
-	"entity.baseraids.baseraids_phantom_entity": "Phantom"
+	"entity.baseraids.baseraids_phantom_entity": "Phantom",
+	"baseraids.subtitle.raid_win": "Raid won"
 }

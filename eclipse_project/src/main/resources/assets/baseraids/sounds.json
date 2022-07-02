@@ -1,0 +1,18 @@
+{
+  "raid_win": {
+    "subtitle": "baseraids.subtitle.raid_win",
+    "sounds": [ "baseraids:raid_win" ]
+  },
+  "raid_lose": {
+    "subtitle": "baseraids.subtitle.raid_win",
+    "sounds": [ "baseraids:raid_lose" ]
+  },
+  "pock_ticking": {
+    "subtitle": "baseraids.subtitle.raid_win",
+    "sounds": [ "baseraids:pock_ticking" ]
+  },
+  "pock_low_aggressive": {
+    "subtitle": "baseraids.subtitle.raid_win",
+    "sounds": [ "baseraids:pock_low_aggressive" ]
+  }
+}

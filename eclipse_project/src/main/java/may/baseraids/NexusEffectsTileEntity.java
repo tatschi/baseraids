@@ -39,11 +39,11 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 		addEffectsToPlayers();
 
 		
-		if (this.world.getGameTime() % 80L == 0L) {
+		if (this.world.getGameTime() % 40L == 0L) {
 
 			this.addEffectsToPlayers();
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				this.playSound(SoundEvents.BLOCK_BELL_USE, 2.0F, 0.1F);
+				this.playSound(Baseraids.SOUND_RAID_ACTIVE.get(), 1.0F, 1.0F);
 			} else {								
 				this.playSound(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 			}

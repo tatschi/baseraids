@@ -1,7 +1,5 @@
 package may.baseraids;
 
-import java.util.HashMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +17,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -61,6 +61,7 @@ public class Baseraids {
 			.create(ForgeRegistries.TILE_ENTITIES, Baseraids.MODID);
 	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES,
 			Baseraids.MODID);
+	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Baseraids.MODID);
 
 	// BLOCKS & ITEMS
 	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> new NexusBlock());
@@ -71,8 +72,11 @@ public class Baseraids {
 	public static final RegistryObject<TileEntityType<NexusEffectsTileEntity>> NEXUS_TILE_ENTITY_TYPE = TILE_ENTITIES
 			.register("nexus_effects_tile_entity", () -> TileEntityType.Builder
 					.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
-
-	public static final HashMap<String, EntityType<?>> configRegister = new HashMap<>();
+	
+	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low_aggressive", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low_aggressive")));
 
 	public static BaseraidsWorldSavedData baseraidsData;
 	
@@ -98,6 +102,7 @@ public class Baseraids {
 		ITEMS.register(bus);
 		TILE_ENTITIES.register(bus);
 		ENTITIES.register(bus);
+		SOUNDS.register(bus);
 
 		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
 		

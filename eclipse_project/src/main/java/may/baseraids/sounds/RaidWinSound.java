@@ -15,6 +15,8 @@ import net.minecraft.util.SoundEvents;
 public class RaidWinSound extends LocatableSound {
 
 	public RaidWinSound() {
+		
+		
 		super(SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.BLOCKS);
 		this.volume = 5.0F;
 		this.pitch = 1.5F;

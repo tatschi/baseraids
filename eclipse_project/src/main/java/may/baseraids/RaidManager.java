@@ -8,14 +8,11 @@ import com.google.common.collect.Sets;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
-import may.baseraids.networking.BaseraidsPacketHandler;
-import may.baseraids.networking.BaseraidsRaidEndPacket;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
@@ -24,7 +21,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 /**
  * This class controls everything concerning raids: spawning, timers, ending a
@@ -134,8 +130,9 @@ public class RaidManager {
 		
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
-			world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
-					5.0F, 1F);
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
+			//world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
+			//		5.0F, 1F);
 		}
 	}
 
@@ -217,7 +214,17 @@ public class RaidManager {
 		// the new level
 		resetRaidLevel();
 		endRaid();
-		BaseraidsPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new BaseraidsRaidEndPacket(false));
+		
+		playLoseSound();
+	}
+	
+	private void playWinSound() {
+		Baseraids.LOGGER.info("Play raid win sound");
+		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
+	}
+	
+	private void playLoseSound() {
+		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
 	}
 
 	/**
@@ -236,7 +243,8 @@ public class RaidManager {
 		// the new level
 		increaseRaidLevel();
 		endRaid();
-		BaseraidsPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new BaseraidsRaidEndPacket(true));
+		
+		playWinSound();
 	}
 
 	/**
