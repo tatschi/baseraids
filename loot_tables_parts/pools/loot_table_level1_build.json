@@ -1,0 +1,31 @@
+{
+  "rolls": 1,
+  "entries": [
+    {
+      "type": "minecraft:tag",
+      "name": "minecraft:logs",
+      "functions": [
+        {
+          "function": "minecraft:set_count",
+          "count": {
+            "min": 15,
+            "max": 30
+          }
+        }
+      ]
+    },
+    {
+      "type": "minecraft:item",
+      "name": "minecraft:sand",
+      "functions": [
+        {
+          "function": "minecraft:set_count",
+          "count": {
+            "min": 20,
+            "max": 40
+          }
+        }
+      ]
+    }
+  ]
+}
