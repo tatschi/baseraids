@@ -130,7 +130,7 @@ public class RaidManager {
 		
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
 			//world.playSound(null, NexusBlock.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_BIT, SoundCategory.AMBIENT,
 			//		5.0F, 1F);
 		}
@@ -300,14 +300,24 @@ public class RaidManager {
 	 * @return the number of ticks until the next raid
 	 */
 	private int getTimeUntilRaid() {
+		
+		
+		
+		
 		long curTime = world.getDayTime();
 		int rawTimeUntilRaid = getRawTimeUntilRaid();
 		
 		long rawTimeOfNextRaid = curTime + rawTimeUntilRaid;
 		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % 24000;
 		
-		if(START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid && rawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME) {
-			return (int) (rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid - curTime);
+		int normalizeDiff = (24000 - START_OF_DAY_IN_WORLD_DAY_TIME);
+		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff; 
+		
+		
+		// TODO START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid funktioniert nicht für z.B. 0
+		if(0 < normalizedRawDayTimeOfNextRaid && normalizedRawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME + normalizeDiff) {
+			long timeOfNextRaid = rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid;
+			return (int) (timeOfNextRaid - curTime);
 		}	
 		
 		return rawTimeUntilRaid;
