@@ -1,0 +1,50 @@
+{
+    "pools": [
+      {
+        "rolls": 1,
+        "entries": [
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:mushroom_stew"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:cookie"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:beetroot_soup"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:rabbit_stew"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:honey_bottle"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:cooked_cod"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:cooked_chicken"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:cooked_beef"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:bread"
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:baked_potato"
+          }
+        ]
+      }
+    ]
+}
+  

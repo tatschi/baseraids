@@ -1,0 +1,33 @@
+{
+  "pools": [
+    {
+      "rolls": 6,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:level1_build"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:level1_gear"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:misc"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:food"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:level1_ore"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:level1-2_heads"
+        }
+      ]
+    }
+  ]
+}

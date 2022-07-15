@@ -60,11 +60,11 @@ public class RaidManager {
 	private RaidSpawningManager raidSpawningMng;
 
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = {
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_1"),
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_2"),
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_3"),
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_4"),
-			new ResourceLocation(Baseraids.MODID, "chests/raid_level_5") };
+			new ResourceLocation(Baseraids.MODID, "level1"),
+			new ResourceLocation(Baseraids.MODID, "raid_level_2"),
+			new ResourceLocation(Baseraids.MODID, "raid_level_3"),
+			new ResourceLocation(Baseraids.MODID, "raid_level_4"),
+			new ResourceLocation(Baseraids.MODID, "raid_level_5") };
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);

@@ -1,0 +1,22 @@
+{
+  "pools": [
+    {
+      "rolls": {
+        "min": 3,
+        "max": 7
+      },
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "weight": 10,
+          "name": "baseraids:food_common"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "weight": 1,
+          "name": "baseraids:food_rare"
+        }
+      ]
+    }
+  ]
+}
