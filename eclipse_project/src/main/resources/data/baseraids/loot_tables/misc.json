@@ -12,8 +12,8 @@
           "name": "minecraft:name_tag"
         },
         {
-          "type": "minecraft:item",
-          "name": "minecraft:filled_map"
+          "type": "minecraft:loot_table",
+          "name": "baseraids:explorer_maps"
         },
         {
           "type": "minecraft:item",
