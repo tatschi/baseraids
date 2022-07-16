@@ -44,7 +44,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 			this.addEffectsToPlayers();
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				this.playSoundWithoutPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
+				this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
 			} else {								
 				this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 			}
@@ -54,10 +54,6 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 	public void playSoundWithPos(SoundEvent sound, float volume, float pitch) {
 		this.playSound(sound, this.pos, volume, pitch);
-	}
-	
-	public void playSoundWithoutPos(SoundEvent sound, float volume, float pitch) {
-		this.playSound(sound, null, volume, pitch);
 	}
 	
 	public void playSound(SoundEvent sound, BlockPos pos, float volume, float pitch) {
