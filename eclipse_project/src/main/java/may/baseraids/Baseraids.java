@@ -18,6 +18,7 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -201,7 +202,9 @@ public class Baseraids {
 	 * @param message the string that is sent in the chat
 	 */
 	public static void sendChatMessage(String message) {
-		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(player -> sendChatMessage(message, player));
+		LOGGER.debug("Sending chat message: \"" + message);
+		ServerLifecycleHooks.getCurrentServer().getPlayerList().func_232641_a_(new StringTextComponent(message), ChatType.SYSTEM, Util.DUMMY_UUID);
+		//ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(player -> sendChatMessage(message, player));
 	}
 
 	/**
@@ -211,6 +214,7 @@ public class Baseraids {
 	 * @param player  the player that the message is sent to
 	 */
 	public static void sendChatMessage(String message, PlayerEntity player) {
+		LOGGER.debug("Sending chat message: \"" + message + "\" to " + player.getDisplayName().getString());
 		player.sendMessage(new StringTextComponent(message), Util.DUMMY_UUID);
 	}
 

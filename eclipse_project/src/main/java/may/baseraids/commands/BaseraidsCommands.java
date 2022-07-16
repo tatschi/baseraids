@@ -27,19 +27,20 @@ public class BaseraidsCommands {
 	      dispatcher.register(
 	    		Commands.literal("baseraids")
 	    		.requires((commandSource) -> { return commandSource.hasPermissionLevel(2);})
-				.then(Commands.literal("start_raid")
+				.then(Commands.literal("startRaid")
 						.executes((commandSource) -> {return startRaid(commandSource.getSource());}))
-				.then(Commands.literal("win_raid")
+				.then(Commands.literal("winRaid")
 						.executes((commandSource) -> {return winRaid(commandSource.getSource());}))
-				.then(Commands.literal("lose_raid")
+				.then(Commands.literal("loseRaid")
 						.executes((commandSource) -> {return loseRaid(commandSource.getSource());}))
 	    		
-	      		.then(Commands.literal("get_timeUntilRaid")
+	      		.then(Commands.literal("getTimeUntilRaid")
 	      				.executes((commandSource) -> {return getTimeUntilRaid(commandSource.getSource());}))
-	      		.then(Commands.literal("get_level")
+	      		.then(Commands.literal("getLevel")
 	      				.executes((commandSource) -> {return getRaidLevel(commandSource.getSource());}))
-	      		
-	      		.then(Commands.literal("give_nexus")
+	      		.then(Commands.literal("sendTestMessage")
+	      				.executes((commandSource) -> {return sendTestMessage(commandSource.getSource());}))
+	      		.then(Commands.literal("giveNexus")
 	      				.then(Commands.argument("target", EntityArgument.players())
 	      						.executes((commandSource) -> {return giveNexusToPlayer(commandSource.getSource(), EntityArgument.getPlayer(commandSource, "target"));})))
 	    		 );
@@ -74,6 +75,11 @@ public class BaseraidsCommands {
 
 	private static int startRaid(CommandSource source) {
 		Baseraids.baseraidsData.raidManager.startRaid();
+		return 0;
+	}
+	
+	private static int sendTestMessage(CommandSource source) {
+		Baseraids.sendChatMessage("Test Message");
 		return 0;
 	}
 }
