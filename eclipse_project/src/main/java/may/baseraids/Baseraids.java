@@ -6,8 +6,6 @@ import org.apache.logging.log4j.Logger;
 import may.baseraids.config.Config;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
-import may.baseraids.networking.BaseraidsPacketHandler;
-import may.baseraids.networking.BaseraidsRaidEndPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityClassification;
@@ -73,10 +71,12 @@ public class Baseraids {
 			.register("nexus_effects_tile_entity", () -> TileEntityType.Builder
 					.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
 	
+	// SOUNDS
 	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
-	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low_aggressive", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low_aggressive")));
+	//public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low_aggressive", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low_aggressive")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
 	public static BaseraidsWorldSavedData baseraidsData;
 	
@@ -105,12 +105,6 @@ public class Baseraids {
 		SOUNDS.register(bus);
 
 		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
-		
-		// networking
-		BaseraidsPacketHandler.INSTANCE.registerMessage(packetMsgId++, BaseraidsRaidEndPacket.class,
-				(msg, buff) -> msg.writePacketData(buff), (buff) -> new BaseraidsRaidEndPacket(buff),
-				(msg, ctx) -> BaseraidsRaidEndPacket.handle(msg, ctx));
-
 	}
 
 	/**

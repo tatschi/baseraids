@@ -1,11 +1,7 @@
 package may.baseraids.networking;
 
-import java.util.function.Supplier;
-
 import may.baseraids.Baseraids;
-import may.baseraids.sounds.RaidWinSound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -23,10 +19,5 @@ public class BaseraidsPacketHandler {
 			new ResourceLocation(Baseraids.MODID, "main"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals,
 			PROTOCOL_VERSION::equals);
 
-	public static void handleRaidEnd(BaseraidsRaidEndPacket msg, Supplier<NetworkEvent.Context> ctx) {
-		if(msg.getIsWin()) {
-			new RaidWinSound();
-		}
 		
-	}
 }

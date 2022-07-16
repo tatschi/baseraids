@@ -1,11 +1,8 @@
 package may.baseraids.networking;
 
-import java.util.function.Supplier;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 /**
  * This packet is sent from the server side to notify the client that a raid has ended.
@@ -35,18 +32,6 @@ public class BaseraidsRaidEndPacket {
 		buff.writeBoolean(isWin);
 	}
 
-	/**
-	 * Passes the packet on to the packet handler by calling the corresponding
-	 * handle method.
-	 * 
-	 * @param msg the packet that is passed on
-	 * @param ctx a network context that gives access to communication info like the
-	 *            sender of the packet
-	 */
-	public static void handle(BaseraidsRaidEndPacket msg, Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> BaseraidsPacketHandler.handleRaidEnd(msg, ctx));
-		ctx.get().setPacketHandled(true);
-	}
 
 	@OnlyIn(Dist.CLIENT)
 	public boolean getIsWin() {

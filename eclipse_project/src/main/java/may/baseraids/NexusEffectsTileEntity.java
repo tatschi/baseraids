@@ -14,6 +14,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * This class handles sound and effects from the nexus. Effects are not
@@ -43,17 +44,26 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 			this.addEffectsToPlayers();
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				this.playSound(Baseraids.SOUND_RAID_ACTIVE.get(), 1.0F, 1.0F);
+				this.playSoundWithoutPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
 			} else {								
-				this.playSound(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
+				this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 			}
 
 		}
 	}
 
-	public void playSound(SoundEvent sound, float volume, float pitch) {
-		this.world.playSound((PlayerEntity) null, this.pos, sound, SoundCategory.BLOCKS, volume, pitch);
+	public void playSoundWithPos(SoundEvent sound, float volume, float pitch) {
+		this.playSound(sound, this.pos, volume, pitch);
 	}
+	
+	public void playSoundWithoutPos(SoundEvent sound, float volume, float pitch) {
+		this.playSound(sound, null, volume, pitch);
+	}
+	
+	public void playSound(SoundEvent sound, BlockPos pos, float volume, float pitch) {
+		this.world.playSound((PlayerEntity) null, pos, sound, SoundCategory.BLOCKS, volume, pitch);
+	}
+	
 
 	/**
 	 * Adds the effect <code>curEffect</code> to all players in the distance
