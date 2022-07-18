@@ -3,7 +3,7 @@
     {
       "rolls": {
         "min": 0,
-        "max": 1
+        "max": 2
       },
       "entries": [
         {
@@ -28,6 +28,32 @@
               "count": {
                 "min": 20,
                 "max": 40
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:clay_ball",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 30,
+                "max": 100
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:glowstone_dust",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 15,
+                "max": 50
               }
             }
           ]

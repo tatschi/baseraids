@@ -1,0 +1,82 @@
+{
+    "pools": [
+      {
+        "rolls": 1,
+        "entries": [
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:diamond_axe",
+            "functions": [
+              {
+                "function": "minecraft:enchant_with_levels",
+                "levels": 30,
+                "treasure": true
+              },
+              {
+                "function": "minecraft:set_damage",
+                "damage": {
+                  "min": 0.05,
+                  "max": 0.2
+                }
+              }
+            ]
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:diamond_pickaxe",
+            "functions": [
+              {
+                "function": "minecraft:enchant_with_levels",
+                "levels": 30,
+                "treasure": true
+              },
+              {
+                "function": "minecraft:set_damage",
+                "damage": {
+                  "min": 0.05,
+                  "max": 0.2
+                }
+              }
+            ]
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:diamond_shovel",
+            "functions": [
+              {
+                "function": "minecraft:enchant_with_levels",
+                "levels": 30,
+                "treasure": true
+              },
+              {
+                "function": "minecraft:set_damage",
+                "damage": {
+                  "min": 0.05,
+                  "max": 0.2
+                }
+              }
+            ]
+          },
+          {
+            "type": "minecraft:item",
+            "name": "minecraft:diamond_sword",
+            "functions": [
+              {
+                "function": "minecraft:enchant_with_levels",
+                "levels": 30,
+                "treasure": true
+              },
+              {
+                "function": "minecraft:set_damage",
+                "damage": {
+                  "min": 0.05,
+                  "max": 0.2
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  

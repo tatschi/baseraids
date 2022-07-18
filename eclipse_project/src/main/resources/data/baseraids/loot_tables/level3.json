@@ -5,7 +5,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level1_build"
+          "name": "baseraids:level3_build"
         }
       ]
     },
@@ -14,7 +14,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level1_gear"
+          "name": "baseraids:level3_gear"
         }
       ]
     },
@@ -23,7 +23,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level1-2_misc"
+          "name": "baseraids:level3_misc"
         }
       ]
     },
@@ -41,7 +41,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level1_ore"
+          "name": "baseraids:level2-3_ore"
         }
       ]
     },
@@ -53,6 +53,16 @@
           "name": "baseraids:level1-4_heads"
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:potions"
+        }
+      ]
     }
   ]
 }
+
