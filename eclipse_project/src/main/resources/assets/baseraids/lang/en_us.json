@@ -5,5 +5,8 @@
 	"entity.baseraids.baseraids_skeleton_entity": "Skeleton",
 	"entity.baseraids.baseraids_spider_entity": "Spider",
 	"entity.baseraids.baseraids_phantom_entity": "Phantom",
-	"baseraids.subtitle.raid_win": "Raid won"
+	"baseraids.subtitle.raid_win": "Raid won",
+	"baseraids.subtitle.raid_lose": "Raid lost",
+	"baseraids.subtitle.raid_ticking": "Raid starts shortly",
+	"baseraids.subtitle.raid_active": "Raid is active"
 }
