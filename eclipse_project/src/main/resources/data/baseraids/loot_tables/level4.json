@@ -5,7 +5,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level4_build"
+          "name": "baseraids:level4-6_build"
         }
       ]
     },
@@ -14,7 +14,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level4_gear"
+          "name": "baseraids:level4-5_gear"
         }
       ]
     },
@@ -23,7 +23,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level4_misc"
+          "name": "baseraids:level4-6_misc"
         }
       ]
     },
@@ -32,7 +32,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level4-7_ore"
+          "name": "baseraids:level4_ore"
         }
       ]
     },

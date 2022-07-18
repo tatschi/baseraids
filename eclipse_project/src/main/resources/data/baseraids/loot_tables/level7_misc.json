@@ -8,38 +8,16 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "minecraft:leather",
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 15,
-                "max": 40
-              }
-            }
-          ]
+          "name": "minecraft:name_tag"
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:emerald",
+          "name": "minecraft:experience_bottle",
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
                 "min": 5,
-                "max": 15
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:iron_ingot",
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 10,
                 "max": 20
               }
             }
@@ -47,12 +25,30 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:gold_ingot",
+          "name": "minecraft:book",
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 5,
+                "min": 1,
+                "max": 4
+              }
+            },
+            {
+              "function": "minecraft:enchant_with_levels",
+              "levels": 30,
+              "treasure": true
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:ender_pearl",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 2,
                 "max": 10
               }
             }
@@ -60,26 +56,13 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:diamond",
+          "name": "minecraft:shulker_shell",
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
                 "min": 1,
-                "max": 5
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:netherite_scrap",
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 1,
-                "max": 10
+                "max": 3
               }
             }
           ]

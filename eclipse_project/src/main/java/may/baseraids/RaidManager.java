@@ -64,9 +64,9 @@ public class RaidManager {
 			new ResourceLocation(Baseraids.MODID, "level2"),
 			new ResourceLocation(Baseraids.MODID, "level3"),
 			new ResourceLocation(Baseraids.MODID, "level4"),
-			new ResourceLocation(Baseraids.MODID, "raid_level_5"),
-			new ResourceLocation(Baseraids.MODID, "raid_level_5"),
-			new ResourceLocation(Baseraids.MODID, "raid_level_5")};
+			new ResourceLocation(Baseraids.MODID, "level5"),
+			new ResourceLocation(Baseraids.MODID, "level6"),
+			new ResourceLocation(Baseraids.MODID, "level7")};
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
