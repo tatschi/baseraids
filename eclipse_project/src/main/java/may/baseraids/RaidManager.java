@@ -43,7 +43,7 @@ public class RaidManager {
 	private int curRaidLevel = -1;
 	private int lastRaidGameTime = -1;
 
-	public static final int MAX_RAID_LEVEL = 5, MIN_RAID_LEVEL = 1;
+	public static final int MAX_RAID_LEVEL = 7, MIN_RAID_LEVEL = 1;
 	/**
 	 * defines the world.daytime at which it starts to be night (one day == 24000)
 	 */

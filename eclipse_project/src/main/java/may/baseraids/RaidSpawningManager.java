@@ -33,7 +33,7 @@ public class RaidSpawningManager {
 	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
 
 	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 10, 3, 2 }, { 12, 5, 4 },
-			{ 15, 6, 5 } };
+			{ 15, 6, 5 }, { 25, 10, 8 }, { 30, 15, 10 } };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
 
 	public RaidSpawningManager(RaidManager raidManager, World world) {

@@ -23,14 +23,27 @@ public class BlockBreakGoal extends Goal{
  	protected static ConcurrentHashMap<BlockPos, Integer> previousBreakProgress = new ConcurrentHashMap<BlockPos, Integer>();
  	
  	// time to break the block in ticks
- 	protected int timeToBreak = 200;
+ 	protected int curTimeToBreak = 200;
+ 	protected final static int TIME_TO_BREAK_MULTIPLIER = 2;
  	
  	
  	final static Vector3i[] focusableBlocksAroundEntity = {
  			
  			new Vector3i(0, 0, 0),
  			new Vector3i(0, 0, 1),
- 			new Vector3i(0, 0, -1),
+ 			new Vector3i(0, 0, -1), 			
+ 			
+ 			new Vector3i(1, 0, 0),
+ 			new Vector3i(1, 0, 1),
+ 			new Vector3i(1, 0, -1),
+ 			
+ 			new Vector3i(-1, 0, 0),
+ 			new Vector3i(-1, 0, 1),
+ 			new Vector3i(-1, 0, -1),
+ 			
+ 			new Vector3i(-1, -1, 0),
+ 			new Vector3i(-1, -1, 1),
+ 			new Vector3i(-1, -1, -1),
  			
  			new Vector3i(0, 1, 0),
  			new Vector3i(0, 1, 1),
@@ -40,10 +53,6 @@ public class BlockBreakGoal extends Goal{
  			new Vector3i(0, -1, 1),
  			new Vector3i(0, -1, -1),
  			
- 			new Vector3i(1, 0, 0),
- 			new Vector3i(1, 0, 1),
- 			new Vector3i(1, 0, -1),
- 			
  			new Vector3i(1, 1, 0),
  			new Vector3i(1, 1, 1),
  			new Vector3i(1, 1, -1),
@@ -52,17 +61,9 @@ public class BlockBreakGoal extends Goal{
  			new Vector3i(1, -1, 1),
  			new Vector3i(1, -1, -1),
  			
- 			new Vector3i(-1, 0, 0),
- 			new Vector3i(-1, 0, 1),
- 			new Vector3i(-1, 0, -1),
- 			
  			new Vector3i(-1, 1, 0),
  			new Vector3i(-1, 1, 1),
  			new Vector3i(-1, 1, -1),
- 			
- 			new Vector3i(-1, -1, 0),
- 			new Vector3i(-1, -1, 1),
- 			new Vector3i(-1, -1, -1)
  			
  	};    
 	
@@ -83,9 +84,12 @@ public class BlockBreakGoal extends Goal{
 			BlockPos defaultFocusedBlock = this.entity.getPosition();
 			curFocusedBlock = defaultFocusedBlock;
 			
+			
 			for(Vector3i vec : focusableBlocksAroundEntity){
 				curFocusedBlock = curFocusedBlock.add(vec);
 				if(entity.world.getBlockState(curFocusedBlock).isSolid()) {
+					float hardness = entity.world.getBlockState(curFocusedBlock).getBlockHardness(entity.world, curFocusedBlock);
+					curTimeToBreak = TIME_TO_BREAK_MULTIPLIER * (int)  Math.round(3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);					
 					return true;
 				}
 				curFocusedBlock = defaultFocusedBlock;
@@ -99,7 +103,7 @@ public class BlockBreakGoal extends Goal{
 		
 	}
 	
-	public void tick() {		
+	public void tick() {				
 		entity.setAggroed(true);
 		entity.getLookController().setLookPosition(curFocusedBlock.getX(), curFocusedBlock.getY(), curFocusedBlock.getZ());
 		
@@ -121,7 +125,7 @@ public class BlockBreakGoal extends Goal{
 		
 		// send progress every time i was increased (so every timeToBreak / 10 ticks)
 		
-		int i = (int)((float)globalBreakingProgress.get(curFocusedBlock) / (float)timeToBreak * 10.0F);		
+		int i = (int)((float)globalBreakingProgress.get(curFocusedBlock) / (float)curTimeToBreak * 10.0F);		
 		if (i != previousBreakProgress.getOrDefault(curFocusedBlock, -1)) {
 			Baseraids.LOGGER.info("BlockBreakGoal#tick Send Block break progress");
 			// TODO sound design
@@ -132,7 +136,7 @@ public class BlockBreakGoal extends Goal{
 
 
 		synchronized(raidManager) {
-			if (globalBreakingProgress.get(curFocusedBlock) == timeToBreak) {
+			if (globalBreakingProgress.get(curFocusedBlock) == curTimeToBreak) {
 				// break the block after timeToBreak ticks (block should stay though)
 
 				Baseraids.LOGGER.info("BlockBreakGoal#tick Break block");
