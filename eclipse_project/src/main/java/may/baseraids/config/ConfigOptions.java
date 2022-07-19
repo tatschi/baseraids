@@ -40,7 +40,7 @@ public class ConfigOptions {
 		
 		monsterBlockBreakingTimeMultiplier = builder
 				.comment("Time it takes the monsters to break a block. Doubling the value will double the time. ")
-				.defineInRange(Baseraids.MODID + ".monsterBlockBreakingTimeMultiplier", 0, 100, MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT);
+				.defineInRange(Baseraids.MODID + ".monsterBlockBreakingTimeMultiplier", MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT, 0, 100);
 	
 		
 		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
