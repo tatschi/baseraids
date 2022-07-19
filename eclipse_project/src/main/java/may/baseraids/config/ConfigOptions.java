@@ -16,8 +16,9 @@ public class ConfigOptions {
 	public static ForgeConfigSpec.IntValue maxRaidDuration;	
 	public static ForgeConfigSpec.BooleanValue deactivateMonsterNightSpawn;
 	public static Vector3i lootChestPositionRelative;
+	public static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
 	
-	
+	protected final static int MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT = 2;
 	public static final int[] LOOT_CHEST_POS_RELATIVE_DEFAULT = {0, 1, 0};
 	
 	
@@ -35,6 +36,10 @@ public class ConfigOptions {
 		deactivateMonsterNightSpawn = builder
 				.comment("If set to true, the mod deactivates monster spawning at night. They will still spawn in caves.")
 				.define(Baseraids.MODID + ".deactivateMonsterNightSpawn", true);
+		
+		monsterBlockBreakingTimeMultiplier = builder
+				.comment("Time it takes the monsters to break a block. Doubling the value will double the time. ")
+				.defineInRange(Baseraids.MODID + ".monsterBlockBreakingTimeMultiplier", 0, 100, MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT);
 	
 		
 		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);

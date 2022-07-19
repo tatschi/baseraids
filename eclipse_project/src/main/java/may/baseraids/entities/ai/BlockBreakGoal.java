@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
+import may.baseraids.config.ConfigOptions;
 import net.minecraft.block.Block;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -24,7 +25,7 @@ public class BlockBreakGoal extends Goal{
  	
  	// time to break the block in ticks
  	protected int curTimeToBreak = 200;
- 	protected final static int TIME_TO_BREAK_MULTIPLIER = 2;
+ 	
  	
  	
  	final static Vector3i[] focusableBlocksAroundEntity = {
@@ -89,7 +90,7 @@ public class BlockBreakGoal extends Goal{
 				curFocusedBlock = curFocusedBlock.add(vec);
 				if(entity.world.getBlockState(curFocusedBlock).isSolid()) {
 					float hardness = entity.world.getBlockState(curFocusedBlock).getBlockHardness(entity.world, curFocusedBlock);
-					curTimeToBreak = TIME_TO_BREAK_MULTIPLIER * (int)  Math.round(3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);					
+					curTimeToBreak = ConfigOptions.monsterBlockBreakingTimeMultiplier.get() * (int)  Math.round(3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);					
 					return true;
 				}
 				curFocusedBlock = defaultFocusedBlock;
