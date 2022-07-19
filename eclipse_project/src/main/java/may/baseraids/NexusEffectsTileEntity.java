@@ -2,10 +2,7 @@ package may.baseraids;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -82,32 +79,6 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 		for (PlayerEntity playerentity : list) {
 			playerentity.addPotionEffect(curEffect);
 		}
-	}
-
-	/**
-	 * Retrieves packet to send to the client whenever this Tile Entity is resynced
-	 * via World.notifyBlockUpdate. For modded TE's, this packet comes back to you
-	 * clientside in {@link #onDataPacket}
-	 */
-	@Override
-	@Nullable
-	public SUpdateTileEntityPacket getUpdatePacket() {
-		return new SUpdateTileEntityPacket(this.pos, 3, this.getUpdateTag());
-	}
-
-	/**
-	 * Called when you receive a TileEntityData packet for the location this
-	 * TileEntity is currently in. On the client, the NetworkManager will always be
-	 * the remote server. On the server, it will be whomever is responsible for
-	 * sending the packet.
-	 *
-	 * @param net The NetworkManager the packet originated from
-	 * @param pkt The data packet
-	 */
-	@Override
-	public void onDataPacket(net.minecraft.network.NetworkManager net,
-			net.minecraft.network.play.server.SUpdateTileEntityPacket pkt) {
-
 	}
 
 }
