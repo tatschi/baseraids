@@ -42,7 +42,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * saving and loading is intiated and basic, general functionality is provided.
  * 
  * @author Natascha May
- * @since 1.16.4-0.1
+ * @since 1.16.4-0.0.0.1
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 //The value here should match an entry in the META-INF/mods.toml file

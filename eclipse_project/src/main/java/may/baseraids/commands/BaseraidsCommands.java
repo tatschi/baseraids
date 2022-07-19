@@ -13,12 +13,17 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+/**
+ * This class defines the commands for this mod.
+ * 
+ * @author Natascha May
+ * @since 1.16.4-0.0.0.1
+ */
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsCommands {
 
-	
 	@SubscribeEvent
- 	public static void onRegisterCommandEvent(RegisterCommandsEvent event) {
+	public static void onRegisterCommandEvent(RegisterCommandsEvent event) {
 		CommandDispatcher<CommandSource> commandDispatcher = event.getDispatcher();
 		BaseraidsCommands.register(commandDispatcher);
 	}
@@ -38,8 +43,6 @@ public class BaseraidsCommands {
 	      				.executes((commandSource) -> {return getTimeUntilRaid(commandSource.getSource());}))
 	      		.then(Commands.literal("getLevel")
 	      				.executes((commandSource) -> {return getRaidLevel(commandSource.getSource());}))
-	      		.then(Commands.literal("sendTestMessage")
-	      				.executes((commandSource) -> {return sendTestMessage(commandSource.getSource());}))
 	      		.then(Commands.literal("giveNexus")
 	      				.then(Commands.argument("target", EntityArgument.players())
 	      						.executes((commandSource) -> {return giveNexusToPlayer(commandSource.getSource(), EntityArgument.getPlayer(commandSource, "target"));})))
@@ -61,25 +64,22 @@ public class BaseraidsCommands {
 	}
 
 	private static int getTimeUntilRaid(CommandSource source) {
-		source.sendFeedback(new StringTextComponent("Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()), true);
+		source.sendFeedback(new StringTextComponent(
+				"Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()),
+				true);
 		int timeUntilRaid = Baseraids.baseraidsData.raidManager.getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
-	
+
 	private static int getRaidLevel(CommandSource source) {
 		int level = Baseraids.baseraidsData.raidManager.getRaidLevel();
 		source.sendFeedback(new StringTextComponent("Raid level: " + level), true);
 		return level;
 	}
 
-
 	private static int startRaid(CommandSource source) {
 		Baseraids.baseraidsData.raidManager.startRaid();
 		return 0;
 	}
-	
-	private static int sendTestMessage(CommandSource source) {
-		Baseraids.sendChatMessage("Test Message");
-		return 0;
-	}
+
 }

@@ -54,7 +54,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
  * </ul>
  * 
  * @author Natascha May
- * @since 1.16.4-0.1
+ * @since 1.16.4-0.0.0.1
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock {

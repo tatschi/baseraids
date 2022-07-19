@@ -21,6 +21,12 @@ import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 
+/**
+ * This class is used for setting up the default monsters with custom AI for raiding.
+ * 
+ * @author Natascha May
+ * @since 1.16.4-0.0.0.1
+ */
 public class BaseraidsEntityManager {
 	
 	private static Map<EntityType<?>, Consumer<MobEntity>> setupsRegistry = new HashMap<EntityType<?>, Consumer<MobEntity>>();

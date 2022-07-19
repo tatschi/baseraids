@@ -17,11 +17,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * This class handles sound and effects from the nexus. Effects are not
- * implemented as of 1.16.4-0.1.
+ * This class handles sound and effects from the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.1
+ * @since 1.16.4-0.0.0.1
  */
 public class NexusEffectsTileEntity extends TileEntity implements ITickableTileEntity {
 

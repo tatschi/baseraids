@@ -23,11 +23,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * This class controls everything concerning raids: spawning, timers, ending a
- * raid, rewards and more.
+ * This class controls everything concerning raids: spawning, timers, starting
+ * and ending a raid, rewards and more.
  * 
  * @author Natascha May
- * @since 1.16.4-0.1
+ * @since 1.16.4-0.0.0.1
  */
 // @Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -45,28 +45,28 @@ public class RaidManager {
 
 	public static final int MAX_RAID_LEVEL = 7, MIN_RAID_LEVEL = 1;
 	/**
-	 * defines the world.daytime at which it starts to be night (one day == 24000)
+	 * defines the world.daytime at which it starts to be night (one day = 24000)
 	 */
 	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000;
+	/**
+	 * defines the world.daytime at which it starts to be day (one day = 24000)
+	 */
 	private static final int START_OF_DAY_IN_WORLD_DAY_TIME = 23000;
 
 	/**
-	 * Sets the times (remaining time until raid) for when to warn all players of
-	 * the coming raid (approximated, in seconds), @see warnPlayersOfRaid().
+	 * Sets the times (remaining time until raid) at which all players will be
+	 * warned of the coming raid (approximated, in seconds), @see
+	 * warnPlayersOfRaid().
 	 */
-	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900, 600, 300,
-			60, 30, 10, 5, 4, 3, 2, 1);
+	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
+			600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
 
-	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = {
-			new ResourceLocation(Baseraids.MODID, "level1"),
-			new ResourceLocation(Baseraids.MODID, "level2"),
-			new ResourceLocation(Baseraids.MODID, "level3"),
-			new ResourceLocation(Baseraids.MODID, "level4"),
-			new ResourceLocation(Baseraids.MODID, "level5"),
-			new ResourceLocation(Baseraids.MODID, "level6"),
-			new ResourceLocation(Baseraids.MODID, "level7")};
+	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
+			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
+			new ResourceLocation(Baseraids.MODID, "level4"), new ResourceLocation(Baseraids.MODID, "level5"),
+			new ResourceLocation(Baseraids.MODID, "level6"), new ResourceLocation(Baseraids.MODID, "level7") };
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
@@ -129,10 +129,11 @@ public class RaidManager {
 		if (TIMES_TO_WARN_PLAYERS_OF_RAID.stream().noneMatch(time -> time == timeUntilRaidInSec)) {
 			return;
 		}
-		
+
 		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
+					1.0F, 1.0F);
 		}
 	}
 
@@ -147,10 +148,10 @@ public class RaidManager {
 		if (getTimeSinceRaid() < ConfigOptions.timeBetweenRaids.get()) {
 			return false;
 		}
-		if(START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % 24000) {
+		if (START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % 24000) {
 			return false;
 		}
-		
+
 		if (world.getDayTime() % 24000 < START_OF_NIGHT_IN_WORLD_DAY_TIME) {
 			return false;
 		}
@@ -161,7 +162,7 @@ public class RaidManager {
 	}
 
 	/**
-	 * Ticks during raids and checks if the raid is won.
+	 * Ticks during raids and checks if the raid is won or the max duration is over.
 	 */
 	private void activeRaidTick() {
 		if (!isRaidActive) {
@@ -181,7 +182,7 @@ public class RaidManager {
 	}
 
 	/**
-	 * Initiates a raid, that means it sets the <code>lastRaidGameTime</code> and
+	 * Starts a raid. That means it sets the <code>lastRaidGameTime</code> and
 	 * the <code>isRaidActive</code> and calls the spawning of the mobs.
 	 */
 	public void startRaid() {
@@ -214,17 +215,18 @@ public class RaidManager {
 		// the new level
 		resetRaidLevel();
 		endRaid();
-		
+
 		playLoseSound();
 	}
-	
+
 	private void playWinSound() {
-		Baseraids.LOGGER.info("Play raid win sound");
-		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
+		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F,
+				1.0F);
 	}
-	
+
 	private void playLoseSound() {
-		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F, 1.0F);
+		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F,
+				1.0F);
 	}
 
 	/**
@@ -243,7 +245,7 @@ public class RaidManager {
 		// the new level
 		increaseRaidLevel();
 		endRaid();
-		
+
 		playWinSound();
 	}
 
@@ -256,7 +258,6 @@ public class RaidManager {
 		setRaidActive(false);
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
-		
 	}
 
 	/**
@@ -300,26 +301,24 @@ public class RaidManager {
 	 * @return the number of ticks until the next raid
 	 */
 	private int getTimeUntilRaid() {
-		
-		
-		
-		
+
 		long curTime = world.getDayTime();
 		int rawTimeUntilRaid = getRawTimeUntilRaid();
-		
+
 		long rawTimeOfNextRaid = curTime + rawTimeUntilRaid;
 		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % 24000;
-		
+
 		int normalizeDiff = (24000 - START_OF_DAY_IN_WORLD_DAY_TIME);
-		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff; 
-		
-		
-		// TODO START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid funktioniert nicht für z.B. 0
-		if(0 < normalizedRawDayTimeOfNextRaid && normalizedRawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME + normalizeDiff) {
+		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff;
+
+		// TODO START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid funktioniert nicht
+		// für z.B. 0
+		if (0 < normalizedRawDayTimeOfNextRaid
+				&& normalizedRawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME + normalizeDiff) {
 			long timeOfNextRaid = rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid;
 			return (int) (timeOfNextRaid - curTime);
-		}	
-		
+		}
+
 		return rawTimeUntilRaid;
 	}
 
@@ -372,7 +371,7 @@ public class RaidManager {
 	}
 
 	/**
-	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the
+	 * Saves data relevant for the RaidManager: Writes the necessary data to a <code>CompoundNBT</code> and returns the
 	 * <code>CompoundNBT</code> object.
 	 * 
 	 * @return the adapted <code>CompoundNBT</code> that was written to

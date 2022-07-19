@@ -9,6 +9,12 @@ import may.baseraids.Baseraids;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
 
+/**
+ * This class builds and loads the config file.
+ * 
+ * @author Natascha May
+ * @since 1.16.4-0.0.0.1
+ */
 @Mod.EventBusSubscriber
 public class Config {
 

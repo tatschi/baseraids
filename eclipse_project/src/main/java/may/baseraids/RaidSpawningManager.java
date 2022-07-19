@@ -26,6 +26,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 
+/**
+ * This class controls the spawning, saving and loading and other handling of
+ * the raid mobs.
+ * 
+ * @author Natascha May
+ * @since 1.16.4-0.0.0.1
+ */
 public class RaidSpawningManager {
 
 	private World world;
@@ -42,6 +49,9 @@ public class RaidSpawningManager {
 		setAmountOfMobsToSpawn();
 	}
 
+	/**
+	 * Sets the amount of mobs to spawn at each raid level.
+	 */
 	void setAmountOfMobsToSpawn() {
 		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER };
 
@@ -57,6 +67,10 @@ public class RaidSpawningManager {
 
 	}
 
+	/**
+	 * Spawns the mobs for the current level specified by <code>amountOfMobs</code>
+	 * and inputs the spawned entities into the list <code>spawnedMobs</code>.
+	 */
 	void spawnRaidMobs() {
 		HashMap<EntityType<?>, Integer> amountOfMobsToSpawn = amountOfMobs.get(raidManager.getRaidLevel());
 		if (amountOfMobs == null) {
@@ -76,6 +90,15 @@ public class RaidSpawningManager {
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
 
+	/**
+	 * Spawns <code>numMobs</code> mobs of the type <code>entityType</code>.
+	 * 
+	 * @param <T>        extends <code>Entity</code> the entity class corresponding
+	 *                   to the <code>entityType</code>
+	 * @param entityType
+	 * @param numMobs    the amount of mobs to spawn of this type
+	 * @return an array of <code>MobEntity</code> containing the spawned entities
+	 */
 	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 
 		ILivingEntityData ilivingentitydata = null;
@@ -83,7 +106,7 @@ public class RaidSpawningManager {
 		for (int i = 0; i < numMobs; i++) {
 
 			BlockPos spawnPos = findSpawnPos(entityType);
-			
+
 			if (entityType.equals(EntityType.PHANTOM)) {
 				mobs[i] = EntityType.PHANTOM.create(world);
 				mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
@@ -95,14 +118,21 @@ public class RaidSpawningManager {
 				mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos,
 						SpawnReason.MOB_SUMMONED, false, false);
 			}
-			
-			if(mobs[i] != null) {
+
+			if (mobs[i] != null) {
 				BaseraidsEntityManager.setupGoals(mobs[i]);
 			}
 		}
 		return mobs;
 	}
 
+	/**
+	 * Finds and returns a compatible spawn position for the given entity type. The
+	 * position is selected randomly on a circle around the nexus block.
+	 * 
+	 * @param entityType
+	 * @return compatible spawn position
+	 */
 	private BlockPos findSpawnPos(EntityType<?> entityType) {
 		int radius = 50;
 		double angleInterval = 2 * Math.PI / 100;
@@ -131,6 +161,10 @@ public class RaidSpawningManager {
 		return spawnPos;
 	}
 
+	/**
+	 * @return <code>true</code>, if and only if all mobs that were spawned by this
+	 *         object are dead.
+	 */
 	boolean areAllSpawnedMobsDead() {
 		if (spawnedMobs.isEmpty())
 			return false;
@@ -143,6 +177,28 @@ public class RaidSpawningManager {
 		return true;
 	}
 
+	/**
+	 * Kills all mobs that were spawned by this object.
+	 */
+	void killAllMobs() {
+		spawnedMobs.forEach(mob -> {
+			mob.remove();
+		});
+		spawnedMobs.clear();
+	}
+
+	/**
+	 * Reads the UUIDs of the mobs stored in the given <code>CompoundNBT</code> and
+	 * recovers the entities from the serverWorld. This function assumes that the
+	 * nbt was previously written by this class or to be precise, that the nbt
+	 * includes certain elements.
+	 * 
+	 * @param nbt         the nbt that will be read out. It is assumed to include
+	 *                    certain elements.
+	 * @param serverWorld the world that is loaded. It is used in the
+	 *                    <code>RaidSpawningManager</code> to get references to
+	 *                    previously spawned mobs.
+	 */
 	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
@@ -162,10 +218,16 @@ public class RaidSpawningManager {
 			spawnedMobs.add((MobEntity) entity);
 			index++;
 		}
-		
-		spawnedMobs.forEach(mob -> BaseraidsEntityManager.setupGoals(mob));		
+
+		spawnedMobs.forEach(mob -> BaseraidsEntityManager.setupGoals(mob));
 	}
 
+	/**
+	 * Saves the UUIDs of the spawned mobs to a <code>CompoundNBT</code> and returns
+	 * the <code>CompoundNBT</code> object.
+	 * 
+	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 */
 	CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
 
@@ -185,11 +247,6 @@ public class RaidSpawningManager {
 
 	void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
 		readSpawnedMobsList(nbt, serverWorld);
-	}
-
-	void killAllMobs() {
-		spawnedMobs.forEach(mob ->{ mob.remove();});
-		spawnedMobs.clear();
 	}
 
 }
