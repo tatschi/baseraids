@@ -8,4 +8,4 @@ For more detailed information about what this mod does, see the [wiki](https://g
 **WARNING: This mod is in early development. Please backup your save files before using it and don't expect it to work without bugs.**
 
 # Download and Install
-You can download the latest release on the right under "Releases" or on <TODO: curseforge link>. Download the .jar file and place it in your ".minecraft/mods" folder. A compatible forge version (compatible with the given minecraft version number) must be installed. For more info on installing forge mods, see [How to install Mods for Minecraft Forge](https://www.minecraftmods.com/how-to-install-mods-for-minecraft-forge/).
+You can download the latest release on the right under "Releases" or on [curseforge.com](https://www.curseforge.com/minecraft/mc-mods/baseraids). Download the .jar file and place it in your ".minecraft/mods" folder. A compatible forge version (compatible with the given minecraft version number) must be installed. For more info on installing forge mods, see [How to install Mods for Minecraft Forge](https://www.minecraftmods.com/how-to-install-mods-for-minecraft-forge/).
