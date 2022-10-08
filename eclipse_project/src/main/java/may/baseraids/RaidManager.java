@@ -9,16 +9,19 @@ import com.google.common.collect.Sets;
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity.SleepResult;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -44,6 +47,11 @@ public class RaidManager {
 	private int lastRaidGameTime = -1;
 
 	public static final int MAX_RAID_LEVEL = 7, MIN_RAID_LEVEL = 1;
+	
+	/**
+	 * defines the amount of ticks of one full minecraft day
+	 */
+	private static final int FULL_DAY_TICKS = 24000;
 	/**
 	 * defines the world.daytime at which it starts to be night (one day = 24000)
 	 */
@@ -148,7 +156,7 @@ public class RaidManager {
 		if (getTimeSinceRaid() < ConfigOptions.timeBetweenRaids.get()) {
 			return false;
 		}
-		if (START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % 24000) {
+		if (START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % FULL_DAY_TICKS) {
 			return false;
 		}
 
@@ -281,6 +289,19 @@ public class RaidManager {
 			Baseraids.LOGGER.error("Could not add loot to loot chest");
 		}
 	}
+	
+	/**
+	 * Forbids the player to sleep in bed when a raid is coming in less than a day
+	 * @param event the event of type <code>PlayerSleepInBedEvent</code> that
+	 *              triggers this function
+	 */
+	@SubscribeEvent
+	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
+		if(isRaidActive() || getTimeUntilRaid() < FULL_DAY_TICKS) {
+			event.setResult(SleepResult.OTHER_PROBLEM);
+			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before or during a raid!"), true);
+		}				
+	}
 
 	/**
 	 * Gets the time in ticks until the next raid with considering only the
@@ -306,7 +327,7 @@ public class RaidManager {
 		int rawTimeUntilRaid = getRawTimeUntilRaid();
 
 		long rawTimeOfNextRaid = curTime + rawTimeUntilRaid;
-		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % 24000;
+		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % FULL_DAY_TICKS;
 
 		int normalizeDiff = (24000 - START_OF_DAY_IN_WORLD_DAY_TIME);
 		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff;
