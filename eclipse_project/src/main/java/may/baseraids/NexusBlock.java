@@ -14,9 +14,6 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
@@ -30,8 +27,8 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 /**
  * This class handles the nexus block and its special behavior that ensures that
@@ -43,7 +40,8 @@ import net.minecraftforge.items.CapabilityItemHandler;
  * given a nexus. @see onPlayerLogInAndStateUNINITIALZED_giveNexus
  * <li>When a player exits a world and has the nexus in his inventory, it is
  * attempted to give the nexus to another player on the server and remove it
- * from the player that is logging out. @see onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore
+ * from the player that is logging out. @see
+ * onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore
  * <li>When the nexus is not placed as a block, a debuff is added to every
  * player in the world. @see onWorldTick_addDebuff
  * <li>When the nexus is block is broken by a player, the item is not dropped
@@ -143,13 +141,12 @@ public class NexusBlock extends Block implements IForgeBlock {
 			return;
 		}
 		// only apply debuff every time half the duration of the effect has passed
-		if (world.getGameTime() % (Debuff.DURATION / 2) != 0L) {
+		if (world.getGameTime() % (NexusEffects.DEBUFF.DURATION / 2) != 0L) {
 			return;
 		}
 
 		for (PlayerEntity playerentity : world.getPlayers()) {
-			playerentity
-					.addPotionEffect(new EffectInstance(Debuff.EFFECT, Debuff.DURATION, Debuff.AMPLIFIER, false, true));
+			playerentity.addPotionEffect(NexusEffects.getEffectInstance(NexusEffects.DEBUFF));
 		}
 	}
 
@@ -271,14 +268,17 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Attempts to transfer the nexus to another player when a player logs out with the nexus in his inventory.
-	 * If there are not other players on the server or the transfer was not successful, this method allows the log out with the nexus.
+	 * Attempts to transfer the nexus to another player when a player logs out with
+	 * the nexus in his inventory. If there are not other players on the server or
+	 * the transfer was not successful, this method allows the log out with the
+	 * nexus.
 	 * 
 	 * @param event the event of type <code>PlayerEvent.PlayerLoggedOutEvent</code>
 	 *              that triggers this method
 	 */
 	@SubscribeEvent
-	public static void onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore(final PlayerEvent.PlayerLoggedOutEvent event) {
+	public static void onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore(
+			final PlayerEvent.PlayerLoggedOutEvent event) {
 		PlayerEntity playerLogOut = event.getPlayer();
 		World world = playerLogOut.world;
 		if (world.isRemote())
@@ -286,10 +286,11 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!playerHasNexus(playerLogOut)) {
 			return;
 		}
-		
+
 		Baseraids.LOGGER.debug("PlayerLoggedOutEvent Player has nexus");
 
-		// If there are other players on the server, randomly gives the nexus to one of the other players.
+		// If there are other players on the server, randomly gives the nexus to one of
+		// the other players.
 		// Otherwise, this allows the log out with the nexus.
 		List<? extends PlayerEntity> playerList = world.getPlayers();
 		playerList.remove(playerLogOut);
@@ -331,7 +332,8 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (playerHasNexus(player)) {
 			// In some situations, the nexus could be in the inventory and the state could
 			// be State.BLOCK at the same time.
-			// In any case, we should make sure the state is set to State.ITEM here to stay consistent.
+			// In any case, we should make sure the state is set to State.ITEM here to stay
+			// consistent.
 			Baseraids.LOGGER.warn("NexusBlock already exists in player's inventory");
 			setState(State.ITEM);
 			return true;
@@ -343,10 +345,10 @@ public class NexusBlock extends Block implements IForgeBlock {
 			return false;
 		}
 		Baseraids.LOGGER.debug("Successfully added nexus to player's inventory");
-		setState(State.ITEM);	
+		setState(State.ITEM);
 		return true;
 	}
-	
+
 	/**
 	 * Attempts to give the nexus to a random player from a specified list of
 	 * players. As long as it's not successfull, it selects a new random player from
@@ -367,9 +369,10 @@ public class NexusBlock extends Block implements IForgeBlock {
 		} while (playerList.size() <= 0);
 		return false;
 	}
-	
+
 	/**
-	 * Removes all nexus items from the player's inventory and returns a flag whether it was successful.
+	 * Removes all nexus items from the player's inventory and returns a flag
+	 * whether it was successful.
 	 * 
 	 * @param player the player to remove the items from
 	 * @return a flag whether the method was successful
@@ -409,7 +412,8 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the <code>CompoundNBT</code> object.
+	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the
+	 * <code>CompoundNBT</code> object.
 	 * 
 	 * @return the adapted <code>CompoundNBT</code> that was written to
 	 */
@@ -422,13 +426,4 @@ public class NexusBlock extends Block implements IForgeBlock {
 		return nbt;
 	}
 
-	/**
-	 * This class specifies the properties of the slowness debuff that will be added
-	 * to all players, if there is no nexus placed in the world.
-	 */
-	private static class Debuff {
-		final static Effect EFFECT = Effects.SLOWNESS;
-		final static int AMPLIFIER = 0;
-		final static int DURATION = 200;
-	}
 }

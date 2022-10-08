@@ -1,10 +1,10 @@
 package may.baseraids;
 
+import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
@@ -21,11 +21,17 @@ import net.minecraft.util.math.BlockPos;
  */
 public class NexusEffectsTileEntity extends TileEntity implements ITickableTileEntity {
 
-	EffectInstance curEffect = null;
-	double effectDistance = 50D;
-
-	final static EffectInstance REGEN_EFFECT_AFTER_RAID_WIN = new EffectInstance(Effects.REGENERATION, 100, 0, false,
-			true);
+	NexusEffects.NexusEffect curEffect = null;
+	double effectDistance = 30D;
+	
+	List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(
+			Arrays.asList(NexusEffects.SPEEDBUFF_1),
+			Arrays.asList(NexusEffects.SPEEDBUFF_2),
+			Arrays.asList(NexusEffects.SPEEDBUFF_3),
+			Arrays.asList(NexusEffects.SPEEDBUFF_4),
+			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_1),
+			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_2),
+			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_2, NexusEffects.LUCKBUFF));
 
 	public NexusEffectsTileEntity() {
 		super(Baseraids.NEXUS_TILE_ENTITY_TYPE.get());
@@ -33,12 +39,14 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 	public void tick() {
 		if(world.isRemote) return;
-		addEffectsToPlayers();
-
 		
 		if (this.world.getGameTime() % 40L == 0L) {
-
-			this.addEffectsToPlayers();
+			
+			// add effects
+			List<NexusEffects.NexusEffect> curEffects = effects.get(Baseraids.baseraidsData.raidManager.getRaidLevel()-1);
+			curEffects.forEach(x -> this.addEffectsToPlayers(NexusEffects.getEffectInstance(x)));
+			
+			// play sound
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
 				this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
 			} else {								
@@ -61,14 +69,11 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	 * Adds the effect <code>curEffect</code> to all players in the distance
 	 * <code>effectDistance</code>.
 	 */
-	private void addEffectsToPlayers() {
+	public void addEffectsToPlayers(EffectInstance effect) {
 		if (world.isRemote) {
 			return;
 		}
-		if (curEffect == null) {
-			return;
-		}
-		if (world.getGameTime() % (curEffect.getDuration() / 2) != 0) {
+		if (effect == null) {
 			return;
 		}
 
@@ -77,7 +82,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 		List<PlayerEntity> list = world.getEntitiesWithinAABB(PlayerEntity.class, axisalignedbb);
 		for (PlayerEntity playerentity : list) {
-			playerentity.addPotionEffect(curEffect);
+			playerentity.addPotionEffect(effect);
 		}
 	}
 

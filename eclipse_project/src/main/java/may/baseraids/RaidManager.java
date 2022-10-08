@@ -255,6 +255,8 @@ public class RaidManager {
 		endRaid();
 
 		playWinSound();
+		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.baseraidsData.serverWorld.getTileEntity(NexusBlock.getBlockPos());
+		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 	}
 
 	/**
