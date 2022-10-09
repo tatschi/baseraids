@@ -84,7 +84,7 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 * @return an instance of this class which contains the loaded data
 	 */
 	public static BaseraidsWorldSavedData get(ServerWorld world) {
-		Baseraids.LOGGER.info("loading baseraidsSavedData");
+		Baseraids.LOGGER.info("collecting baseraidsSavedData");
 		DimensionSavedDataManager manager = world.getSavedData();
 		BaseraidsWorldSavedData worldSavedDataInstance = manager.getOrCreate(() -> new BaseraidsWorldSavedData(world),
 				DATA_NAME);

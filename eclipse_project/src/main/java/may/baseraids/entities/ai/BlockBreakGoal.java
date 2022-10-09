@@ -122,7 +122,6 @@ public class BlockBreakGoal extends Goal {
 				this.entity.swingArm(this.entity.getActiveHand());
 			}
 		}
-		Baseraids.LOGGER.info("BlockBreakGoal#tick tick");
 
 		// initialize the value if there is none for this block
 		globalBreakingProgress.putIfAbsent(curFocusedBlock, 0);
@@ -133,7 +132,6 @@ public class BlockBreakGoal extends Goal {
 
 		int i = (int) ((float) globalBreakingProgress.get(curFocusedBlock) / (float) curTimeToBreak * 10.0F);
 		if (i != previousBreakProgress.getOrDefault(curFocusedBlock, -1)) {
-			Baseraids.LOGGER.info("BlockBreakGoal#tick Send Block break progress");
 			// TODO sound design
 			entity.world.sendBlockBreakProgress(entity.getEntityId(), curFocusedBlock, i);
 

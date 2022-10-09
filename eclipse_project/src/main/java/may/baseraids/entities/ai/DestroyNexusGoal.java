@@ -76,7 +76,6 @@ public class DestroyNexusGoal extends Goal {
 			// send progress every time i was increased (so every timeToBreak / 10 ticks)
 			int i = (int) ((float) globalBreakingProgress.get() / (float) timeToBreak * 10.0F);
 			if (i != previousBreakProgress.get()) {
-				Baseraids.LOGGER.info("Send Block break progress");
 
 				entity.world.sendBlockBreakProgress(entity.getEntityId(), nexusPos, i);
 
@@ -87,7 +86,7 @@ public class DestroyNexusGoal extends Goal {
 				if (globalBreakingProgress.get() == timeToBreak) {
 					// break the block after timeToBreak ticks (block should stay though)
 
-					Baseraids.LOGGER.info("Break block");
+					Baseraids.LOGGER.info("Break nexus");
 					globalBreakingProgress.set(0);
 					this.entity.world.sendBlockBreakProgress(-1, nexusPos, -1);
 					// entity.world.removeBlock(nexusPos, false);
