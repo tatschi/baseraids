@@ -47,6 +47,11 @@ public class RaidSpawningManager {
 	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 10, 3, 2 }, { 12, 5, 4 },
 			{ 15, 6, 5 }, { 25, 10, 8 }, { 30, 15, 10 } };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
+	
+	// spawning parameters
+	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / 100;
+	private static final int SPAWN_RADIUS_MIN = 40;
+	private static final int SPAWN_RADIUS_MAX = 60;
 
 	public RaidSpawningManager(RaidManager raidManager, World world) {
 		this.raidManager = raidManager;
@@ -141,20 +146,22 @@ public class RaidSpawningManager {
 	 * @return compatible spawn position
 	 */
 	private BlockPos findSpawnPos(EntityType<?> entityType) {
-		int radius = 50;
-		double angleInterval = 2 * Math.PI / 100;
-		BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
+		Random r = new Random();		
+		
+		// select random radius between SPAWN_RADIUS_MIN and SPAWN_RADIUS_MAX
+		int radius = r.nextInt(SPAWN_RADIUS_MAX-SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
+		
+		// select random angle
+		int randomAngleIndex = r.nextInt(100);
+		double angle = randomAngleIndex * SPAWN_ANGLE_INTERVAL;
 
-		// find random coordinates in a circle around the nexus to spawn the current mob
-		Random r = new Random();
-		int randomAngle = r.nextInt(100);
-		double angle = randomAngle * angleInterval;
-
+		// compute coordinates x and z for the radius and angle
 		int x = (int) (radius * Math.cos(angle));
 		int z = (int) (radius * Math.sin(angle));
+		BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
 		BlockPos spawnPosXZ = centerSpawnPos.add(x, 0, z);
 
-		// find the right height
+		// find the right height at which this entity type can be spawned
 		BlockPos spawnPos;
 		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
 				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
