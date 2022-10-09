@@ -138,7 +138,7 @@ public class RaidManager {
 			return;
 		}
 
-		Baseraids.sendChatMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
+		Baseraids.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec < 5) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
 					1.0F, 1.0F);
@@ -201,7 +201,7 @@ public class RaidManager {
 		if (!world.getDimensionKey().equals(World.OVERWORLD))
 			return;
 
-		Baseraids.sendChatMessage("You are being raided!");
+		Baseraids.sendStatusMessage("You are being raided!");
 		Baseraids.LOGGER.info("Initiating raid");
 
 		setLastRaidGameTime((int) (world.getGameTime()));
@@ -218,7 +218,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid lost");
-		Baseraids.sendChatMessage("You lost the raid!");
+		Baseraids.sendStatusMessage("You lost the raid!");
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		resetRaidLevel();
@@ -246,7 +246,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
-		Baseraids.sendChatMessage("You won the raid!");
+		Baseraids.sendStatusMessage("You won the raid!");
 
 		spawnAndFillRewardChest();
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
@@ -264,7 +264,7 @@ public class RaidManager {
 	 * mobs spawned by the raid.
 	 */
 	private void endRaid() {
-		Baseraids.sendChatMessage("Your next raid will have level " + curRaidLevel);
+		Baseraids.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
 		setRaidActive(false);
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
@@ -334,8 +334,6 @@ public class RaidManager {
 		int normalizeDiff = (24000 - START_OF_DAY_IN_WORLD_DAY_TIME);
 		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff;
 
-		// TODO START_OF_DAY_IN_WORLD_DAY_TIME < rawDayTimeOfNextRaid funktioniert nicht
-		// für z.B. 0
 		if (0 < normalizedRawDayTimeOfNextRaid
 				&& normalizedRawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME + normalizeDiff) {
 			long timeOfNextRaid = rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid;

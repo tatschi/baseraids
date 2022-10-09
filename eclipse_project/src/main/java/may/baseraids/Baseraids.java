@@ -197,14 +197,24 @@ public class Baseraids {
 	}
 
 	/**
-	 * Sends a string message in the in-game chat to all players on the server.
+	 * Sends a status message to all players on the server.
 	 * 
 	 * @param message the string that is sent in the chat
 	 */
-	public static void sendChatMessage(String message) {
+	public static void sendStatusMessage(String message) {
+		sendStatusMessage(message, true);
+	}
+	
+	/**
+	 * Sends a status message to all players on the server.
+	 * 
+	 * @param message the string that is sent in the chat
+	 * @param actionBar boolean whether to show the message in the actionBar (true) or in the chat (false)
+	 */
+	public static void sendStatusMessage(String message, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message);
-		ServerLifecycleHooks.getCurrentServer().getPlayerList().func_232641_a_(new StringTextComponent(message), ChatType.SYSTEM, Util.DUMMY_UUID);
-		//ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(player -> sendChatMessage(message, player));
+		//ServerLifecycleHooks.getCurrentServer().getPlayerList().func_232641_a_(new StringTextComponent(message), ChatType.SYSTEM, Util.DUMMY_UUID);
+		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
 	}
 
 	/**
@@ -213,9 +223,20 @@ public class Baseraids {
 	 * @param message the string that is sent in the chat
 	 * @param player  the player that the message is sent to
 	 */
-	public static void sendChatMessage(String message, PlayerEntity player) {
+	public static void sendStatusMessage(String message, PlayerEntity player) {
+		sendStatusMessage(message, player, true);
+	}
+	
+	/**
+	 * Sends a string message in the in-game chat to a specific player.
+	 * 
+	 * @param message the string that is sent in the chat
+	 * @param player  the player that the message is sent to
+	 * @param actionBar boolean whether to show the message in the actionBar (true) or in the chat (false)
+	 */
+	public static void sendStatusMessage(String message, PlayerEntity player, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message + "\" to " + player.getDisplayName().getString());
-		player.sendMessage(new StringTextComponent(message), Util.DUMMY_UUID);
+		player.sendStatusMessage(new StringTextComponent(message), actionBar);
 	}
 
 }
