@@ -25,6 +25,10 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	NexusEffects.NexusEffect curEffect = null;
 	double effectDistance = 30D;
 
+	/**
+	 * For each raid level, this list holds a list of effects that will be applied
+	 * to nearby players.
+	 */
 	List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(Arrays.asList(NexusEffects.SPEEDBUFF_1),
 			Arrays.asList(NexusEffects.SPEEDBUFF_2), Arrays.asList(NexusEffects.SPEEDBUFF_3),
 			Arrays.asList(NexusEffects.SPEEDBUFF_4), Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_1),
@@ -52,8 +56,8 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
 				}
 			} else {
-				if(ConfigOptions.enableSoundNexusAmbient.get()) {
-					this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);	
+				if (ConfigOptions.enableSoundNexusAmbient.get()) {
+					this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 				}
 			}
 

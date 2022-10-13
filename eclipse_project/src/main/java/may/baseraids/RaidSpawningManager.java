@@ -40,14 +40,20 @@ public class RaidSpawningManager {
 
 	private World world;
 	private RaidManager raidManager;
+	/** A list of all spawned mobs for managing active raids */
 	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
-	/** UUIDs only used for saving and loading */
+	/**
+	 * A list of UUIDs for all spawned mobs. Only used and updated when saving and
+	 * loading.
+	 */
 	private List<UUID> spawnedMobsUUIDs = new ArrayList<UUID>();
 
+	private static final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { EntityType.ZOMBIE, EntityType.SKELETON,
+			EntityType.SPIDER };
 	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 10, 3, 2 }, { 12, 5, 4 },
 			{ 15, 6, 5 }, { 25, 10, 8 }, { 30, 15, 10 } };
 	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-	
+
 	// spawning parameters
 	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / 100;
 	private static final int SPAWN_RADIUS_MIN = 40;
@@ -64,8 +70,6 @@ public class RaidSpawningManager {
 	 * Sets the amount of mobs to spawn at each raid level.
 	 */
 	void setAmountOfMobsToSpawn() {
-		final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER };
-
 		for (int curLevel = 0; curLevel < RaidManager.MAX_RAID_LEVEL; curLevel++) {
 			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
 
@@ -146,11 +150,11 @@ public class RaidSpawningManager {
 	 * @return compatible spawn position
 	 */
 	private BlockPos findSpawnPos(EntityType<?> entityType) {
-		Random r = new Random();		
-		
+		Random r = new Random();
+
 		// select random radius between SPAWN_RADIUS_MIN and SPAWN_RADIUS_MAX
-		int radius = r.nextInt(SPAWN_RADIUS_MAX-SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
-		
+		int radius = r.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
+
 		// select random angle
 		int randomAngleIndex = r.nextInt(100);
 		double angle = randomAngleIndex * SPAWN_ANGLE_INTERVAL;
@@ -205,11 +209,10 @@ public class RaidSpawningManager {
 	}
 
 	/**
-	 * Reads and stores the UUIDs of the mobs stored in the given <code>CompoundNBT</code>,
-	 * so that they can be recovered when they are spawned into the world.
-	 * This function assumes that the
-	 * nbt was previously written by this class or to be precise, that the nbt
-	 * includes certain elements.
+	 * Reads and stores the UUIDs of the mobs stored in the given
+	 * <code>CompoundNBT</code>, so that they can be recovered when they are spawned
+	 * into the world. This function assumes that the nbt was previously written by
+	 * this class or to be precise, that the nbt includes certain elements.
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
@@ -217,16 +220,16 @@ public class RaidSpawningManager {
 	 *                    <code>RaidSpawningManager</code> to get references to
 	 *                    previously spawned mobs.
 	 */
-	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {		
+	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
 		spawnedMobsUUIDs.clear();
-		
-		for(int index = 0; index < spawnedMobsList.size(); index++) {
+
+		for (int index = 0; index < spawnedMobsList.size(); index++) {
 			CompoundNBT compoundNBT = (CompoundNBT) spawnedMobsList.getCompound(index);
 			UUID entityUUID = compoundNBT.getUniqueId("ID" + index);
 			Baseraids.LOGGER.debug("reading entity with ID " + entityUUID);
-			spawnedMobsUUIDs.add(entityUUID);			
+			spawnedMobsUUIDs.add(entityUUID);
 		}
 	}
 
@@ -237,14 +240,14 @@ public class RaidSpawningManager {
 	 * @return the adapted <code>CompoundNBT</code> that was written to
 	 */
 	CompoundNBT writeAdditional() {
-		
+
 		CompoundNBT nbt = new CompoundNBT();
 
 		ListNBT spawnedMobsList = new ListNBT();
 		int index = 0;
 		for (MobEntity mob : spawnedMobs) {
 			CompoundNBT compound = new CompoundNBT();
-			
+
 			compound.putUniqueId("ID" + index, mob.getUniqueID());
 			Baseraids.LOGGER.debug("writing entity with UUID " + mob.getUniqueID());
 			spawnedMobsList.add(compound);
@@ -255,34 +258,39 @@ public class RaidSpawningManager {
 		return nbt;
 	}
 
-	
-	
 	void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
 		readSpawnedMobsList(nbt, serverWorld);
 	}
-	
+
+	/**
+	 * Recovers the spawned mobs after saving and loading by comparing the UUIDs
+	 * when they are loaded by the game.
+	 * 
+	 * @param event the event of type <code>EntityJoinWorldEvent</code> that
+	 *              triggers this function
+	 */
 	@SubscribeEvent
 	public void onEntityJoinWorld(final EntityJoinWorldEvent event) {
-		if(event.getWorld().isRemote()) {
+		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if(!event.getWorld().equals(world)) {
+		if (!event.getWorld().equals(world)) {
 			return;
 		}
-		
+
 		Entity entity = event.getEntity();
-		if(!(entity instanceof MobEntity)) {
+		if (!(entity instanceof MobEntity)) {
 			return;
 		}
-		
+
 		UUID uuid = entity.getUniqueID();
-		if(!spawnedMobsUUIDs.contains(uuid)) {
+		if (!spawnedMobsUUIDs.contains(uuid)) {
 			return;
 		}
-		
+
 		spawnedMobsUUIDs.remove(uuid);
 		MobEntity mob = (MobEntity) entity;
-		spawnedMobs.add(mob);		
+		spawnedMobs.add(mob);
 		BaseraidsEntityManager.setupGoals(mob);
 		Baseraids.baseraidsData.setDirty(true);
 	}

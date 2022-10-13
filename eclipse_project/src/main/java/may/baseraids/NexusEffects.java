@@ -8,10 +8,15 @@ import net.minecraft.potion.Effects;
  * This class holds and provides the effects for the nexus.
  * 
  * @author Natascha May
- * @since TODO
+ * @since 1.16.4-0.0.1.0
  */
 public class NexusEffects {
 	
+	/**
+	 * Gets a new EffectInstance for a given predefined NexusEffect.
+	 * @param effect
+	 * @return
+	 */
 	public static EffectInstance getEffectInstance(NexusEffect effect) {
 		return new EffectInstance(effect.EFFECT, effect.DURATION, effect.AMPLIFIER);
 	}
@@ -35,9 +40,7 @@ public class NexusEffects {
 	
 	public static final NexusEffect REGEN_EFFECT_AFTER_RAID_WIN = new NexusEffect(Effects.REGENERATION, 200, 0);
 	
-	/*
-	 * speed buffs with increasing value 
-	 */
+	// speed buffs with increasing value
 	public static final NexusEffect SPEEDBUFF_1 = new NexusEffect(Effects.SPEED, 200, 0);
 	
 	public static final NexusEffect SPEEDBUFF_2 = new NexusEffect(Effects.SPEED, 400, 0);

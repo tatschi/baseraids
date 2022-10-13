@@ -17,8 +17,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -76,7 +74,6 @@ public class Baseraids {
 	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
-	//public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low_aggressive", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low_aggressive")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
 	public static BaseraidsWorldSavedData baseraidsData;
@@ -213,7 +210,6 @@ public class Baseraids {
 	 */
 	public static void sendStatusMessage(String message, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message);
-		//ServerLifecycleHooks.getCurrentServer().getPlayerList().func_232641_a_(new StringTextComponent(message), ChatType.SYSTEM, Util.DUMMY_UUID);
 		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
 	}
 
