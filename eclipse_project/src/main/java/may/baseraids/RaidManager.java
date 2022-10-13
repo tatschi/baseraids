@@ -47,7 +47,7 @@ public class RaidManager {
 	private int lastRaidGameTime = -1;
 
 	public static final int MAX_RAID_LEVEL = 7, MIN_RAID_LEVEL = 1;
-	
+
 	/**
 	 * defines the amount of ticks of one full minecraft day
 	 */
@@ -139,7 +139,7 @@ public class RaidManager {
 		}
 
 		Baseraids.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
-		if (timeUntilRaidInSec < 5) {
+		if (timeUntilRaidInSec < 5 && ConfigOptions.enableSoundCountdown.get()) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
 					1.0F, 1.0F);
 		}
@@ -190,8 +190,8 @@ public class RaidManager {
 	}
 
 	/**
-	 * Starts a raid. That means it sets the <code>lastRaidGameTime</code> and
-	 * the <code>isRaidActive</code> and calls the spawning of the mobs.
+	 * Starts a raid. That means it sets the <code>lastRaidGameTime</code> and the
+	 * <code>isRaidActive</code> and calls the spawning of the mobs.
 	 */
 	public void startRaid() {
 		if (world == null) {
@@ -228,13 +228,17 @@ public class RaidManager {
 	}
 
 	private void playWinSound() {
-		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F,
-				1.0F);
+		if (ConfigOptions.enableSoundWinLose.get()) {
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F,
+					1.0F);
+		}
 	}
 
 	private void playLoseSound() {
-		world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F,
-				1.0F);
+		if (ConfigOptions.enableSoundWinLose.get()) {
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F,
+					1.0F);
+		}
 	}
 
 	/**
@@ -255,7 +259,9 @@ public class RaidManager {
 		endRaid();
 
 		playWinSound();
-		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.baseraidsData.serverWorld.getTileEntity(NexusBlock.getBlockPos());
+
+		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.baseraidsData.serverWorld
+				.getTileEntity(NexusBlock.getBlockPos());
 		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 	}
 
@@ -291,18 +297,20 @@ public class RaidManager {
 			Baseraids.LOGGER.error("Could not add loot to loot chest");
 		}
 	}
-	
+
 	/**
 	 * Forbids the player to sleep in bed when a raid is coming in less than a day
+	 * 
 	 * @param event the event of type <code>PlayerSleepInBedEvent</code> that
 	 *              triggers this function
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-		if(isRaidActive() || getTimeUntilRaid() < FULL_DAY_TICKS) {
+		if (isRaidActive() || getTimeUntilRaid() < FULL_DAY_TICKS) {
 			event.setResult(SleepResult.OTHER_PROBLEM);
-			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before or during a raid!"), true);
-		}				
+			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before or during a raid!"),
+					true);
+		}
 	}
 
 	/**
@@ -392,8 +400,8 @@ public class RaidManager {
 	}
 
 	/**
-	 * Saves data relevant for the RaidManager: Writes the necessary data to a <code>CompoundNBT</code> and returns the
-	 * <code>CompoundNBT</code> object.
+	 * Saves data relevant for the RaidManager: Writes the necessary data to a
+	 * <code>CompoundNBT</code> and returns the <code>CompoundNBT</code> object.
 	 * 
 	 * @return the adapted <code>CompoundNBT</code> that was written to
 	 */

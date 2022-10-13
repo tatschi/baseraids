@@ -17,7 +17,14 @@ public class ConfigOptions {
 	public static ForgeConfigSpec.IntValue maxRaidDuration;	
 	public static ForgeConfigSpec.BooleanValue deactivateMonsterNightSpawn;
 	public static Vector3i lootChestPositionRelative;
+	
 	public static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
+	
+	// SOUNDS
+	public static ForgeConfigSpec.BooleanValue enableSoundWinLose;
+	public static ForgeConfigSpec.BooleanValue enableSoundRaidHeartbeat;
+	public static ForgeConfigSpec.BooleanValue enableSoundCountdown;
+	public static ForgeConfigSpec.BooleanValue enableSoundNexusAmbient;
 	
 	protected final static int MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT = 2;
 	public static final int[] LOOT_CHEST_POS_RELATIVE_DEFAULT = {0, 1, 0};
@@ -42,6 +49,21 @@ public class ConfigOptions {
 				.comment("Time it takes the monsters to break a block. Doubling the value will double the time. ")
 				.defineInRange(Baseraids.MODID + ".monsterBlockBreakingTimeMultiplier", MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT, 0, 100);
 	
+		enableSoundWinLose = builder
+				.comment("If set to true, the sounds after winning or losing a raid will be played.")
+				.define(Baseraids.MODID + ".enableSoundWinLose", true);
+		
+		enableSoundRaidHeartbeat = builder
+				.comment("If set to true, the heartbeat sound during a raid will be played.")
+				.define(Baseraids.MODID + ".enableSoundRaidHeartbeat", true);
+		
+		enableSoundCountdown = builder
+				.comment("If set to true, the sounds during the countdown before a raid will be played.")
+				.define(Baseraids.MODID + ".enableSoundCountdown", true);
+		
+		enableSoundNexusAmbient = builder
+				.comment("If set to true, the ambient sound of the nexus will be played.")
+				.define(Baseraids.MODID + ".enableSoundNexusAmbient", true);
 		
 		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
 	}	

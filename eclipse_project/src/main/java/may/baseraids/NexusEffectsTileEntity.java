@@ -3,6 +3,7 @@ package may.baseraids;
 import java.util.Arrays;
 import java.util.List;
 
+import may.baseraids.config.ConfigOptions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -23,13 +24,10 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 	NexusEffects.NexusEffect curEffect = null;
 	double effectDistance = 30D;
-	
-	List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(
-			Arrays.asList(NexusEffects.SPEEDBUFF_1),
-			Arrays.asList(NexusEffects.SPEEDBUFF_2),
-			Arrays.asList(NexusEffects.SPEEDBUFF_3),
-			Arrays.asList(NexusEffects.SPEEDBUFF_4),
-			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_1),
+
+	List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(Arrays.asList(NexusEffects.SPEEDBUFF_1),
+			Arrays.asList(NexusEffects.SPEEDBUFF_2), Arrays.asList(NexusEffects.SPEEDBUFF_3),
+			Arrays.asList(NexusEffects.SPEEDBUFF_4), Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_1),
 			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_2),
 			Arrays.asList(NexusEffects.SPEEDBUFF_4, NexusEffects.HASTEBUFF_2, NexusEffects.LUCKBUFF));
 
@@ -38,19 +36,25 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	}
 
 	public void tick() {
-		if(world.isRemote) return;
-		
+		if (world.isRemote)
+			return;
+
 		if (this.world.getGameTime() % 40L == 0L) {
-			
+
 			// add effects
-			List<NexusEffects.NexusEffect> curEffects = effects.get(Baseraids.baseraidsData.raidManager.getRaidLevel()-1);
+			List<NexusEffects.NexusEffect> curEffects = effects
+					.get(Baseraids.baseraidsData.raidManager.getRaidLevel() - 1);
 			curEffects.forEach(x -> this.addEffectsToPlayers(NexusEffects.getEffectInstance(x)));
-			
+
 			// play sound
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
-			} else {								
-				this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
+				if (ConfigOptions.enableSoundRaidHeartbeat.get()) {
+					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
+				}
+			} else {
+				if(ConfigOptions.enableSoundNexusAmbient.get()) {
+					this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);	
+				}
 			}
 
 		}
@@ -59,11 +63,10 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	public void playSoundWithPos(SoundEvent sound, float volume, float pitch) {
 		this.playSound(sound, this.pos, volume, pitch);
 	}
-	
+
 	public void playSound(SoundEvent sound, BlockPos pos, float volume, float pitch) {
 		this.world.playSound((PlayerEntity) null, pos, sound, SoundCategory.BLOCKS, volume, pitch);
 	}
-	
 
 	/**
 	 * Adds the effect <code>curEffect</code> to all players in the distance
