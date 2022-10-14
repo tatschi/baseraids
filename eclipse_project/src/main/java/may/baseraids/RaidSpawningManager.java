@@ -3,13 +3,14 @@ package may.baseraids;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import may.baseraids.entities.BaseraidsEntityManager;
+import may.baseraids.entities.RaidEntitySpawnCountRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
@@ -48,12 +49,6 @@ public class RaidSpawningManager {
 	 */
 	private List<UUID> spawnedMobsUUIDs = new ArrayList<UUID>();
 
-	private static final EntityType<?>[] ORDER_OF_MOBS_IN_ARRAY = { EntityType.ZOMBIE, EntityType.SKELETON,
-			EntityType.SPIDER };
-	private static final int[][] AMOUNT_OF_MOBS_DEFAULT = { { 10, 0, 0 }, { 10, 3, 0 }, { 10, 3, 2 }, { 12, 5, 4 },
-			{ 15, 6, 5 }, { 25, 10, 8 }, { 30, 15, 10 } };
-	private static HashMap<Integer, HashMap<EntityType<?>, Integer>> amountOfMobs = new HashMap<Integer, HashMap<EntityType<?>, Integer>>();
-
 	// spawning parameters
 	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / 100;
 	private static final int SPAWN_RADIUS_MIN = 40;
@@ -63,23 +58,7 @@ public class RaidSpawningManager {
 		this.raidManager = raidManager;
 		this.world = world;
 		MinecraftForge.EVENT_BUS.register(this);
-		setAmountOfMobsToSpawn();
-	}
-
-	/**
-	 * Sets the amount of mobs to spawn at each raid level.
-	 */
-	void setAmountOfMobsToSpawn() {
-		for (int curLevel = 0; curLevel < RaidManager.MAX_RAID_LEVEL; curLevel++) {
-			HashMap<EntityType<?>, Integer> hashMapForCurLevel = new HashMap<EntityType<?>, Integer>();
-
-			for (int curMob = 0; curMob < ORDER_OF_MOBS_IN_ARRAY.length; curMob++) {
-				hashMapForCurLevel.put(ORDER_OF_MOBS_IN_ARRAY[curMob], AMOUNT_OF_MOBS_DEFAULT[curLevel][curMob]);
-			}
-
-			amountOfMobs.put(curLevel + 1, hashMapForCurLevel);
-		}
-
+		RaidEntitySpawnCountRegistry.registerSpawnCounts();
 	}
 
 	/**
@@ -87,21 +66,20 @@ public class RaidSpawningManager {
 	 * and inputs the spawned entities into the list <code>spawnedMobs</code>.
 	 */
 	void spawnRaidMobs() {
-		HashMap<EntityType<?>, Integer> amountOfMobsToSpawn = amountOfMobs.get(raidManager.getRaidLevel());
-		if (amountOfMobs == null) {
-			Baseraids.LOGGER.error("Error while reading the amount of mobs to spawn: HashMap was null");
-		}
-		amountOfMobsToSpawn.forEach((type, num) -> {
+		int raidLevel = raidManager.getRaidLevel();
+		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
-			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, num);
+		entityTypesToSpawn.forEach(type -> {
+			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevel(type, raidLevel);
+			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
 			// remove nulls and convert to collection
 			Collection<MobEntity> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
 					.filter((entity) -> entity != null).collect(Collectors.toList());
 
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
-
 		});
+		
 		Baseraids.baseraidsData.setDirty(true);
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}

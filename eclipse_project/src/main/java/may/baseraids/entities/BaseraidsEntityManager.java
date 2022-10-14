@@ -20,6 +20,7 @@ import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.ZombieEntity;
+import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 
 /**
  * This class is used for setting up the default monsters with custom AI for raiding.
@@ -36,6 +37,7 @@ public class BaseraidsEntityManager {
 		setupsRegistry.put(EntityType.SPIDER, (entity) -> setupSpiderGoals((SpiderEntity) entity));
 		setupsRegistry.put(EntityType.SKELETON, (entity) -> setupSkeletonGoals((SkeletonEntity) entity));
 		setupsRegistry.put(EntityType.PHANTOM, (entity) -> setupPhantomGoals((PhantomEntity) entity));
+		setupsRegistry.put(EntityType.ZOMBIFIED_PIGLIN, (entity) -> setupZombifiedPiglinGoals((ZombifiedPiglinEntity) entity));
 	}
 	
 	public static void setupGoals(MobEntity entity) {
@@ -82,6 +84,16 @@ public class BaseraidsEntityManager {
 		
 		entity.goalSelector.addGoal(0, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+	}
+	
+	public static void setupZombifiedPiglinGoals(ZombifiedPiglinEntity entity) {
+		// remove unwanted goals
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(WaterAvoidingRandomWalkingGoal.class);
+		removeGoalsFromList(entity, goalClassesToRemove);
+		
+		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(3, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 	}
 	
 	/**
