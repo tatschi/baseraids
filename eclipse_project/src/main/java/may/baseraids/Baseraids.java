@@ -17,6 +17,8 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -233,6 +235,10 @@ public class Baseraids {
 	public static void sendStatusMessage(String message, PlayerEntity player, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message + "\" to " + player.getDisplayName().getString());
 		player.sendStatusMessage(new StringTextComponent(message), actionBar);
+	}
+	
+	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
+		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
 	}
 
 }
