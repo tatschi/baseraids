@@ -8,7 +8,6 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 
 /**
@@ -33,19 +32,27 @@ public class MoveTowardsNexusGoal extends Goal {
 
 	public boolean shouldExecute() {
 		nexusPos = NexusBlock.getBlockPos();
+		
+		
+		if(entity.getAttackTarget() != null || !raidManager.isRaidActive() || entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceReached) {
+			return false;
+		}
+		
 		Path path = entity.getNavigator().getPath();
-		return entity.getAttackTarget() == null && raidManager.isRaidActive()
-				&& entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) >= distanceReached
-				&& (path == null || !path.isFinished());
+		return (path == null || !path.isFinished());
 	}
 
 	public boolean shouldContinueExecuting() {
 		nexusPos = NexusBlock.getBlockPos();
 		Path path = entity.getNavigator().getPath();
-		;
-		return raidManager.isRaidActive() && entity.world instanceof ServerWorld
-				&& entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) >= distanceReached
-				&& (path == null || !path.isFinished());
+		boolean shouldContinueExecuting = true;
+		shouldContinueExecuting &= raidManager.isRaidActive();
+		shouldContinueExecuting &= entity.getAttackTarget() == null;
+		shouldContinueExecuting &= entity.world instanceof ServerWorld;
+		shouldContinueExecuting &= entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) >= distanceReached;
+		shouldContinueExecuting &= (path == null || !path.isFinished());
+		
+		return shouldContinueExecuting;
 	}
 
 	public void startExecuting() {
@@ -54,12 +61,10 @@ public class MoveTowardsNexusGoal extends Goal {
 
 	public void tick() {
 		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
-
 	}
 
 	public void resetTask() {
-		entity.getNavigator().clearPath();
-		entity.getLookController().setLookPosition(new Vector3d(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()));
+		entity.getLookController().setLookPosition(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
 	}
 
 }
