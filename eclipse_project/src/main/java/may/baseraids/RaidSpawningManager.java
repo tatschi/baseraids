@@ -15,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.nbt.CompoundNBT;
@@ -70,7 +71,7 @@ public class RaidSpawningManager {
 		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
 		entityTypesToSpawn.forEach(type -> {
-			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevel(type, raidLevel);
+			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevel(type, raidLevel-1);
 			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
 			// remove nulls and convert to collection
@@ -184,7 +185,7 @@ public class RaidSpawningManager {
 		});
 		spawnedMobs.clear();
 		Baseraids.baseraidsData.setDirty(true);
-	}
+	}	
 
 	/**
 	 * Reads and stores the UUIDs of the mobs stored in the given
