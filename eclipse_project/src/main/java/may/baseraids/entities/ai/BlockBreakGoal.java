@@ -1,15 +1,16 @@
 package may.baseraids.entities.ai;
 
 import java.util.EnumSet;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Random;
 
 import may.baseraids.Baseraids;
+import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
-import may.baseraids.config.ConfigOptions;
-import net.minecraft.block.Block;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
 /**
@@ -23,138 +24,150 @@ public class BlockBreakGoal extends Goal {
 
 	private MobEntity entity;
 	private RaidManager raidManager;
-
-	protected BlockPos curFocusedBlock;
-
-	protected static ConcurrentHashMap<BlockPos, Integer> globalBreakingProgress = new ConcurrentHashMap<BlockPos, Integer>();
-	protected static ConcurrentHashMap<BlockPos, Integer> previousBreakProgress = new ConcurrentHashMap<BlockPos, Integer>();
-
-	// time to break the block in ticks
-	protected int curTimeToBreak = 200;
-
- 	final static Vector3i[] focusableBlocksAroundEntity = {
- 			
- 			new Vector3i(0, 0, 0),
- 			new Vector3i(0, 0, 1),
- 			new Vector3i(0, 0, -1), 			
- 			
- 			new Vector3i(1, 0, 0),
- 			new Vector3i(1, 0, 1),
- 			new Vector3i(1, 0, -1),
- 			
- 			new Vector3i(-1, 0, 0),
- 			new Vector3i(-1, 0, 1),
- 			new Vector3i(-1, 0, -1),
- 			
- 			new Vector3i(-1, -1, 0),
- 			new Vector3i(-1, -1, 1),
- 			new Vector3i(-1, -1, -1),
- 			
- 			new Vector3i(0, 1, 0),
- 			new Vector3i(0, 1, 1),
- 			new Vector3i(0, 1, -1),
- 			
- 			new Vector3i(0, -1, 0),
- 			new Vector3i(0, -1, 1),
- 			new Vector3i(0, -1, -1),
- 			
- 			new Vector3i(1, 1, 0),
- 			new Vector3i(1, 1, 1),
- 			new Vector3i(1, 1, -1),
- 			
- 			new Vector3i(1, -1, 0),
- 			new Vector3i(1, -1, 1),
- 			new Vector3i(1, -1, -1),
- 			
- 			new Vector3i(-1, 1, 0),
- 			new Vector3i(-1, 1, 1),
- 			new Vector3i(-1, 1, -1),
- 			
- 	};    
 	
+	private static final int DAMAGE = 1;
+
+	protected BlockPos target = null;
+
+	final static Vector3i[] focusableBlocksAroundEntity = {
+
+			new Vector3i(0, 0, 0), new Vector3i(0, 0, 1), new Vector3i(0, 0, -1),
+
+			new Vector3i(1, 0, 0), new Vector3i(1, 0, 1), new Vector3i(1, 0, -1),
+
+			new Vector3i(-1, 0, 0), new Vector3i(-1, 0, 1), new Vector3i(-1, 0, -1),
+
+			new Vector3i(-1, -1, 0), new Vector3i(-1, -1, 1), new Vector3i(-1, -1, -1),
+
+			new Vector3i(0, 1, 0), new Vector3i(0, 1, 1), new Vector3i(0, 1, -1),
+
+			new Vector3i(0, -1, 0), new Vector3i(0, -1, 1), new Vector3i(0, -1, -1),
+
+			new Vector3i(1, 1, 0), new Vector3i(1, 1, 1), new Vector3i(1, 1, -1),
+
+			new Vector3i(1, -1, 0), new Vector3i(1, -1, 1), new Vector3i(1, -1, -1),
+
+			new Vector3i(-1, 1, 0), new Vector3i(-1, 1, 1), new Vector3i(-1, 1, -1),
+
+	};
+
 	public BlockBreakGoal(MobEntity entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
-		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET));
-		curFocusedBlock = new BlockPos(0, 0, 0);
+		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.LOOK));
 	}
 
 	@Override
 	public boolean shouldExecute() {
-		if (!raidManager.isRaidActive())
+		if (!raidManager.isRaidActive()) {
 			return false;
-
-		if (entity.getAIMoveSpeed() > 0) {
-			// cycle through possible blocks to destroy around the entity
-			BlockPos defaultFocusedBlock = this.entity.getPosition();
-			curFocusedBlock = defaultFocusedBlock;
-
-			for (Vector3i vec : focusableBlocksAroundEntity) {
-				curFocusedBlock = curFocusedBlock.add(vec);
-				if (entity.world.getBlockState(curFocusedBlock).isSolid()) {
-					float hardness = entity.world.getBlockState(curFocusedBlock).getBlockHardness(entity.world,
-							curFocusedBlock);
-					curTimeToBreak = ConfigOptions.monsterBlockBreakingTimeMultiplier.get()
-							* (int) Math.round(3 * (hardness + 80 * Math.log10(hardness + 1))
-									- 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
-					return true;
-				}
-				curFocusedBlock = defaultFocusedBlock;
-			}
+		}		
+		
+		if (entity.getAttackTarget() != null) {
+			return false;
 		}
-		return false;
-
+		
+		Path path = entity.getNavigator().getPath();
+		if (path != null && !path.isFinished()) {
+			return false;
+		}
+		
+		return true;
 	}
 
+	public boolean shouldContinueExecuting() {
+		if (!raidManager.isRaidActive()) {
+			return false;
+		}
+		
+		if (entity.getAttackTarget() != null) {
+			return false;
+		}
+		
+		Path path = entity.getNavigator().getPath();
+		if (path != null && !path.isFinished()) {
+			return false;
+		}
+		return true;
+	}
+	
 	public void startExecuting() {
-
+		
 	}
 
-	public void tick() {
+	public void tick() {		
+		if(target != null) {
+			attackTarget();
+		}else {
+			findTarget();
+		}	
+	}
+	
+	private void attackTarget() {
 		entity.setAggroed(true);
-		entity.getLookController().setLookPosition(curFocusedBlock.getX(), curFocusedBlock.getY(),
-				curFocusedBlock.getZ());
+		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(target));
 
 		// swing arm at random
 		if (this.entity.getRNG().nextInt(20) == 0) {
-
 			if (!this.entity.isSwingInProgress) {
 				this.entity.swingArm(this.entity.getActiveHand());
 			}
 		}
 
-		// initialize the value if there is none for this block
-		globalBreakingProgress.putIfAbsent(curFocusedBlock, 0);
-		// increment breaking progress
-		globalBreakingProgress.compute(curFocusedBlock, (k, V) -> V + 1);
-
-		// send progress every time i was increased (so every timeToBreak / 10 ticks)
-
-		int i = (int) ((float) globalBreakingProgress.get(curFocusedBlock) / (float) curTimeToBreak * 10.0F);
-		if (i != previousBreakProgress.getOrDefault(curFocusedBlock, -1)) {
-			// TODO sound design
-			entity.world.sendBlockBreakProgress(entity.getEntityId(), curFocusedBlock, i);
-
+		boolean wasBroken = raidManager.blockBreakProgressMng.addProgress(entity, target, DAMAGE);		
+		if(wasBroken) {
+			entity.getNavigator().clearPath();
 		}
-		previousBreakProgress.replace(curFocusedBlock, i);
-
-		synchronized (raidManager) {
-			if (globalBreakingProgress.get(curFocusedBlock) == curTimeToBreak) {
-				// break the block after timeToBreak ticks (block should stay though)
-
-				Baseraids.LOGGER.info("BlockBreakGoal#tick Break block");
-				globalBreakingProgress.remove(curFocusedBlock);
-				this.entity.world.sendBlockBreakProgress(-1, curFocusedBlock, -1);
-				entity.world.removeBlock(curFocusedBlock, false);
-				// TODO sound design
-				entity.world.playEvent(1021, curFocusedBlock, 0);
-				entity.world.playEvent(2001, curFocusedBlock,
-						Block.getStateId(entity.world.getBlockState(curFocusedBlock)));
-
-				entity.getNavigator().clearPath();
-			}
+	}
+	
+	private void findTarget() {		
+		BlockPos nexusPos = NexusBlock.getBlockPos();
+		Random r = new Random();
+		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).mul(4, 4, 4);
+		Vector3d jitteredLookVec = jitter.add(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
+		entity.getLookController().setLookPosition(jitteredLookVec);
+		
+		BlockPos focusedBlock = getFocusedBlock();
+		if(isAttackableBlock(focusedBlock)) {
+			target = focusedBlock;
 		}
-
+	}
+	
+	private BlockPos getFocusedBlock() {
+		return new BlockPos(entity.getLookController().getLookPosX(), entity.getLookController().getLookPosY(), entity.getLookController().getLookPosZ());
+	}
+	
+	private boolean isAttackableBlock(BlockPos pos) {
+		if (!entity.world.getBlockState(pos).isSolid()) {
+			return false;
+		}
+		
+		Vector3d nexusPos = Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos());
+		if(entity.getDistanceSq(nexusPos) <= pos.distanceSq(NexusBlock.getBlockPos())){
+			return false;
+		}
+		
+		// TODO check if we can see the block
+		
+		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
+		Vector3d lookVec = posVec.subtract(entity.getEyePosition(0)).normalize();
+		Vector3d vecToNexus = nexusPos.subtract(entity.getEyePosition(0)).normalize();
+		double dotProduct = lookVec.dotProduct(vecToNexus); 
+		
+		if(dotProduct < 0.7) {
+			return false;
+		}
+		
+		if(entity.getDistanceSq(posVec) > 1.5) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public void resetTask() {
+		entity.setAggroed(false);
+		target = null;
 	}
 
 }
