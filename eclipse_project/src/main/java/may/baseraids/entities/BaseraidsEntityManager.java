@@ -8,11 +8,13 @@ import java.util.function.Consumer;
 
 import may.baseraids.Baseraids;
 import may.baseraids.entities.ai.BlockBreakGoal;
+import may.baseraids.entities.ai.BlockBreakRangedGoal;
 import may.baseraids.entities.ai.DestroyNexusGoal;
 import may.baseraids.entities.ai.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.goal.LookRandomlyGoal;
 import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
@@ -69,12 +71,11 @@ public class BaseraidsEntityManager {
 
 	public static void setupSkeletonGoals(SkeletonEntity entity) {
 		// remove unwanted goals
-		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookRandomlyGoal.class);
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class, WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		
-		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
-		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
-		entity.goalSelector.addGoal(2, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new BlockBreakRangedGoal<SkeletonEntity>(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 	}
 
 	public static void setupPhantomGoals(PhantomEntity entity) {
