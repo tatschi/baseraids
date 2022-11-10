@@ -51,7 +51,7 @@ public class BaseraidsEntityManager {
 
 	public static void setupZombieGoals(ZombieEntity entity) {
 		// remove unwanted goals
-		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(ZombieEntity.AttackTurtleEggGoal.class,
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, ZombieEntity.AttackTurtleEggGoal.class,
 				LookRandomlyGoal.class, MoveThroughVillageGoal.class, WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		final List<Class<? extends TargetGoal>> targetClassesToRemove = Arrays.asList(HurtByTargetGoal.class);
@@ -65,7 +65,7 @@ public class BaseraidsEntityManager {
 
 	public static void setupSpiderGoals(SpiderEntity entity) {
 		// remove unwanted goals
-		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookRandomlyGoal.class, SpiderEntity.AttackGoal.class);
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class, SpiderEntity.AttackGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		final List<Class<? extends TargetGoal>> targetClassesToRemove = Arrays.asList(HurtByTargetGoal.class);
 		removeTargetsFromList(entity, targetClassesToRemove);
@@ -119,9 +119,8 @@ public class BaseraidsEntityManager {
 	 * @param entity              the entity from which to remove the goals
 	 * @param goalClassesToRemove a list of classes of the types of goals to remove
 	 */
-	private static void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {		
-		entity.goalSelector.getRunningGoals().filter((goal) -> goalClassesToRemove.contains(goal.getClass()))
-				.forEach((goal) -> entity.goalSelector.removeGoal(goal));
+	private static void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
+		entity.goalSelector.goals.removeIf((goal) -> goalClassesToRemove.contains(goal.getGoal().getClass()));
 	}
 	
 	/**
