@@ -35,12 +35,11 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 
 
 	// cooldown in ticks
-	private static final int ATTACK_COOLDOWN = 10;
+	private static final int ATTACK_COOLDOWN = 20;
 	
 	private int remainingCooldown = 0;
 	//private float maxAttackDistance = 20;
 	private BlockPos target = null;
-	private int seeTime;
 
 	public BlockBreakRangedGoal(T entity, RaidManager raidManager) {
 		this.entity = entity;
@@ -88,20 +87,16 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 	public void resetTask() {
 		super.resetTask();
 		this.entity.setAggroed(false);
-		this.seeTime = 0;
 		this.entity.resetActiveHand();
 		target = null;
 	}
 
 	public void tick() {
-		
-
 		if(target != null) {
 			attackTarget();
 		}else {
 			findTarget();
 		}		
-		
 	}
 	
 	private void attackTarget() {
