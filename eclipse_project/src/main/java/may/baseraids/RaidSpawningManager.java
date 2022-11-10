@@ -185,7 +185,11 @@ public class RaidSpawningManager {
 		});
 		spawnedMobs.clear();
 		Baseraids.baseraidsData.setDirty(true);
-	}	
+	}
+	
+	public boolean isEntityRaiding(LivingEntity entity) {
+		return spawnedMobs.contains(entity);
+	}
 
 	/**
 	 * Reads and stores the UUIDs of the mobs stored in the given
