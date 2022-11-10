@@ -10,6 +10,11 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceContext.BlockMode;
+import net.minecraft.util.math.RayTraceContext.FluidMode;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 
@@ -25,7 +30,7 @@ public class BlockBreakGoal extends Goal {
 	private RaidManager raidManager;
 	
 	private static final int DAMAGE = 1;
-	private static final int DISTANCE_TO_ALLOW_BREAKING = 2;
+	private static final float DISTANCE_TO_ALLOW_MELEE_BREAKING = 2.5f;
 
 	protected BlockPos target = null;
 
@@ -126,6 +131,7 @@ public class BlockBreakGoal extends Goal {
 		// Prioritize nexus if possible
 		if (isAttackableBlock(nexusPos)) {
 			target = nexusPos;
+			entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(target));
 			return;
 		}		
 		
@@ -155,15 +161,15 @@ public class BlockBreakGoal extends Goal {
 		}
 		
 		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
-		Vector3d lookVec = posVec.subtract(entity.getEyePosition(0)).normalize();
-
-		/*
-		// TODO check if we can see the block		
+		
+		// check if the entity can see the block
 		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(0), posVec, BlockMode.COLLIDER, FluidMode.ANY, entity));
 		if(rayTraceResult.getType() == RayTraceResult.Type.MISS) {
 			return false;
-		}*/
+		}		
 		
+		
+		Vector3d lookVec = posVec.subtract(entity.getEyePosition(0)).normalize();		
 		Vector3d vecToNexus = nexusPos.subtract(entity.getEyePosition(0)).normalize();
 		double dotProduct = lookVec.dotProduct(vecToNexus); 
 		
@@ -171,7 +177,7 @@ public class BlockBreakGoal extends Goal {
 			return false;
 		}
 		
-		if(entity.getDistanceSq(posVec) > DISTANCE_TO_ALLOW_BREAKING) {
+		if(entity.getDistanceSq(posVec) > DISTANCE_TO_ALLOW_MELEE_BREAKING) {
 			return false;
 		}
 		

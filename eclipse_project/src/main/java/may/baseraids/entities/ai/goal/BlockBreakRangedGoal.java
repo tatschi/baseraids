@@ -18,7 +18,12 @@ import net.minecraft.item.Items;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceContext.BlockMode;
+import net.minecraft.util.math.RayTraceContext.FluidMode;
 import net.minecraft.util.math.vector.Vector3d;
 
 /**
@@ -35,6 +40,7 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 
 	// cooldown in ticks
 	private static final int ATTACK_COOLDOWN = 20;
+	
 	
 	private int remainingCooldown = 0;
 	//private float maxAttackDistance = 20;
@@ -114,6 +120,7 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 		// Prioritize nexus if possible
 		if (isAttackableBlock(nexusPos)) {
 			target = nexusPos;
+			entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(target));
 			return;
 		}
 		
@@ -142,7 +149,16 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 			return false;
 		}
 		
+		
 		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
+		
+		// check if the entity can see the block
+		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(0), posVec, BlockMode.COLLIDER, FluidMode.ANY, entity));
+		if(rayTraceResult.getType() == RayTraceResult.Type.MISS) {
+			return false;
+		}
+		
+		
 		Vector3d lookVec = posVec.subtract(entity.getEyePosition(0)).normalize();
 		Vector3d vecToNexus = nexusPos.subtract(entity.getEyePosition(0)).normalize();
 		double dotProduct = lookVec.dotProduct(vecToNexus); 
