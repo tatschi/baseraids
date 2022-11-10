@@ -41,6 +41,8 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 	// cooldown in ticks
 	private static final int ATTACK_COOLDOWN = 20;
 	
+	private static final int MELEE_DAMAGE = 1;
+	private static final float DISTANCE_TO_ALLOW_MELEE_BREAKING = 2.5f;
 	
 	private int remainingCooldown = 0;
 	//private float maxAttackDistance = 20;
@@ -104,14 +106,19 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 		}		
 	}
 	
-	private void attackTarget() {
-		if(remainingCooldown == 0) {
-			remainingCooldown = ATTACK_COOLDOWN;
-			
-			attackBlockWithRangedAttack(getFocusedBlock());
+	private void attackTarget() {		
+		if(entity.getDistanceSq(Baseraids.getVector3dFromBlockPos(target)) > DISTANCE_TO_ALLOW_MELEE_BREAKING) {
+			// RANGED ATTACK
+			if(remainingCooldown == 0) {
+				remainingCooldown = ATTACK_COOLDOWN;			
+				attackBlockWithRangedAttack(getFocusedBlock());
+			}else {
+				remainingCooldown--;
+			}
 		}else {
-			remainingCooldown--;
-		}
+			// MELEE ATTACK
+			attackBlockMelee(getFocusedBlock());
+		}		
 	}
 	
 	private void findTarget() {
@@ -184,6 +191,23 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 				(float) (14 - entity.world.getDifficulty().getId() * 4));
 		entity.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (entity.getRNG().nextFloat() * 0.4F + 0.8F));
 		entity.world.addEntity(arrowEntity);		
+	}
+	
+	private void attackBlockMelee(BlockPos targetBlock) {
+		entity.setAggroed(true);
+		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(targetBlock));
+
+		// swing arm at random
+		if (this.entity.getRNG().nextInt(20) == 0) {
+			if (!this.entity.isSwingInProgress) {
+				this.entity.swingArm(this.entity.getActiveHand());
+			}
+		}
+
+		boolean wasBroken = raidManager.blockBreakProgressMng.addProgress(entity, target, MELEE_DAMAGE);		
+		if(wasBroken) {
+			entity.getNavigator().clearPath();
+		}
 	}
 	
 	private AbstractArrowEntity createArrowEntity() {
