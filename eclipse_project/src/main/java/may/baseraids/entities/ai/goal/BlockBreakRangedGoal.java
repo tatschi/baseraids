@@ -110,6 +110,13 @@ public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> ex
 	
 	private void findTarget() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
+		
+		// Prioritize nexus if possible
+		if (isAttackableBlock(nexusPos)) {
+			target = nexusPos;
+			return;
+		}
+		
 		Random r = new Random();
 		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).mul(2, 2, 2);
 		Vector3d jitteredLookVec = jitter.add(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
