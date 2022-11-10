@@ -15,7 +15,7 @@ public class RaidArrowEntity extends ArrowEntity {
 	RaidManager raidManager;
 	private static final int DAMAGE = 25;
 
-	protected RaidArrowEntity(World world, LivingEntity shooter, RaidManager raidManager) {
+	public RaidArrowEntity(World world, LivingEntity shooter, RaidManager raidManager) {
 		super(world, shooter);
 		this.raidManager = raidManager;
 	}

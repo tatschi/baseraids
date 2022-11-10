@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import may.baseraids.Baseraids;
-import may.baseraids.entities.ai.BlockBreakGoal;
-import may.baseraids.entities.ai.BlockBreakRangedGoal;
-import may.baseraids.entities.ai.DestroyNexusGoal;
-import may.baseraids.entities.ai.HurtByNotRaidingTargetGoal;
-import may.baseraids.entities.ai.MoveTowardsNexusGoal;
+import may.baseraids.entities.ai.goal.BlockBreakGoal;
+import may.baseraids.entities.ai.goal.BlockBreakRangedGoal;
+import may.baseraids.entities.ai.goal.DestroyNexusGoal;
+import may.baseraids.entities.ai.goal.HurtByNotRaidingTargetGoal;
+import may.baseraids.entities.ai.goal.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;

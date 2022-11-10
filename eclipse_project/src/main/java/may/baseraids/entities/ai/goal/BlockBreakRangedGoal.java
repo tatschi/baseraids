@@ -1,4 +1,4 @@
-package may.baseraids.entities.ai;
+package may.baseraids.entities.ai.goal;
 
 import java.util.EnumSet;
 import java.util.Random;
@@ -6,6 +6,7 @@ import java.util.Random;
 import may.baseraids.Baseraids;
 import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
+import may.baseraids.entities.ai.RaidArrowEntity;
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.monster.MonsterEntity;

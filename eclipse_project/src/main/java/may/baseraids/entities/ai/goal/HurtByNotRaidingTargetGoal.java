@@ -1,4 +1,4 @@
-package may.baseraids.entities.ai;
+package may.baseraids.entities.ai.goal;
 
 import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
