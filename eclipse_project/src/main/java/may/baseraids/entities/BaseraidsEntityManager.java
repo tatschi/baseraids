@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import may.baseraids.Baseraids;
 import may.baseraids.entities.ai.goal.BlockBreakGoal;
 import may.baseraids.entities.ai.goal.BlockBreakRangedGoal;
-import may.baseraids.entities.ai.goal.DestroyNexusGoal;
 import may.baseraids.entities.ai.goal.HurtByNotRaidingTargetGoal;
 import may.baseraids.entities.ai.goal.MoveTowardsNexusGoal;
 import net.minecraft.entity.EntityType;
@@ -57,7 +56,6 @@ public class BaseraidsEntityManager {
 		final List<Class<? extends TargetGoal>> targetClassesToRemove = Arrays.asList(HurtByTargetGoal.class);
 		removeTargetsFromList(entity, targetClassesToRemove);
 		
-		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(3, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager).setCallsForHelp(ZombifiedPiglinEntity.class));
@@ -71,7 +69,6 @@ public class BaseraidsEntityManager {
 		removeTargetsFromList(entity, targetClassesToRemove);
 		
 		entity.goalSelector.addGoal(0, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
-		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));		
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
@@ -96,7 +93,6 @@ public class BaseraidsEntityManager {
 		removeGoalsFromList(entity, goalClassesToRemove);
 		
 		entity.goalSelector.addGoal(0, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
-		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 	}
 	
 	public static void setupZombifiedPiglinGoals(ZombifiedPiglinEntity entity) {
@@ -106,7 +102,6 @@ public class BaseraidsEntityManager {
 		final List<Class<? extends TargetGoal>> targetClassesToRemove = Arrays.asList(HurtByTargetGoal.class);
 		removeTargetsFromList(entity, targetClassesToRemove);
 		
-		entity.goalSelector.addGoal(0, new DestroyNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1, new BlockBreakGoal(entity, Baseraids.baseraidsData.raidManager));				
 		entity.goalSelector.addGoal(3, new MoveTowardsNexusGoal(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager).setCallsForHelp());

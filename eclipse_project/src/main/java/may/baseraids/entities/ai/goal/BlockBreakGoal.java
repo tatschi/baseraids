@@ -18,7 +18,6 @@ import net.minecraft.util.math.vector.Vector3i;
  * the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class BlockBreakGoal extends Goal {
 
@@ -26,6 +25,7 @@ public class BlockBreakGoal extends Goal {
 	private RaidManager raidManager;
 	
 	private static final int DAMAGE = 1;
+	private static final int DISTANCE_TO_ALLOW_BREAKING = 2;
 
 	protected BlockPos target = null;
 
@@ -122,6 +122,13 @@ public class BlockBreakGoal extends Goal {
 	
 	private void findTarget() {		
 		BlockPos nexusPos = NexusBlock.getBlockPos();
+		
+		// Prioritize nexus if possible
+		if (isAttackableBlock(nexusPos)) {
+			target = nexusPos;
+			return;
+		}		
+		
 		Random r = new Random();
 		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).mul(4, 4, 4);
 		Vector3d jitteredLookVec = jitter.add(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
@@ -147,10 +154,16 @@ public class BlockBreakGoal extends Goal {
 			return false;
 		}
 		
-		// TODO check if we can see the block
-		
 		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
 		Vector3d lookVec = posVec.subtract(entity.getEyePosition(0)).normalize();
+
+		/*
+		// TODO check if we can see the block		
+		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(0), posVec, BlockMode.COLLIDER, FluidMode.ANY, entity));
+		if(rayTraceResult.getType() == RayTraceResult.Type.MISS) {
+			return false;
+		}*/
+		
 		Vector3d vecToNexus = nexusPos.subtract(entity.getEyePosition(0)).normalize();
 		double dotProduct = lookVec.dotProduct(vecToNexus); 
 		
@@ -158,7 +171,7 @@ public class BlockBreakGoal extends Goal {
 			return false;
 		}
 		
-		if(entity.getDistanceSq(posVec) > 1.5) {
+		if(entity.getDistanceSq(posVec) > DISTANCE_TO_ALLOW_BREAKING) {
 			return false;
 		}
 		
