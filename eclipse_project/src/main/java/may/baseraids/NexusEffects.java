@@ -8,7 +8,6 @@ import net.minecraft.potion.Effects;
  * This class holds and provides the effects for the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.1.0
  */
 public class NexusEffects {
 	

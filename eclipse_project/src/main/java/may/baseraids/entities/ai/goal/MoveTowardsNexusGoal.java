@@ -14,7 +14,6 @@ import net.minecraft.world.server.ServerWorld;
  * This class defines the AI goal to move toward the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class MoveTowardsNexusGoal extends Goal {
 

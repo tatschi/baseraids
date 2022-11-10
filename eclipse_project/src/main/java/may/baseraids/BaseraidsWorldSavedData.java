@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.Mod;
  * This class is the base of saving and loading data for this mod.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 //@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)

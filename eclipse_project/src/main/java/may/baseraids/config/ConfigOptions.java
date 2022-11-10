@@ -8,7 +8,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
  * This class defines all options that are available in the config file and their initial values.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class ConfigOptions {
 

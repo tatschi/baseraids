@@ -31,7 +31,6 @@ import net.minecraft.entity.monster.ZombifiedPiglinEntity;
  * This class is used for setting up the default monsters with custom AI for raiding.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class BaseraidsEntityManager {
 	

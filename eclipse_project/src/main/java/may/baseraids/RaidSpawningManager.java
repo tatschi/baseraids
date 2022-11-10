@@ -35,7 +35,6 @@ import net.minecraftforge.fml.common.Mod;
  * the raid mobs.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RaidSpawningManager {

@@ -18,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
  * This class handles sound and effects from the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class NexusEffectsTileEntity extends TileEntity implements ITickableTileEntity {
 

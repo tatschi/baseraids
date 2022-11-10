@@ -9,7 +9,6 @@ import net.minecraft.entity.ai.goal.HurtByTargetGoal;
  * This class defines the AI goal to move toward the nexus.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 

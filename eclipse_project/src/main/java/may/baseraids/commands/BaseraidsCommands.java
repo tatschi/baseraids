@@ -17,7 +17,6 @@ import net.minecraftforge.fml.common.Mod;
  * This class defines the commands for this mod.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.0.1
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsCommands {

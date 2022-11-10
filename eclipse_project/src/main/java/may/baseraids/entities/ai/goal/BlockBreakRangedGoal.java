@@ -23,10 +23,9 @@ import net.minecraft.util.math.vector.Vector3d;
 
 /**
  * This class defines the AI goal to break blocks that are in the way towards
- * the nexus.
+ * the nexus using a ranged attack.
  * 
  * @author Natascha May
- * @since 1.16.4-0.0.2.0
  */
 public class BlockBreakRangedGoal<T extends MonsterEntity & IRangedAttackMob> extends Goal {
 
