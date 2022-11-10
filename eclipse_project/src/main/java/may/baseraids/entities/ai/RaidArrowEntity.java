@@ -13,11 +13,13 @@ public class RaidArrowEntity extends ArrowEntity {
 
 	Entity shooter;
 	RaidManager raidManager;
-	private static final int DAMAGE = 25;
+	private static final int DEFAULT_DAMAGE = 25;
+	private int blockBreakDamage;
 
 	public RaidArrowEntity(World world, LivingEntity shooter, RaidManager raidManager) {
 		super(world, shooter);
 		this.raidManager = raidManager;
+		this.blockBreakDamage = DEFAULT_DAMAGE;
 	}
 
 	// collision with block
@@ -26,7 +28,9 @@ public class RaidArrowEntity extends ArrowEntity {
 		if (!raidManager.isRaidActive()) {
 			return;
 		}
-		raidManager.blockBreakProgressMng.addProgress(shooter, p_230299_1_.getPos(), DAMAGE);
+ 		raidManager.blockBreakProgressMng.addProgress(shooter, p_230299_1_.getPos(), blockBreakDamage);
+		// the damage should decrease with every hit in order to disable infinite loops with falling arrows 
+		blockBreakDamage /= 2;		
 	}
 
 	public void setShooter(@Nullable Entity entityIn) {
