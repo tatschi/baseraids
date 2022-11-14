@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -162,8 +163,12 @@ public class Baseraids {
 		World world = (World) event.getWorld();
 		if (world.isRemote())
 			return;
-
-		onMonsterSpawnOutsideCave_cancelSpawning(event);
+		
+		if (event.isCancelable() && onMonsterSpawnOutsideCave_shouldCancelSpawn(event)) {
+			event.setCanceled(true);
+		}else {
+			return;
+		}
 	}
 
 	/**
@@ -175,23 +180,29 @@ public class Baseraids {
 	 */
 	// TODO check if this also disables monsters in the nether and end which would
 	// not be desired
-	private void onMonsterSpawnOutsideCave_cancelSpawning(final WorldEvent.PotentialSpawns event) {
+	private boolean onMonsterSpawnOutsideCave_shouldCancelSpawn(final WorldEvent.PotentialSpawns event) {
 
-		if (!ConfigOptions.deactivateMonsterNightSpawn.get())
-			return;
-
-		if (event.getType() != EntityClassification.MONSTER)
-			return;
-
-		if (event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState()))
-			return;
-		
-		if(!event.getWorld().canSeeSky(event.getPos()))
-			return;
-
-		if (event.isCancelable()) {
-			event.setCanceled(true);
+		if (!ConfigOptions.deactivateMonsterNightSpawn.get()) {
+			return false;
 		}
+			
+		if (event.getType() != EntityClassification.MONSTER) {
+			return false;
+		}
+		
+		if (!event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState())) {
+			return true;
+		}
+		
+		if(event.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, event.getPos()).equals(event.getPos())) {
+			return true;
+		}
+		
+		if(event.getWorld().canSeeSky(event.getPos())) {
+			return true;
+		}
+		
+		return false;		
 	}
 
 	/**
