@@ -34,7 +34,7 @@ public class MoveTowardsNexusGoal extends Goal {
 		}
 		
 		Path path = entity.getNavigator().getPath();
-		return (path == null || !path.isFinished());
+		return (path == null || path.isFinished());
 	}
 
 	public boolean shouldContinueExecuting() {		
@@ -50,6 +50,7 @@ public class MoveTowardsNexusGoal extends Goal {
 	}
 
 	public void resetTask() {
+		entity.getNavigator().clearPath();
 	}
 
 }
