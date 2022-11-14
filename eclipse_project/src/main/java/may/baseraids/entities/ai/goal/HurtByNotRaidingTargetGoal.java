@@ -1,6 +1,5 @@
 package may.baseraids.entities.ai.goal;
 
-import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
@@ -21,14 +20,15 @@ public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 
 	@Override
 	public boolean shouldExecute() {
-		if(super.shouldExecute()) {
-			if(!raidManager.isEntityRaiding(this.goalOwner.getRevengeTarget())) {
-				Baseraids.LOGGER.debug("shouldExecute from custom goal");
-				return true;
-			}
+		if(!super.shouldExecute()) {
+			return false;
 		}
 		
-		return false;
+		if(raidManager.isEntityRaiding(this.goalOwner.getRevengeTarget())) {
+			return false;
+		}
+				
+		return true;
 	}
 
 }
