@@ -13,6 +13,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+/**
+ * This class collects and manages all information on breaking blocks during a raid.
+ * 
+ * @author Natascha May
+ */
 public class BlockBreakProgressManager {
 
 	private RaidManager raidManager;
