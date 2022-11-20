@@ -57,6 +57,10 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		}		
 	}
 
+	/**
+	 * Attacks the given block with a ranged attack including animation and sound effects.
+	 * @param targetBlock the block to be attacked
+	 */
 	private void attackBlockWithRangedAttack(BlockPos targetBlock) {
 		AbstractArrowEntity arrowEntity = createArrowEntity();		
 		shootArrowEntityAtBlock(arrowEntity, targetBlock);
@@ -64,6 +68,10 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		entity.world.addEntity(arrowEntity);		
 	}
 	
+	/**
+	 * Creates an <code>AbstractArrowEntity</code> from ammo held by the entity and adds potion, enchantment and other effects.
+	 * @return the create arrow entity
+	 */
 	private AbstractArrowEntity createArrowEntity() {
 		ItemStack itemstack = entity.findAmmo(entity.getHeldItem(ProjectileHelper.getHandWith(entity, Items.BOW)));
 		RaidArrowEntity arrowEntity = new RaidArrowEntity(entity.world, entity, raidManager);
@@ -79,6 +87,11 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		return arrowEntity;
 	}
 	
+	/**
+	 * Takes an arrow entity and shoots the arrow towards the given target block.
+	 * @param arrowEntity the arrow entity to be shot
+	 * @param targetBlock the block position to be shot at
+	 */
 	private void shootArrowEntityAtBlock(AbstractArrowEntity arrowEntity, BlockPos targetBlock) {
 		double dX = targetBlock.getX() - entity.getPosX();
 		double dY = targetBlock.getY() + 0.333333D - arrowEntity.getPosY();

@@ -96,7 +96,8 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	}
 	
 	/**
-	 * Attacks the block specified by the field <code>target</code> with a melee attack.
+	 * Attacks the given block with a melee attack including animation and sound effects.
+	 * @param targetBlock the block to be attacked
 	 */
 	protected void attackBlockMelee(BlockPos targetBlock) {
 		swingArmAtRandom();
