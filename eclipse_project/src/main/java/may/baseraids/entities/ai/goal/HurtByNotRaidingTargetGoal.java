@@ -5,7 +5,7 @@ import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
 
 /**
- * This class defines the AI goal to move toward the nexus.
+ * This class replaces the vanilla <code>HurtByTargetGoal</code> for raid monsters so that they do not attack other raid monsters.
  * 
  * @author Natascha May
  */
