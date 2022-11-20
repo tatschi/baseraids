@@ -247,6 +247,11 @@ public class Baseraids {
 		player.sendStatusMessage(new StringTextComponent(message), actionBar);
 	}
 	
+	/**
+	 * Converts a BlockPos to a Vector3d for convenience.
+	 * @param pos the given BlockPos
+	 * @return the Vector3d converted from the BlockPos
+	 */
 	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
 		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
 	}
