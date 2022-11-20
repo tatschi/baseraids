@@ -86,11 +86,18 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		}	
 	}
 	
+	/**
+	 * Attacks the block specified by the field <code>target</code>.
+	 * This method is expected to be extended by every implementing class.
+	 */
 	protected void attackTarget() {
 		entity.setAggroed(true);
 		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(target));
 	}
 	
+	/**
+	 * Attacks the block specified by the field <code>target</code> with a melee attack.
+	 */
 	protected void attackBlockMelee(BlockPos targetBlock) {
 		swingArmAtRandom();
 
@@ -101,6 +108,10 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		}
 	}
 	
+	/**
+	 * Attempts to find a target block and saves the result in the field <code>target</code>.
+	 * Prioritizes the nexus direction, otherwise jitters the look direction of the entity to find a possible target.
+	 */
 	protected void findTarget() {				
 		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
 		BlockPos focusedBlock = getFocusedBlock();
@@ -120,16 +131,30 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		target = null;
 	}
 	
+	/**
+	 * Gets the first block in the look direction of the entity.
+	 * @return the BlockPos of the first block in the look direction
+	 */
 	protected BlockPos getFocusedBlock() {
 		Vector3d posVec = new Vector3d(entity.getLookController().getLookPosX(), entity.getLookController().getLookPosY(), entity.getLookController().getLookPosZ());
 		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
 		return rayTraceResult.getPos();
 	}
 	
+	/**
+	 * Checks if a given block is in melee range for the entity.
+	 * @param pos the position of the block that is checked to be in melee range
+	 * @return true, if the block is in melee range, otherwise false
+	 */
 	protected boolean isBlockInMeleeRange(BlockPos pos) {
 		return entity.getDistanceSq(Baseraids.getVector3dFromBlockPos(pos)) <= (MELEE_ATTACK_RANGE * MELEE_ATTACK_RANGE);
 	}
 	
+	/**
+	 * Checks if a given block is attackable for the entity.
+	 * @param pos the position of the block that is checked to be attackable
+	 * @return true, if the block is attackable, otherwise false
+	 */
 	protected boolean isAttackableBlock(BlockPos pos) {
 		if(entity.world.getBlockState(pos).equals(Blocks.AIR.getDefaultState())){
 			return false;
@@ -152,6 +177,9 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		target = null;
 	}
 	
+	/**
+	 * Swings the active arm of the entity with a certain probability. 
+	 */
 	private void swingArmAtRandom() {
 		if (this.entity.getRNG().nextInt(20) == 0) {
 			if (!this.entity.isSwingInProgress) {
@@ -160,6 +188,9 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		}
 	}
 	
+	/**
+	 * Adds some randomized variation (jitter) to the nexus position and sets this new position as the look position of the entity.
+	 */
 	private void jitterLookPositionAroundNexus() {
 		Random r = new Random();
 		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).mul(JITTER_FACTOR, JITTER_FACTOR, JITTER_FACTOR);
@@ -167,10 +198,20 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		entity.getLookController().setLookPosition(jitteredLookPos);
 	}
 	
+	/**
+	 * Checks if a given block is closer to the nexus than the entity.
+	 * @param pos the position of the block that is checked to be closer
+	 * @return true, if the block is closer, otherwise false
+	 */
 	private boolean isBlockCloserToNexusThanEntityToNexus(BlockPos pos) {
 		return pos.distanceSq(NexusBlock.getBlockPos()) <= entity.getPosition().distanceSq(NexusBlock.getBlockPos());
 	}
 	
+	/**
+	 * Checks if a given block can be seen from the entities eye position.
+	 * @param pos the position of the block that is checked to be visible
+	 * @return true, if the block can be seen, otherwise false
+	 */
 	private boolean canEntitySeeBlock(BlockPos pos) {
 		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
 		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
