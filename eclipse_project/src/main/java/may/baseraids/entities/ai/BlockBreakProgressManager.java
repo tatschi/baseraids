@@ -161,7 +161,6 @@ public class BlockBreakProgressManager {
 	 * @param event the event of type <code>BlockEvent.BreakEvent</code> that
 	 *              triggers this method
 	 */
-	// TODO test
 	@SubscribeEvent
 	public void onBreakBlock_resetAllInfoForThisBlockPos(final BlockEvent.BreakEvent event) {
 		if (event.getPlayer().world.isRemote()) {
