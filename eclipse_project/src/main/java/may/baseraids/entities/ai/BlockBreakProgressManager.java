@@ -81,7 +81,6 @@ public class BlockBreakProgressManager {
 		int cur = breakProgressRelative.compute(pos,
 				(k, V) -> breakProgressAbsolute.get(k) * 10 / damageUntilBlockBreaks);
 		if (prev != cur) {
-			// TODO sound design
 			world.playEvent(1019, pos, 0);
 			world.sendBlockBreakProgress(breakBlockId, pos, -1);
 			world.sendBlockBreakProgress(breakBlockId, pos, cur);
@@ -117,7 +116,6 @@ public class BlockBreakProgressManager {
 		damageUntilBlockBreaks.remove(pos);
 		breakBlockId.remove(pos);
 
-		// TODO sound design
 		world.playEvent(1021, pos, 0);
 		world.playEvent(2001, pos, Block.getStateId(world.getBlockState(pos)));
 
@@ -177,6 +175,5 @@ public class BlockBreakProgressManager {
 		damageUntilBlockBreaks.remove(event.getPos());
 		breakBlockId.remove(event.getPos());
 	}
-	
-	// TODO Saving and loading of the fields
+
 }
