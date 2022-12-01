@@ -184,7 +184,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
-			Baseraids.sendStatusMessage("You cannot remove the nexus during a raid!", event.getPlayer(), true);
+			Baseraids.sendStatusMessage("The NexusBlock cannot be removed during raid!", event.getPlayer(), true);
 			return;
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {

@@ -8,7 +8,7 @@ import com.google.common.collect.Sets;
 
 import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
-import may.baseraids.entities.ai.BlockBreakProgressManager;
+import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity.SleepResult;
@@ -71,7 +71,7 @@ public class RaidManager {
 			600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
-	public BlockBreakProgressManager blockBreakProgressMng;
+	public GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
 
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
@@ -82,7 +82,7 @@ public class RaidManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
-		blockBreakProgressMng = new BlockBreakProgressManager(this, world);
+		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
@@ -277,7 +277,7 @@ public class RaidManager {
 		setRaidActive(false);
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
-		blockBreakProgressMng.resetAllProgress();
+		globalBlockBreakProgressMng.resetAllProgress();
 	}
 
 	/**

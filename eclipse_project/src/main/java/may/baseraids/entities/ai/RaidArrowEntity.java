@@ -37,7 +37,7 @@ public class RaidArrowEntity extends ArrowEntity {
 		if (!raidManager.isRaidActive()) {
 			return;
 		}
- 		raidManager.blockBreakProgressMng.addProgress(p_230299_1_.getPos(), blockBreakDamage);
+ 		raidManager.globalBlockBreakProgressMng.addProgress(p_230299_1_.getPos(), blockBreakDamage);
 		// the damage should decrease with every hit in order to disable infinite loops with falling arrows 
 		blockBreakDamage /= 2;		
 	}

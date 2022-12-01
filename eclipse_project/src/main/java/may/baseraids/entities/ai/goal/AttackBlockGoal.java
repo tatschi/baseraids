@@ -102,7 +102,7 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	protected void attackBlockMelee(BlockPos targetBlock) {
 		swingArmAtRandom();
 
-		boolean wasBroken = raidManager.blockBreakProgressMng.addProgress(target, MELEE_DAMAGE);		
+		boolean wasBroken = raidManager.globalBlockBreakProgressMng.addProgress(target, MELEE_DAMAGE);		
 		if(wasBroken) {
 			entity.getNavigator().clearPath();
 			target = null;
