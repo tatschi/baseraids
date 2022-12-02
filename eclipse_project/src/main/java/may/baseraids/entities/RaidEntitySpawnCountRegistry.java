@@ -39,4 +39,8 @@ public class RaidEntitySpawnCountRegistry {
 		}
 		return entitySpawnCountRegistry.get(type)[level];
 	}
+	
+	public static int getSpawnCountForEntityAndLevelAndPlayerCount(EntityType<?> type, int level, int playerCount) {
+		return getSpawnCountForEntityAndLevel(type, level) * playerCount;
+	}
 }
