@@ -45,6 +45,8 @@ public class BaseraidsCommands {
 	      		.then(Commands.literal("giveNexus")
 	      				.then(Commands.argument("target", EntityArgument.players())
 	      						.executes((commandSource) -> {return giveNexusToPlayer(commandSource.getSource(), EntityArgument.getPlayer(commandSource, "target"));})))
+	      		.then(Commands.literal("restoreDestroyedBlocks")
+	      				.executes((commandSource) -> {return restoreDestroyedBlocks(commandSource.getSource());}))
 	    		 );
 	}
 
@@ -81,4 +83,8 @@ public class BaseraidsCommands {
 		return 0;
 	}
 
+	private static int restoreDestroyedBlocks(CommandSource source) {
+		Baseraids.baseraidsData.raidManager.restoreDestroyedBlocksMng.restoreSavedBlocks();
+		return 0;
+	}
 }

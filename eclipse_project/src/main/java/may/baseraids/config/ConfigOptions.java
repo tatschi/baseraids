@@ -18,6 +18,7 @@ public class ConfigOptions {
 	public static Vector3i lootChestPositionRelative;
 	
 	public static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
+	public static ForgeConfigSpec.BooleanValue restoreDestroyedBlocks;
 	
 	// SOUNDS
 	public static ForgeConfigSpec.BooleanValue enableSoundWinLose;
@@ -47,7 +48,12 @@ public class ConfigOptions {
 		monsterBlockBreakingTimeMultiplier = builder
 				.comment("Time it takes the monsters to break a block. Doubling the value will double the time. ")
 				.defineInRange(Baseraids.MODID + ".monsterBlockBreakingTimeMultiplier", MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT, 0, 100);
-	
+		
+		restoreDestroyedBlocks = builder
+				.comment("If set to true, the mod restores all blocks that were broken during the raid."
+						+ "No matter the value, you can always restore the blocks using a command.")
+				.define(Baseraids.MODID + ".restoreDestroyedBlocks", false);
+		
 		enableSoundWinLose = builder
 				.comment("If set to true, the sounds after winning or losing a raid will be played.")
 				.define(Baseraids.MODID + ".enableSoundWinLose", true);

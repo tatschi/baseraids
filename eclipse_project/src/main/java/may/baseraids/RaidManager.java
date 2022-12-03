@@ -72,6 +72,7 @@ public class RaidManager {
 
 	private RaidSpawningManager raidSpawningMng;
 	public GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
+	public RestoreDestroyedBlocksManager restoreDestroyedBlocksMng;
 
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
@@ -83,6 +84,7 @@ public class RaidManager {
 		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
 		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
+		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(world);
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
@@ -279,6 +281,9 @@ public class RaidManager {
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
+		if(ConfigOptions.restoreDestroyedBlocks.get()) {
+			restoreDestroyedBlocksMng.restoreSavedBlocks();			
+		}
 	}
 
 	/**
@@ -418,6 +423,8 @@ public class RaidManager {
 
 		CompoundNBT raidSpawning = raidSpawningMng.writeAdditional();
 		nbt.put("raidSpawningManager", raidSpawning);
+		CompoundNBT restoreDestroyedBlocksMngNBT = restoreDestroyedBlocksMng.writeAdditional();
+		nbt.put("restoreDestroyedBlocksManager", restoreDestroyedBlocksMngNBT);
 
 		return nbt;
 	}
@@ -444,7 +451,9 @@ public class RaidManager {
 
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
-
+			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
+			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT, serverWorld);
+			
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
 
 		} catch (Exception e) {

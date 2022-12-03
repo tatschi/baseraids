@@ -37,7 +37,7 @@ public class RaidEntitySpawnCountRegistry {
 		if(!entitySpawnCountRegistry.containsKey(type)) {
 			return 0;
 		}
-		return entitySpawnCountRegistry.get(type)[level];
+		return entitySpawnCountRegistry.get(type)[level-1];
 	}
 	
 	public static int getSpawnCountForEntityAndLevelAndPlayerCount(EntityType<?> type, int level, int playerCount) {
