@@ -70,6 +70,7 @@ public class RaidManager {
 			600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
+	public RestoreDestroyedBlocksManager restoreDestroyedBlocksMng;
 
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
@@ -80,6 +81,7 @@ public class RaidManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
+		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(world);
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 	}
@@ -273,7 +275,9 @@ public class RaidManager {
 		Baseraids.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
 		setRaidActive(false);
 		raidSpawningMng.killAllMobs();
-		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
+		if(ConfigOptions.restoreDestroyedBlocks.get()) {
+			restoreDestroyedBlocksMng.restoreSavedBlocks();			
+		}
 	}
 
 	/**
@@ -413,6 +417,8 @@ public class RaidManager {
 
 		CompoundNBT raidSpawning = raidSpawningMng.writeAdditional();
 		nbt.put("raidSpawningManager", raidSpawning);
+		CompoundNBT restoreDestroyedBlocksMngNBT = restoreDestroyedBlocksMng.writeAdditional();
+		nbt.put("restoreDestroyedBlocksManager", restoreDestroyedBlocksMngNBT);
 
 		return nbt;
 	}
@@ -439,7 +445,9 @@ public class RaidManager {
 
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
-
+			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
+			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT, serverWorld);
+			
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
 
 		} catch (Exception e) {

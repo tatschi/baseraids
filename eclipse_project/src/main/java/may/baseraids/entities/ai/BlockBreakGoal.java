@@ -84,7 +84,7 @@ public class BlockBreakGoal extends Goal {
 		if (!raidManager.isRaidActive())
 			return false;
 
-		if (entity.getAIMoveSpeed() > 0) {
+		if (entity.getAIMoveSpeed() <= 0) {
 			// cycle through possible blocks to destroy around the entity
 			BlockPos defaultFocusedBlock = this.entity.getPosition();
 			curFocusedBlock = defaultFocusedBlock;

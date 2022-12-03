@@ -172,19 +172,19 @@ public class Baseraids {
 	 * @param event the event of type <code>WorldEvent.PotentialSpawns</code> that
 	 *              calls this function
 	 */
-	// TODO check if this also disables monsters in the nether and end which would
-	// not be desired
 	private void onMonsterSpawnOutsideCave_cancelSpawning(final WorldEvent.PotentialSpawns event) {
-
+		if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
+			return;
+		}
 		if (!ConfigOptions.deactivateMonsterNightSpawn.get())
 			return;
 
 		if (event.getType() != EntityClassification.MONSTER)
 			return;
 
-		if (event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState()))
+		if (event.getWorld().getBlockState(event.getPos()).getBlock().equals(Blocks.CAVE_AIR)) {
 			return;
-		
+		}
 		if(!event.getWorld().canSeeSky(event.getPos()))
 			return;
 

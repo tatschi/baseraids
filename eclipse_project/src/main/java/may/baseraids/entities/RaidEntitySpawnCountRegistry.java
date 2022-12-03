@@ -19,8 +19,8 @@ public class RaidEntitySpawnCountRegistry {
 	
 	public static void registerSpawnCounts() {
 		entitySpawnCountRegistry.put(EntityType.ZOMBIE, SPAWN_COUNT_ZOMBIES);
-		entitySpawnCountRegistry.put(EntityType.SPIDER, SPAWN_COUNT_SKELETONS);
-		entitySpawnCountRegistry.put(EntityType.SKELETON, SPAWN_COUNT_SPIDERS);
+		entitySpawnCountRegistry.put(EntityType.SPIDER, SPAWN_COUNT_SPIDERS);
+		entitySpawnCountRegistry.put(EntityType.SKELETON, SPAWN_COUNT_SKELETONS);
 		entitySpawnCountRegistry.put(EntityType.PHANTOM, SPAWN_COUNT_PHANTOMS);
 		entitySpawnCountRegistry.put(EntityType.ZOMBIFIED_PIGLIN, SPAWN_COUNT_ZOMBIFIED_PIGLINS);
 	}
@@ -33,6 +33,6 @@ public class RaidEntitySpawnCountRegistry {
 		if(!entitySpawnCountRegistry.containsKey(type)) {
 			return 0;
 		}
-		return entitySpawnCountRegistry.get(type)[level];
+		return entitySpawnCountRegistry.get(type)[level-1];
 	}
 }
