@@ -107,6 +107,7 @@ public class RaidManager {
 
 		if (world.getDifficulty() == Difficulty.PEACEFUL) {
 			if (isRaidActive()) {
+				Baseraids.sendStatusMessage("Raid was ended because difficulty is peaceful", true);
 				endRaid();
 			}
 			return;
