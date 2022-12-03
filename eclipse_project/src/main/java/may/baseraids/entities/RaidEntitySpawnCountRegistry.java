@@ -15,7 +15,7 @@ public class RaidEntitySpawnCountRegistry {
 	private static final int[] SPAWN_COUNT_SKELETONS = 			{0, 3, 3, 5, 6, 10, 15, 15};
 	private static final int[] SPAWN_COUNT_SPIDERS = 			{0, 0, 2, 4, 5, 8, 10, 10};
 	private static final int[] SPAWN_COUNT_PHANTOMS = 			{0, 0, 0, 0, 0, 0, 0, 0};
-	private static final int[] SPAWN_COUNT_ZOMBIFIED_PIGLINS = 	{0, 0, 1, 5, 10, 10, 10, 10};
+	private static final int[] SPAWN_COUNT_ZOMBIFIED_PIGLINS = 	{0, 0, 4, 8, 12, 16, 16, 16};
 	private static final int[] SPAWN_COUNT_WITHER_SKELETONS = 	{0, 0, 0, 0, 0, 0, 0, 1};
 	private static final int[] SPAWN_COUNT_CAVE_SPIDERS = 		{0, 0, 0, 0, 0, 1, 1, 1};
 	
