@@ -1,9 +1,13 @@
 package may.baseraids.entities.ai;
 
+import org.jline.utils.Log;
+
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 /**
  * This class manages all information on breaking a block for a given BlockPos
@@ -99,4 +103,45 @@ public class BlockBreakProgressManager {
 				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
 	}
 
+	/**
+	 * Saves data relevant for the this class: Writes the necessary data to a
+	 * <code>CompoundNBT</code> and returns the <code>CompoundNBT</code> object.
+	 * 
+	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 */
+	public CompoundNBT writeAdditional() {
+		CompoundNBT nbt = new CompoundNBT();
+		nbt.putInt("breakProgressAbsolute", breakProgressAbsolute);
+		nbt.putInt("breakProgressRelative", breakProgressRelative);
+		nbt.putInt("breakBlockId", breakBlockId);		
+		return nbt;
+	}
+
+	/**
+	 * Reads the data stored in the given <code>CompoundNBT</code>. This function
+	 * assumes that the nbt was previously written by this class or to be precise,
+	 * that the nbt includes certain elements. If an exception was thrown during the
+	 * reading process (this could very well happen for incompatible versions), the
+	 * parameters that were not set are given a default value using
+	 * <code>setDefaultWriteParametersIfNotSet()</code>.
+	 * 
+	 * @param nbt         the nbt that will be read out. It is assumed to include
+	 *                    certain elements.
+	 * @param serverWorld the world that is loaded. It is used in the
+	 *                    <code>RaidSpawningManager</code> to get references to
+	 *                    previously spawned mobs.
+	 */
+	public static BlockBreakProgressManager readAdditional(CompoundNBT nbt, ServerWorld serverWorld, BlockPos pos) {
+		try {
+			int breakBlockId = nbt.getInt("breakBlockId");
+			BlockBreakProgressManager mng = new BlockBreakProgressManager(serverWorld, pos, breakBlockId);
+			mng.breakProgressAbsolute = nbt.getInt("breakProgressAbsolute");
+			mng.breakProgressRelative = nbt.getInt("breakProgressRelative");
+			return mng;
+
+		} catch (Exception e) {
+			Log.warn("Exception while reading data for BlockBreakProgressManager. Setting parameters to default. Exception: " + e);
+			return null;
+		}
+	}
 }
