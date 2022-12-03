@@ -194,7 +194,7 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	 */
 	private void jitterLookPositionAroundNexus() {
 		Random r = new Random();
-		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).mul(JITTER_FACTOR, JITTER_FACTOR, JITTER_FACTOR);
+		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).scale(JITTER_FACTOR);
 		Vector3d jitteredLookPos = jitter.add(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
 		entity.getLookController().setLookPosition(jitteredLookPos);
 	}
