@@ -1,4 +1,4 @@
-package may.baseraids;
+package may.baseraids.nexus;
 
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;

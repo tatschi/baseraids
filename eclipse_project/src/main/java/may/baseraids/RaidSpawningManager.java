@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import may.baseraids.entities.BaseraidsEntityManager;
 import may.baseraids.entities.RaidEntitySpawnCountRegistry;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;

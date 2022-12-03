@@ -1,8 +1,9 @@
-package may.baseraids;
+package may.baseraids.nexus;
 
 import java.util.Arrays;
 import java.util.List;
 
+import may.baseraids.Baseraids;
 import may.baseraids.config.ConfigOptions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;

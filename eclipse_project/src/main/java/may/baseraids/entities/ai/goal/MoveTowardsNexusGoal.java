@@ -2,8 +2,8 @@ package may.baseraids.entities.ai.goal;
 
 import java.util.EnumSet;
 
-import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.pathfinding.Path;

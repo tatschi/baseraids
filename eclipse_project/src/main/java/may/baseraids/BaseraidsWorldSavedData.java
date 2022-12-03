@@ -1,5 +1,6 @@
 package may.baseraids;
 
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;

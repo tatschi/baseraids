@@ -1,10 +1,11 @@
-package may.baseraids;
+package may.baseraids.nexus;
 
 import java.util.List;
 import java.util.Random;
 
 import com.google.common.collect.Sets;
 
+import may.baseraids.Baseraids;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -61,7 +62,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 				return 15;
 			});
 
-	enum State {
+	public enum NexusState {
 		BLOCK, ITEM, UNINITIALIZED
 	}
 
@@ -77,7 +78,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * The state of the nexus is UNINITIALIZED until the data of this class is first
 	 * loaded.
 	 */
-	private static State curState = State.UNINITIALIZED;
+	private static NexusState curState = NexusState.UNINITIALIZED;
 	/**
 	 * The current position of the nexus needs to be tracked through its
 	 * interactions at all times to allow for the special behavior of the block.
@@ -136,7 +137,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (event.phase != TickEvent.Phase.START) {
 			return;
 		}
-		if (NexusBlock.getState() == State.BLOCK) {
+		if (NexusBlock.getState() == NexusState.BLOCK) {
 			return;
 		}
 		// only apply debuff every time half the duration of the effect has passed
@@ -161,7 +162,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (event.getWorld().isRemote())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
-			setState(State.BLOCK);
+			setState(NexusState.BLOCK);
 			setBlockPos(event.getPos());
 		}
 	}
@@ -240,7 +241,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!(blockitem.getBlock() instanceof NexusBlock)) {
 			return;
 		}
-		setState(State.ITEM);
+		setState(NexusState.ITEM);
 	}
 
 	/**
@@ -259,7 +260,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 			return;
 		Baseraids.LOGGER
 				.debug("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
-		if (curState != State.UNINITIALIZED) {
+		if (curState != NexusState.UNINITIALIZED) {
 			return;
 		}
 		Baseraids.LOGGER.info("PlayerLoggedInEvent giving nexus to player");
@@ -302,12 +303,12 @@ public class NexusBlock extends Block implements IForgeBlock {
 		}
 	}
 
-	private static void setState(State state) {
+	private static void setState(NexusState state) {
 		curState = state;
 		Baseraids.baseraidsData.markDirty();
 	}
 
-	public static State getState() {
+	public static NexusState getState() {
 		return curState;
 	}
 
@@ -334,7 +335,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 			// In any case, we should make sure the state is set to State.ITEM here to stay
 			// consistent.
 			Baseraids.LOGGER.warn("NexusBlock already exists in player's inventory");
-			setState(State.ITEM);
+			setState(NexusState.ITEM);
 			return true;
 		}
 		ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
@@ -344,7 +345,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 			return false;
 		}
 		Baseraids.LOGGER.debug("Successfully added nexus to player's inventory");
-		setState(State.ITEM);
+		setState(NexusState.ITEM);
 		return true;
 	}
 
@@ -406,7 +407,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *            elements.
 	 */
 	public static void readAdditional(CompoundNBT nbt) {
-		curState = State.valueOf(nbt.getString("curState"));
+		curState = NexusState.valueOf(nbt.getString("curState"));
 		curBlockPos = new BlockPos(nbt.getInt("curBlockPosX"), nbt.getInt("curBlockPosY"), nbt.getInt("curBlockPosZ"));
 	}
 

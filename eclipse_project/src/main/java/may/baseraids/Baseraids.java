@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import may.baseraids.config.Config;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
+import may.baseraids.nexus.NexusBlock;
+import may.baseraids.nexus.NexusEffectsTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityClassification;

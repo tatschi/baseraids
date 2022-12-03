@@ -6,9 +6,12 @@ import org.jline.utils.Log;
 
 import com.google.common.collect.Sets;
 
-import may.baseraids.NexusBlock.State;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
+import may.baseraids.nexus.NexusBlock;
+import may.baseraids.nexus.NexusEffects;
+import may.baseraids.nexus.NexusEffectsTileEntity;
+import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity.SleepResult;
@@ -169,7 +172,7 @@ public class RaidManager {
 		if (world.getDayTime() % 24000 < START_OF_NIGHT_IN_WORLD_DAY_TIME) {
 			return false;
 		}
-		if (NexusBlock.getState() != State.BLOCK) {
+		if (NexusBlock.getState() != NexusState.BLOCK) {
 			return false;
 		}
 		return true;

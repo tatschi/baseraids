@@ -1,7 +1,7 @@
 package may.baseraids.entities.ai;
 
-import may.baseraids.NexusBlock;
 import may.baseraids.config.ConfigOptions;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 

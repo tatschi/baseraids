@@ -3,8 +3,8 @@ package may.baseraids.entities.ai;
 import java.util.concurrent.ConcurrentHashMap;
 
 import may.baseraids.Baseraids;
-import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

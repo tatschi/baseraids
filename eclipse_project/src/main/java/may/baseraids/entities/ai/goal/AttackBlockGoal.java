@@ -4,8 +4,8 @@ import java.util.EnumSet;
 import java.util.Random;
 
 import may.baseraids.Baseraids;
-import may.baseraids.NexusBlock;
 import may.baseraids.RaidManager;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;

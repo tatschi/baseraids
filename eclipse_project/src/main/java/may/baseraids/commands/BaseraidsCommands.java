@@ -3,7 +3,7 @@ package may.baseraids.commands;
 import com.mojang.brigadier.CommandDispatcher;
 
 import may.baseraids.Baseraids;
-import may.baseraids.NexusBlock;
+import may.baseraids.nexus.NexusBlock;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
