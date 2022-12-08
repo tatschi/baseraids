@@ -64,7 +64,11 @@ public class RaidManager {
 	 * defines the world.daytime at which it starts to be day (one day = 24000)
 	 */
 	private static final int START_OF_DAY_IN_WORLD_DAY_TIME = 23000;
-
+	/**
+	 * defines the amount of ticks before the next raid start at which you can no longer sleep
+	 */
+	private static final int SLEEP_RESTRICTION_TICKS = 12000;
+	
 	/**
 	 * Sets the times (remaining time until raid) at which all players will be
 	 * warned of the coming raid (approximated, in seconds), @see
@@ -319,7 +323,7 @@ public class RaidManager {
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-		if (isRaidActive() || getTimeUntilRaid() < FULL_DAY_TICKS) {
+		if (isRaidActive() || getTimeUntilRaid() < SLEEP_RESTRICTION_TICKS) {
 			event.setResult(SleepResult.OTHER_PROBLEM);
 			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before or during a raid!"),
 					true);
