@@ -73,7 +73,7 @@ public class RaidSpawningManager {
 		int playerCount = world.getPlayers().size();
 		
 		entityTypesToSpawn.forEach(type -> {
-			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel-1, playerCount);
+			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel, playerCount);
 			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
 			// remove nulls and convert to collection

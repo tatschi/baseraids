@@ -224,7 +224,7 @@ public class Baseraids {
 	 * @param actionBar boolean whether to show the message in the actionBar (true) or in the chat (false)
 	 */
 	public static void sendStatusMessage(String message, boolean actionBar) {
-		LOGGER.debug("Sending chat message: \"" + message);
+		LOGGER.debug("Sending chat message: \"" + message + "\"");
 		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
 	}
 
