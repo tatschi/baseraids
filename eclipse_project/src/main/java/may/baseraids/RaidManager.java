@@ -75,7 +75,7 @@ public class RaidManager {
 	 * warnPlayersOfRaid().
 	 */
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
-			600, 300, 60, 30, 10, 5, 4, 3, 2, 1);
+			600, 300, 120, 60, 30, 10, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
 	public GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
