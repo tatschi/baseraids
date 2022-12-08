@@ -211,9 +211,10 @@ public class RaidManager {
 			Baseraids.LOGGER.warn("Could not start raid because world == null");
 			return;
 		}
-		if (!world.getDimensionKey().equals(World.OVERWORLD))
-			return;
-
+		if (!world.getDimensionKey().equals(World.OVERWORLD)) {
+			return;			
+		}
+		
 		Baseraids.sendStatusMessage("You are being raided!");
 		Baseraids.LOGGER.info("Initiating raid");
 
