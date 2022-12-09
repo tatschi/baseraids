@@ -308,8 +308,10 @@ public class RaidManager {
 		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
 			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
 			// fill chest
-			chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
-			chestEntity.fillWithLoot(null);
+			for(int i = 0; i < world.getPlayers().size(); i++) {
+				chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
+				chestEntity.fillWithLoot(null);				
+			}
 			Baseraids.LOGGER.info("Added loot to loot chest");
 		} else {
 			Baseraids.LOGGER.error("Could not add loot to loot chest");
