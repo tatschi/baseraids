@@ -14,13 +14,13 @@ import net.minecraft.util.math.BlockPos;
  * 
  * @author Natascha May
  */
-public class MoveTowardsNexusGoal extends Goal {
+public class MoveTowardsNexusGoal<T extends MobEntity> extends Goal {
 
-	private MobEntity entity;
-	private RaidManager raidManager;
-	private int distanceReached = 2;
+	protected T entity;
+	protected RaidManager raidManager;
+	protected int distanceReached = 2;
 
-	public MoveTowardsNexusGoal(MobEntity entity, RaidManager raidManager) {
+	public MoveTowardsNexusGoal(T entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
 		this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE));
