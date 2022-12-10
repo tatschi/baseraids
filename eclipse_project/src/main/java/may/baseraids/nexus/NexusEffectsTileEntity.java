@@ -5,7 +5,6 @@ import java.util.List;
 
 import may.baseraids.Baseraids;
 import may.baseraids.config.ConfigOptions;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -39,36 +38,36 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	}
 
 	public void tick() {
-		if (world.isRemote) {
-			tickOnClient();
-		}else {
-			tickOnServer();
-		}
-	}
-	
-	private void tickOnServer() {
+		if (world.isRemote)
+			return;
+
 		if (this.world.getGameTime() % 40L == 0L) {
+
+			// add effects
 			List<NexusEffects.NexusEffect> curEffects = effects
 					.get(Baseraids.baseraidsData.raidManager.getRaidLevel() - 1);
 			curEffects.forEach(x -> this.addEffectsToPlayers(NexusEffects.getEffectInstance(x)));
-		}		
-	}
-	
-	private void tickOnClient() {
-		if (this.world.getGameTime() % 40L == 0L) {
-			
-			Minecraft instance = Minecraft.getInstance();
+
+			// play sound
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
-				if (ConfigOptions.enableSoundRaidHeartbeat.get()) {					
-					this.world.playSound(instance.player, instance.player.getPosition(), Baseraids.SOUND_RAID_ACTIVE.get(), SoundCategory.BLOCKS, 0.5F, 1.0F);
+				if (ConfigOptions.enableSoundRaidHeartbeat.get()) {
+					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
 				}
 			} else {
 				if (ConfigOptions.enableSoundNexusAmbient.get()) {
-					this.world.playSound(instance.player, this.pos, SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 0.25F, 0.5F);
+					this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 				}
 			}
-		}
 
+		}
+	}
+
+	public void playSoundWithPos(SoundEvent sound, float volume, float pitch) {
+		this.playSound(sound, this.pos, volume, pitch);
+	}
+
+	public void playSound(SoundEvent sound, BlockPos pos, float volume, float pitch) {
+		this.world.playSound((PlayerEntity) null, pos, sound, SoundCategory.BLOCKS, volume, pitch);
 	}
 
 	/**
