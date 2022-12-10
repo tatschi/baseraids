@@ -62,7 +62,8 @@ public class Baseraids {
 			.create(ForgeRegistries.TILE_ENTITIES, Baseraids.MODID);
 	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES,
 			Baseraids.MODID);
-	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Baseraids.MODID);
+	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS,
+			Baseraids.MODID);
 
 	// BLOCKS & ITEMS
 	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> new NexusBlock());
@@ -73,20 +74,24 @@ public class Baseraids {
 	public static final RegistryObject<TileEntityType<NexusEffectsTileEntity>> NEXUS_TILE_ENTITY_TYPE = TILE_ENTITIES
 			.register("nexus_effects_tile_entity", () -> TileEntityType.Builder
 					.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
-	
+
 	// SOUNDS
-	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
-	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
-	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
-	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low", () -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win",
+			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose",
+			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking",
+			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
+	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low",
+			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
 	public static BaseraidsWorldSavedData baseraidsData;
-	
+
 	public static int packetMsgId = 0;
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
-	 * the class <code>Config</code>.
+	 * the class {@link Config}.
 	 */
 	public Baseraids() {
 
@@ -112,10 +117,10 @@ public class Baseraids {
 	/**
 	 * Registers the attributes for the custom entity types and registers the
 	 * renderers for the custom entity types. Called through the
-	 * <code>FMLCommonSetupEvent</code>.
+	 * {@link FMLCommonSetupEvent}.
 	 * 
-	 * @param event the event of type <code>FMLCommonSetupEvent</code> that calls
-	 *              this function
+	 * @param event the event of type {@link FMLCommonSetupEvent} that calls this
+	 *              function
 	 */
 	private void onFMLCommonSetup(final FMLCommonSetupEvent event) {
 		BaseraidsEntityManager.registerSetups();
@@ -123,9 +128,9 @@ public class Baseraids {
 
 	/**
 	 * Initiates the loading process for this mod using the class
-	 * <code>BaseraidsWorldSavedData</code> when the world is loaded.
+	 * {@link BaseraidsWorldSavedData} when the world is loaded.
 	 * 
-	 * @param event the event of type <code>WorldEvent.Load</code> that calls this
+	 * @param event the event of type {@link WorldEvent.Load} that calls this
 	 *              function
 	 */
 	@SubscribeEvent
@@ -141,9 +146,9 @@ public class Baseraids {
 
 	/**
 	 * Initiates the saving process for this mod using the class
-	 * <code>BaseraidsWorldSavedData</code> when the world is saved.
+	 * {@link BaseraidsWorldSavedData} when the world is saved.
 	 * 
-	 * @param event the event of type <code>WorldEvent.Save</code> that calls this
+	 * @param event the event of type {@link WorldEvent.Save} that calls this
 	 *              function
 	 */
 	@SubscribeEvent
@@ -157,55 +162,57 @@ public class Baseraids {
 
 	/**
 	 * 
-	 * @param event the event of type <code>WorldEvent.PotentialSpawns</code> that
-	 *              calls this function
+	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
+	 *              this function
 	 */
 	@SubscribeEvent
 	public void onMonsterSpawn(final WorldEvent.PotentialSpawns event) {
 		World world = (World) event.getWorld();
 		if (world.isRemote())
 			return;
-		
-		if (event.isCancelable() && onMonsterSpawnOutsideCave_shouldCancelSpawn(event)) {
-			event.setCanceled(true);
-		}else {
+
+		if (!event.isCancelable()) {
 			return;
+		}
+
+		if (onMonsterSpawnOutsideCave_shouldCancelSpawn(event)) {
+			event.setCanceled(true);
 		}
 	}
 
 	/**
 	 * Cancels a monster spawning event, if it is not inside a cave and the config
-	 * option <code>ConfigOptions.deactivateMonsterNightSpawn</code> is true.
+	 * option {@link ConfigOptions#deactivateMonsterNightSpawn} is true.
 	 * 
-	 * @param event the event of type <code>WorldEvent.PotentialSpawns</code> that
-	 *              calls this function
+	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
+	 *              this function
 	 */
 	private boolean onMonsterSpawnOutsideCave_shouldCancelSpawn(final WorldEvent.PotentialSpawns event) {
 		if (!ConfigOptions.deactivateMonsterNightSpawn.get()) {
 			return false;
 		}
-		
-		if(!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
+
+		if (!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
 			return false;
 		}
-			
+
 		if (event.getType() != EntityClassification.MONSTER) {
 			return false;
 		}
-		
+
 		if (!event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState())) {
 			return true;
 		}
-		
-		if(event.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, event.getPos()).equals(event.getPos())) {
+
+		if (event.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, event.getPos()).equals(event.getPos())) {
 			return true;
 		}
-		
-		if(event.getWorld().canSeeSky(event.getPos())) {
+
+		if (event.getWorld().canSeeSky(event.getPos())) {
 			return true;
 		}
-		
-		return false;		
+
+		return false;
 	}
 
 	/**
@@ -216,20 +223,22 @@ public class Baseraids {
 	public static void sendStatusMessage(String message) {
 		sendStatusMessage(message, true);
 	}
-	
+
 	/**
 	 * Sends a status message to all players on the server.
 	 * 
-	 * @param message the string that is sent in the chat
-	 * @param actionBar boolean whether to show the message in the actionBar (true) or in the chat (false)
+	 * @param message   the string that is sent in the chat
+	 * @param actionBar boolean whether to show the message in the actionBar (true)
+	 *                  or in the chat (false)
 	 */
 	public static void sendStatusMessage(String message, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message + "\"");
-		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers().forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
+		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()
+				.forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
 	}
 
 	/**
-	 * Sends a string message in the in-game chat to a specific player.
+	 * Sends a status message to a specific player.
 	 * 
 	 * @param message the string that is sent in the chat
 	 * @param player  the player that the message is sent to
@@ -237,23 +246,25 @@ public class Baseraids {
 	public static void sendStatusMessage(String message, PlayerEntity player) {
 		sendStatusMessage(message, player, true);
 	}
-	
+
 	/**
-	 * Sends a string message in the in-game chat to a specific player.
+	 * Sends a status message to a specific player.
 	 * 
-	 * @param message the string that is sent in the chat
-	 * @param player  the player that the message is sent to
-	 * @param actionBar boolean whether to show the message in the actionBar (true) or in the chat (false)
+	 * @param message   the string that is sent in the chat
+	 * @param player    the player that the message is sent to
+	 * @param actionBar boolean whether to show the message in the actionBar (true)
+	 *                  or in the chat (false)
 	 */
 	public static void sendStatusMessage(String message, PlayerEntity player, boolean actionBar) {
 		LOGGER.debug("Sending chat message: \"" + message + "\" to " + player.getDisplayName().getString());
 		player.sendStatusMessage(new StringTextComponent(message), actionBar);
 	}
-	
+
 	/**
-	 * Converts a BlockPos to a Vector3d for convenience.
-	 * @param pos the given BlockPos
-	 * @return the Vector3d converted from the BlockPos
+	 * Converts a {@link BlockPos} to a Vector3d for convenience.
+	 * 
+	 * @param pos the given {@link BlockPos}
+	 * @return the {@link Vector3d} converted from the {@link BlockPos}
 	 */
 	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
 		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());

@@ -84,7 +84,7 @@ public class BaseraidsCommands {
 	}
 
 	private static int restoreDestroyedBlocks(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.restoreDestroyedBlocksMng.restoreSavedBlocks();
+		Baseraids.baseraidsData.raidManager.restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
 		return 0;
 	}
 }

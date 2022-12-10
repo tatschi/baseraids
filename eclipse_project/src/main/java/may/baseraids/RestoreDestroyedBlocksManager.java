@@ -15,6 +15,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+/**
+ * This class remembers which blocks were destroyed during a raid and can restore them at any point.
+ * @author Natascha May
+ *
+ */
 public class RestoreDestroyedBlocksManager {
 
 	private World world;
@@ -27,9 +32,9 @@ public class RestoreDestroyedBlocksManager {
 	
 	/**
 	 * Saves all blocks that are destroyed during a raid to
-	 * <code>BaseraidsWorldSavedData</code>.
+	 * {@link BaseraidsWorldSavedData}.
 	 * 
-	 * @param event the event of type <code>BlockEvent.BreakEvent</code> that calls this
+	 * @param event the event of type {@link BlockEvent.BreakEvent} that calls this
 	 *              function
 	 */
 	@SubscribeEvent
@@ -47,10 +52,29 @@ public class RestoreDestroyedBlocksManager {
 		savedBlocks.put(event.getPos(), event.getState());
 	}
 	
+	/**
+	 * Restores all currently saved blocks.
+	 */
 	public void restoreSavedBlocks() {
 		savedBlocks.forEach((pos, state) -> {
 			world.setBlockState(pos, state);
 		});
+	}
+	
+	/**
+	 * Restores and then clears all currently saved blocks.
+	 */
+	public void restoreAndClearSavedBlocks() {
+		savedBlocks.forEach((pos, state) -> {
+			world.setBlockState(pos, state);
+		});
+		savedBlocks.clear();
+	}
+	
+	/**
+	 * Clears all currently saved blocks.
+	 */
+	public void clearSavedBlocks() {
 		savedBlocks.clear();
 	}
 	

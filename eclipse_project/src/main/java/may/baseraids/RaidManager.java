@@ -9,9 +9,9 @@ import com.google.common.collect.Sets;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
 import may.baseraids.nexus.NexusBlock;
+import may.baseraids.nexus.NexusBlock.NexusState;
 import may.baseraids.nexus.NexusEffects;
 import may.baseraids.nexus.NexusEffectsTileEntity;
-import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity.SleepResult;
@@ -67,7 +67,7 @@ public class RaidManager {
 	/**
 	 * defines the amount of ticks before the next raid start at which you can no longer sleep
 	 */
-	private static final int SLEEP_RESTRICTION_TICKS = 12000;
+	private static final int SLEEP_RESTRICTION_TICKS = 12020;
 	
 	/**
 	 * Sets the times (remaining time until raid) at which all players will be
@@ -75,7 +75,7 @@ public class RaidManager {
 	 * warnPlayersOfRaid().
 	 */
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
-			600, 300, 120, 60, 30, 10, 5, 4, 3, 2, 1);
+			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
 	public GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
@@ -88,7 +88,7 @@ public class RaidManager {
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
-		this.world = world;
+		this.world = world;		
 		raidSpawningMng = new RaidSpawningManager(this, world);
 		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
 		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(world);
@@ -221,6 +221,8 @@ public class RaidManager {
 		setLastRaidGameTime((int) (world.getGameTime()));
 		setRaidActive(true);
 
+		restoreDestroyedBlocksMng.clearSavedBlocks();
+		
 		raidSpawningMng.spawnRaidMobs();
 	}
 
