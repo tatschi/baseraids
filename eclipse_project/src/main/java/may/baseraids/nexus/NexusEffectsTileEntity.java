@@ -10,8 +10,10 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * This class handles sound and effects from the nexus.
@@ -51,7 +53,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 			// play sound
 			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
 				if (ConfigOptions.enableSoundRaidHeartbeat.get()) {
-					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 0.5F, 1.0F);
+					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 300F, 1.0F);
 				}
 			} else {
 				if (ConfigOptions.enableSoundNexusAmbient.get()) {
