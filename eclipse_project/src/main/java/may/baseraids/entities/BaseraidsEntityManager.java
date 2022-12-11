@@ -64,6 +64,8 @@ public class BaseraidsEntityManager {
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager)
 				.setCallsForHelp(ZombifiedPiglinEntity.class));
+		
+		entity.enablePersistence();
 	}
 
 	public static void setupSpiderGoals(SpiderEntity entity) {
@@ -77,6 +79,8 @@ public class BaseraidsEntityManager {
 		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
+		
+		entity.enablePersistence();
 	}
 
 	public static void setupSkeletonGoals(SkeletonEntity entity) {
@@ -91,6 +95,7 @@ public class BaseraidsEntityManager {
 				new AttackBlockRangedGoal<SkeletonEntity>(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
 
+		entity.enablePersistence();
 	}
 
 	public static void setupPhantomGoals(PhantomEntity entity) {
@@ -100,6 +105,8 @@ public class BaseraidsEntityManager {
 
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusPhantomGoal(entity, Baseraids.baseraidsData.raidManager));
 		//entity.goalSelector.addGoal(2, new AttackBlockPhantomGoal(entity, Baseraids.baseraidsData.raidManager));
+		
+		entity.enablePersistence();
 	}
 
 	public static void setupZombifiedPiglinGoals(ZombifiedPiglinEntity entity) {
@@ -112,6 +119,7 @@ public class BaseraidsEntityManager {
 		entity.targetSelector.addGoal(1,
 				new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager).setCallsForHelp());
 
+		entity.enablePersistence();
 	}
 
 	/**
