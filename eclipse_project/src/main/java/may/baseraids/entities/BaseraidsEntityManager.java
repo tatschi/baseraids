@@ -21,9 +21,11 @@ import net.minecraft.entity.ai.goal.LookRandomlyGoal;
 import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.entity.ai.goal.TargetGoal;
 import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
+import net.minecraft.entity.monster.CaveSpiderEntity;
 import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.monster.SpiderEntity;
+import net.minecraft.entity.monster.WitherSkeletonEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 
@@ -44,6 +46,8 @@ public class BaseraidsEntityManager {
 		setupsRegistry.put(EntityType.PHANTOM, (entity) -> setupPhantomGoals((PhantomEntity) entity));
 		setupsRegistry.put(EntityType.ZOMBIFIED_PIGLIN,
 				(entity) -> setupZombifiedPiglinGoals((ZombifiedPiglinEntity) entity));
+		setupsRegistry.put(EntityType.CAVE_SPIDER, (entity) -> setupCaveSpiderGoals((CaveSpiderEntity) entity));
+		setupsRegistry.put(EntityType.WITHER_SKELETON, (entity) -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
 	}
 
 	public static void setupGoals(MobEntity entity) {
@@ -121,7 +125,36 @@ public class BaseraidsEntityManager {
 
 		entity.enablePersistence();
 	}
+	
+	public static void setupCaveSpiderGoals(CaveSpiderEntity entity) {
+		// remove unwanted goals
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
+				SpiderEntity.AttackGoal.class);
+		removeGoalsFromList(entity, goalClassesToRemove);
+		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
 
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
+		
+		entity.enablePersistence();
+	}
+
+	public static void setupWitherSkeletonGoals(WitherSkeletonEntity entity) {
+		// remove unwanted goals
+		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
+				WaterAvoidingRandomWalkingGoal.class);
+		removeGoalsFromList(entity, goalClassesToRemove);
+		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
+
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
+		
+		entity.enablePersistence();
+	}
+	
 	/**
 	 * Removes the specified AI goals from the given entity.
 	 * 
