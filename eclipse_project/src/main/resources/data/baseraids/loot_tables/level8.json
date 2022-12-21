@@ -3,33 +3,19 @@
     {
       "rolls": {
         "min": 0,
-        "max": 3
+        "max": 2
       },
       "entries": [
         {
           "type": "minecraft:loot_table",
           "name": "baseraids:wood_logs",
-          "weight": 2,
+          "weight": 1,
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 15,
-                "max": 30
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:sand",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 20,
-                "max": 40
+                "min": 45,
+                "max": 90
               }
             }
           ]
@@ -37,88 +23,13 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:clay_ball",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 30,
-                "max": 100
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:glowstone_dust",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 15,
-                "max": 30
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:lapis_lazuli",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 30,
-                "max": 80
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:quartz",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 30,
-                "max": 80
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:lantern",
-          "weight": 2,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 4,
-                "max": 10
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:vine",
-          "weight": 2
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:blue_ice",
           "weight": 1,
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 5,
-                "max": 64
+                "min": 60,
+                "max": 200
               }
             }
           ]
@@ -126,13 +37,13 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:obsidian",
-          "weight": 2,
+          "weight": 1,
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 3,
-                "max": 15
+                "min": 6,
+                "max": 30
               }
             }
           ]
@@ -142,7 +53,7 @@
     {
       "rolls": {
         "min": 1,
-        "max": 2
+        "max": 3
       },
       "entries": [
         {
@@ -153,8 +64,8 @@
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 10,
-                "max": 30
+                "min": 20,
+                "max": 60
               }
             }
           ]
@@ -206,6 +117,11 @@
           "name": "minecraft:diamond_sword",
           "weight": 1,
           "functions": []
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:totem_of_undying",
+          "weight": 2
         }
       ]
     },
@@ -215,21 +131,6 @@
         "max": 3
       },
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:saddle",
-          "weight": 1
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:name_tag",
-          "weight": 1
-        },
-        {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:explorer_maps",
-          "weight": 1
-        },
         {
           "type": "minecraft:item",
           "name": "minecraft:experience_bottle",
@@ -247,7 +148,7 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:book",
-          "weight": 3,
+          "weight": 5,
           "functions": [
             {
               "function": "minecraft:set_count",
@@ -274,14 +175,14 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:blaze_rod",
+          "name": "minecraft:shulker_shell",
           "weight": 1,
           "functions": [
             {
               "function": "minecraft:set_count",
               "count": {
                 "min": 1,
-                "max": 10
+                "max": 3
               }
             }
           ]
@@ -290,7 +191,7 @@
     },
     {
       "rolls": {
-        "min": 0,
+        "min": 1,
         "max": 2
       },
       "entries": [
@@ -302,8 +203,8 @@
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 5,
-                "max": 15
+                "min": 10,
+                "max": 30
               }
             }
           ]
@@ -316,22 +217,8 @@
             {
               "function": "minecraft:set_count",
               "count": {
-                "min": 5,
-                "max": 20
-              }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:gold_ingot",
-          "weight": 1,
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": {
-                "min": 5,
-                "max": 10
+                "min": 10,
+                "max": 40
               }
             }
           ]
@@ -345,7 +232,7 @@
               "function": "minecraft:set_count",
               "count": {
                 "min": 1,
-                "max": 3
+                "max": 6
               }
             }
           ]

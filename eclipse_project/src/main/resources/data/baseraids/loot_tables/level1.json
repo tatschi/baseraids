@@ -1,11 +1,165 @@
 {
   "pools": [
     {
-      "rolls": 1,
+      "rolls": {
+        "min": 0,
+        "max": 1
+      },
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "name": "baseraids:level1_build"
+          "name": "baseraids:wood_logs",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 15,
+                "max": 30
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:sand",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 20,
+                "max": 40
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 0,
+        "max": 1
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:shield",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:arrow",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 10,
+                "max": 30
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 0,
+        "max": 2
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:saddle",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:name_tag",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:explorer_maps",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:experience_bottle",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 5,
+                "max": 15
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 1,
+        "max": 5
+      },
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "baseraids:food",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 0,
+        "max": 2
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:leather",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 5,
+                "max": 20
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 5,
+                "max": 15
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:coal",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 20,
+                "max": 40
+              }
+            }
+          ]
         }
       ]
     },
@@ -13,44 +167,19 @@
       "rolls": 1,
       "entries": [
         {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:level1_gear"
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
+          "type": "minecraft:item",
+          "name": "minecraft:zombie_head",
+          "weight": 1
+        },
         {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:level1-2_misc"
+          "type": "minecraft:item",
+          "name": "minecraft:skeleton_skull",
+          "weight": 1
         }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
+      ],
+      "conditions": [
         {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:food"
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:level1_ore"
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "baseraids:level1-4_heads"
+          "condition": "minecraft:random_chance"
         }
       ]
     }
