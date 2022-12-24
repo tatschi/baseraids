@@ -52,6 +52,7 @@ public class RaidManager {
 	private long lastRaidGameTime = -1;
 	private long nextRaidGameTime = -1;
 
+	public static final int MAX_RAID_LEVEL = 10, MIN_RAID_LEVEL = 1;
 
 	/**
 	 * defines the amount of ticks of one full minecraft day
@@ -82,6 +83,9 @@ public class RaidManager {
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
 			new ResourceLocation(Baseraids.MODID, "level4"), new ResourceLocation(Baseraids.MODID, "level5"),
+			new ResourceLocation(Baseraids.MODID, "level6"), new ResourceLocation(Baseraids.MODID, "level7"),
+			new ResourceLocation(Baseraids.MODID, "level8"), new ResourceLocation(Baseraids.MODID, "level9"),
+			new ResourceLocation(Baseraids.MODID, "level10")};
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
