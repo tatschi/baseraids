@@ -39,7 +39,7 @@ public class ConfigOptions {
 		
 		maxRaidDuration = builder
 				.comment("Maximum time a raid can last in ticks. When this limit is reached, the raid is won, because the nexus survived! 1min is 1200")
-				.defineInRange(Baseraids.MODID + ".maxRaidDuration", 3600, 0, (int) 1e7);
+				.defineInRange(Baseraids.MODID + ".maxRaidDuration", 3600, 0, (int) 11000);
 		
 		deactivateMonsterNightSpawn = builder
 				.comment("If set to true, the mod deactivates monster spawning at night. They will still spawn in caves.")

@@ -27,6 +27,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.event.world.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -48,9 +49,9 @@ public class RaidManager {
 	private int tick = 0;
 	private int timeUntilRaidInLastWarnPlayersOfRaidRun = -1;
 	private int curRaidLevel = -1;
-	private int lastRaidGameTime = -1;
+	private long lastRaidGameTime = -1;
+	private long nextRaidGameTime = -1;
 
-	public static final int MAX_RAID_LEVEL = 7, MIN_RAID_LEVEL = 1;
 
 	/**
 	 * defines the amount of ticks of one full minecraft day
@@ -61,14 +62,11 @@ public class RaidManager {
 	 */
 	private static final int START_OF_NIGHT_IN_WORLD_DAY_TIME = 13000;
 	/**
-	 * defines the world.daytime at which it starts to be day (one day = 24000)
-	 */
-	private static final int START_OF_DAY_IN_WORLD_DAY_TIME = 23000;
-	/**
-	 * defines the amount of ticks before the next raid start at which you can no longer sleep
+	 * defines the amount of ticks before the next raid start at which you can no
+	 * longer sleep
 	 */
 	private static final int SLEEP_RESTRICTION_TICKS = 12020;
-	
+
 	/**
 	 * Sets the times (remaining time until raid) at which all players will be
 	 * warned of the coming raid (approximated, in seconds), @see
@@ -84,11 +82,10 @@ public class RaidManager {
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
 			new ResourceLocation(Baseraids.MODID, "level4"), new ResourceLocation(Baseraids.MODID, "level5"),
-			new ResourceLocation(Baseraids.MODID, "level6"), new ResourceLocation(Baseraids.MODID, "level7") };
 
 	public RaidManager(World world) {
 		MinecraftForge.EVENT_BUS.register(this);
-		this.world = world;		
+		this.world = world;
 		raidSpawningMng = new RaidSpawningManager(this, world);
 		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
 		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(world);
@@ -166,14 +163,10 @@ public class RaidManager {
 	 * @return a flag whether a raid should start or not
 	 */
 	private boolean shouldStartRaid() {
-		if (getTimeSinceRaid() < ConfigOptions.timeBetweenRaids.get()) {
+		if (world.getGameTime() < nextRaidGameTime) {
 			return false;
 		}
-		if (START_OF_DAY_IN_WORLD_DAY_TIME < world.getDayTime() % FULL_DAY_TICKS) {
-			return false;
-		}
-
-		if (world.getDayTime() % 24000 < START_OF_NIGHT_IN_WORLD_DAY_TIME) {
+		if (world.getDayTime() % FULL_DAY_TICKS < START_OF_NIGHT_IN_WORLD_DAY_TIME) {
 			return false;
 		}
 		if (NexusBlock.getState() != NexusState.BLOCK) {
@@ -212,17 +205,18 @@ public class RaidManager {
 			return;
 		}
 		if (!world.getDimensionKey().equals(World.OVERWORLD)) {
-			return;			
+			return;
 		}
-		
+
 		Baseraids.sendStatusMessage("You are being raided!");
 		Baseraids.LOGGER.info("Initiating raid");
 
 		setLastRaidGameTime((int) (world.getGameTime()));
+		resetNextRaidGameTime();
 		setRaidActive(true);
 
 		restoreDestroyedBlocksMng.clearSavedBlocks();
-		
+
 		raidSpawningMng.spawnRaidMobs();
 	}
 
@@ -291,8 +285,8 @@ public class RaidManager {
 		raidSpawningMng.killAllMobs();
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
-		if(ConfigOptions.restoreDestroyedBlocks.get()) {
-			restoreDestroyedBlocksMng.restoreSavedBlocks();			
+		if (ConfigOptions.restoreDestroyedBlocks.get()) {
+			restoreDestroyedBlocksMng.restoreSavedBlocks();
 		}
 	}
 
@@ -310,9 +304,9 @@ public class RaidManager {
 		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
 			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
 			// fill chest
-			for(int i = 0; i < world.getPlayers().size(); i++) {
+			for (int i = 0; i < world.getPlayers().size(); i++) {
 				chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
-				chestEntity.fillWithLoot(null);				
+				chestEntity.fillWithLoot(null);
 			}
 			Baseraids.LOGGER.info("Added loot to loot chest");
 		} else {
@@ -328,11 +322,25 @@ public class RaidManager {
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
+		if(event.getPlayer().world.isRemote()) {
+			return;
+		}
 		if (isRaidActive() || getTimeUntilRaid() < SLEEP_RESTRICTION_TICKS) {
 			event.setResult(SleepResult.OTHER_PROBLEM);
 			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before or during a raid!"),
 					true);
 		}
+	}
+	
+	
+	@SubscribeEvent
+	public void onSleepFinished(SleepFinishedTimeEvent event) {
+		if(event.getWorld().isRemote()) {
+			return;
+		}
+		int reductionTime = (int) (event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
+		reduceTimeUntilRaid(reductionTime);
+		Baseraids.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString(), true);
 	}
 
 	/**
@@ -343,38 +351,16 @@ public class RaidManager {
 	 * @return the raw number of ticks until the next raid according to
 	 *         <code>ConfigOptions.timeBetweenRaids</code>
 	 */
-	private int getRawTimeUntilRaid() {
-		return ConfigOptions.timeBetweenRaids.get() - getTimeSinceRaid();
-	}
-
-	/**
-	 * Gets the actual time in ticks until the next raid considering all
-	 * requirements for a raid.
-	 * 
-	 * @return the number of ticks until the next raid
-	 */
 	private int getTimeUntilRaid() {
-
-		long curTime = world.getDayTime();
-		int rawTimeUntilRaid = getRawTimeUntilRaid();
-
-		long rawTimeOfNextRaid = curTime + rawTimeUntilRaid;
-		long rawDayTimeOfNextRaid = rawTimeOfNextRaid % FULL_DAY_TICKS;
-
-		int normalizeDiff = (24000 - START_OF_DAY_IN_WORLD_DAY_TIME);
-		long normalizedRawDayTimeOfNextRaid = rawDayTimeOfNextRaid + normalizeDiff;
-
-		if (0 < normalizedRawDayTimeOfNextRaid
-				&& normalizedRawDayTimeOfNextRaid <= START_OF_NIGHT_IN_WORLD_DAY_TIME + normalizeDiff) {
-			long timeOfNextRaid = rawTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME - rawDayTimeOfNextRaid;
-			return (int) (timeOfNextRaid - curTime);
-		}
-
-		return rawTimeUntilRaid;
+		return (int) (nextRaidGameTime - world.getGameTime());
 	}
 
 	public int getTimeUntilRaidInSec() {
 		return getTimeUntilRaid() / 20;
+	}
+	
+	public int getTimeUntilRaidInMin() {
+		return getTimeUntilRaidInSec() / 60;
 	}
 
 	/**
@@ -431,7 +417,8 @@ public class RaidManager {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.putBoolean("isRaidActive", isRaidActive);
 		nbt.putInt("curRaidLevel", curRaidLevel);
-		nbt.putInt("lastRaidGameTime", lastRaidGameTime);
+		nbt.putLong("lastRaidGameTime", lastRaidGameTime);
+		nbt.putLong("nextRaidGameTime", nextRaidGameTime);
 
 		CompoundNBT raidSpawning = raidSpawningMng.writeAdditional();
 		nbt.put("raidSpawningManager", raidSpawning);
@@ -459,13 +446,14 @@ public class RaidManager {
 		try {
 			isRaidActive = nbt.getBoolean("isRaidActive");
 			curRaidLevel = nbt.getInt("curRaidLevel");
-			lastRaidGameTime = nbt.getInt("lastRaidGameTime");
+			lastRaidGameTime = nbt.getLong("lastRaidGameTime");
+			nextRaidGameTime = nbt.getLong("nextRaidGameTime");
 
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
 			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
 			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT, serverWorld);
-			
+
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
 
 		} catch (Exception e) {
@@ -488,13 +476,80 @@ public class RaidManager {
 		if (isRaidActive == null) {
 			isRaidActive = false;
 		}
+		if (nextRaidGameTime == -1) {
+			if (lastRaidGameTime != 0) {
+				nextRaidGameTime = lastRaidGameTime + ConfigOptions.timeBetweenRaids.get();
+			} else {
+				nextRaidGameTime = getNextRaidGameTimeRaw();
+			}
+		}
 	}
 
-	private void setLastRaidGameTime(int time) {
+	private long getNextRaidGameTimeRaw() {
+		return world.getGameTime() + ConfigOptions.timeBetweenRaids.get();
+	}
+
+	private void resetNextRaidGameTime() {
+		setTimeUntilRaid(getNextRaidGameTimeRaw());			
+	}
+
+	private void setLastRaidGameTime(long time) {
 		lastRaidGameTime = time;
 		markDirty();
 	}
 
+	private void setNextRaidGameTime(long time) {
+		if(time < world.getGameTime()) {
+			return;
+		}
+		nextRaidGameTime = time;
+		Baseraids.LOGGER.debug("Set next raid game time to " + time);
+		markDirty();		
+	}
+	
+	private void setTimeUntilRaid(long time) {
+		if(time < 0) {
+			return;
+		}
+		long curDayTime = world.getDayTime();
+		long rawGameTimeUntilRaid = time;
+
+		long rawDayTimeOfNextRaid = (curDayTime + rawGameTimeUntilRaid) % FULL_DAY_TICKS;
+		long rawTimeOfNextRaid = world.getGameTime() + time;
+
+		if (wouldRaidBeAtNight(rawDayTimeOfNextRaid)) {
+			setNextRaidGameTime(rawTimeOfNextRaid);
+		}else {
+			setNextRaidGameTime(rawTimeOfNextRaid - rawDayTimeOfNextRaid + START_OF_NIGHT_IN_WORLD_DAY_TIME);
+		}
+		
+		Baseraids.LOGGER.debug("Set time until raid to " + nextRaidGameTime);
+	}
+	
+	private boolean wouldRaidBeAtNight(long rawDayTimeOfNextRaid) {
+		if(!isNightTime(rawDayTimeOfNextRaid)) {
+			return false;
+		}
+		return isNightTime(rawDayTimeOfNextRaid + ConfigOptions.maxRaidDuration.get());
+	}
+	
+	private boolean isNightTime(long dayTime) {
+		dayTime = dayTime % FULL_DAY_TICKS;
+		return dayTime >= START_OF_NIGHT_IN_WORLD_DAY_TIME;
+	}
+	
+	public void setTimeUntilRaidInMin(int min) {
+		setTimeUntilRaid((long) (min) * 60 * 20);		
+	}
+	
+	private void reduceTimeUntilRaid(int reductionTime) {
+		setTimeUntilRaid(getTimeUntilRaid() - reductionTime);
+	}
+	
+	public void reduceTimeUntilRaidInMin(int reductionTimeInMin) {
+		reduceTimeUntilRaid(reductionTimeInMin * 60 * 20);
+	}
+	
 	public boolean isRaidActive() {
 		return isRaidActive;
 	}
@@ -511,10 +566,10 @@ public class RaidManager {
 	public int getTimeSinceRaid() {
 		if (world == null)
 			return -1;
-		return (int) (world.getGameTime()) - lastRaidGameTime;
+		return (int) (world.getGameTime() - lastRaidGameTime);
 	}
 
-	private void setRaidLevel(int level) {
+	public void setRaidLevel(int level) {
 		curRaidLevel = level;
 		markDirty();
 	}
@@ -522,9 +577,9 @@ public class RaidManager {
 	public int getRaidLevel() {
 		return curRaidLevel;
 	}
-	
+
 	public boolean isEntityRaiding(LivingEntity entity) {
-		if(!isRaidActive()) {
+		if (!isRaidActive()) {
 			return false;
 		}
 		return raidSpawningMng.isEntityRaiding(entity);
