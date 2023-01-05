@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace generate_loot_tables
 {
+    [JsonConverter(typeof(ConditionConverter))]
     internal class Condition
     {
         [JsonPropertyName("condition")]

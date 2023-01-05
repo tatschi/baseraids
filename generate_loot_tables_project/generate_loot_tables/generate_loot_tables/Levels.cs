@@ -4,6 +4,8 @@ namespace generate_loot_tables
 {
     internal class Levels
     {
+        // TODO add damage and enchantment to armor and tools
+
         static Level level1 = new()
         {
             Name = "level1.json",

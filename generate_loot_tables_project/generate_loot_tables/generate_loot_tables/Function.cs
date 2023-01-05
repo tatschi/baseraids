@@ -49,6 +49,14 @@ namespace generate_loot_tables
             {
                 JsonSerializer.Serialize(writer, setCount, options);
             }
+            if (value is FunctionEnchantWithLevels enchant)
+            {
+                JsonSerializer.Serialize(writer, enchant, options);
+            }
+            if (value is FunctionSetDamage setDamage)
+            {
+                JsonSerializer.Serialize(writer, setDamage, options);
+            }
         }
     }
 
