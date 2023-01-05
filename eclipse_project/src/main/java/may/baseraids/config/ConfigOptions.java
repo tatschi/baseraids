@@ -25,6 +25,7 @@ public class ConfigOptions {
 	public static ForgeConfigSpec.BooleanValue enableSoundRaidHeartbeat;
 	public static ForgeConfigSpec.BooleanValue enableSoundCountdown;
 	public static ForgeConfigSpec.BooleanValue enableSoundNexusAmbient;
+	public static ForgeConfigSpec.BooleanValue enableTimeReductionFromSleeping;
 	
 	protected final static int MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT = 2;
 	public static final int[] LOOT_CHEST_POS_RELATIVE_DEFAULT = {0, 1, 0};
@@ -69,6 +70,10 @@ public class ConfigOptions {
 		enableSoundNexusAmbient = builder
 				.comment("If set to true, the ambient sound of the nexus will be played.")
 				.define(Baseraids.MODID + ".enableSoundNexusAmbient", true);
+		
+		enableTimeReductionFromSleeping = builder
+				.comment("If set to true, the time until the next raid is reduced when you sleep in a bed.")
+				.define(Baseraids.MODID + ".enableTimeReductionFromSleeping", false);
 		
 		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
 	}	

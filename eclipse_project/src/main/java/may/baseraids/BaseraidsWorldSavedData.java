@@ -31,7 +31,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	public BaseraidsWorldSavedData(ServerWorld world) {
 		super(DATA_NAME);
 		raidManager = new RaidManager(world);
-		raidManager.isInitialized = true;
 		this.serverWorld = world;
 	}
 
@@ -48,7 +47,6 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	public void read(CompoundNBT nbt) {
 		NexusBlock.readAdditional(nbt.getCompound("nexusBlock"));
 		this.raidManager.readAdditional(nbt.getCompound("raidManager"), serverWorld);
-		this.raidManager.isInitialized = true;
 	}
 
 	/**
