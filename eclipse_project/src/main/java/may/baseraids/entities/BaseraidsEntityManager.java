@@ -19,8 +19,10 @@ import net.minecraft.entity.ai.goal.HurtByTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.goal.LookRandomlyGoal;
 import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.TargetGoal;
 import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
+import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.monster.CaveSpiderEntity;
 import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
@@ -28,6 +30,9 @@ import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.WitherSkeletonEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
+import net.minecraft.entity.passive.IronGolemEntity;
+import net.minecraft.entity.passive.TurtleEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
 /**
  * This class is used for setting up the default monsters with custom AI for
@@ -47,7 +52,8 @@ public class BaseraidsEntityManager {
 		setupsRegistry.put(EntityType.ZOMBIFIED_PIGLIN,
 				(entity) -> setupZombifiedPiglinGoals((ZombifiedPiglinEntity) entity));
 		setupsRegistry.put(EntityType.CAVE_SPIDER, (entity) -> setupCaveSpiderGoals((CaveSpiderEntity) entity));
-		setupsRegistry.put(EntityType.WITHER_SKELETON, (entity) -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
+		setupsRegistry.put(EntityType.WITHER_SKELETON,
+				(entity) -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
 	}
 
 	public static void setupGoals(MobEntity entity) {
@@ -62,13 +68,15 @@ public class BaseraidsEntityManager {
 				ZombieEntity.AttackTurtleEggGoal.class, LookRandomlyGoal.class, MoveThroughVillageGoal.class,
 				WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
-		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
+		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
 		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager)
 				.setCallsForHelp(ZombifiedPiglinEntity.class));
-		
+		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
+		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
+
 		entity.enablePersistence();
 	}
 
@@ -83,7 +91,7 @@ public class BaseraidsEntityManager {
 		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
-		
+
 		entity.enablePersistence();
 	}
 
@@ -92,12 +100,14 @@ public class BaseraidsEntityManager {
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
-		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
+		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1,
 				new AttackBlockRangedGoal<SkeletonEntity>(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
+		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
+		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
 
 		entity.enablePersistence();
 	}
@@ -108,8 +118,9 @@ public class BaseraidsEntityManager {
 		removeGoalsFromList(entity, goalClassesToRemove);
 
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusPhantomGoal(entity, Baseraids.baseraidsData.raidManager));
-		//entity.goalSelector.addGoal(2, new AttackBlockPhantomGoal(entity, Baseraids.baseraidsData.raidManager));
-		
+		// entity.goalSelector.addGoal(2, new AttackBlockPhantomGoal(entity,
+		// Baseraids.baseraidsData.raidManager));
+
 		entity.enablePersistence();
 	}
 
@@ -125,7 +136,7 @@ public class BaseraidsEntityManager {
 
 		entity.enablePersistence();
 	}
-	
+
 	public static void setupCaveSpiderGoals(CaveSpiderEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
@@ -137,7 +148,7 @@ public class BaseraidsEntityManager {
 		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
-		
+
 		entity.enablePersistence();
 	}
 
@@ -146,15 +157,17 @@ public class BaseraidsEntityManager {
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
-		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
+		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.baseraidsData.raidManager));
 		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.baseraidsData.raidManager));
-		
+		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
+		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
+
 		entity.enablePersistence();
 	}
-	
+
 	/**
 	 * Removes the specified AI goals from the given entity.
 	 * 
