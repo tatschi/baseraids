@@ -117,7 +117,7 @@ public class RaidManager {
 
 		if (world.getDifficulty() == Difficulty.PEACEFUL) {
 			if (isRaidActive()) {
-				Baseraids.sendStatusMessage("Raid was ended because difficulty is peaceful", true);
+				Baseraids.messageManager.sendStatusMessage("Raid was ended because difficulty is peaceful", true);
 				endRaid();
 			}
 			return;
@@ -151,7 +151,7 @@ public class RaidManager {
 		}
 
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
-		Baseraids.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
+		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
 		if (timeUntilRaidInSec <= 5 && Boolean.TRUE.equals(ConfigOptions.enableSoundCountdown.get())) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
 					2.0F, 1.0F);
@@ -200,7 +200,7 @@ public class RaidManager {
 	 * instance and related managing instances and calls the spawning of the mobs.
 	 */
 	public void startRaid() {
-		Baseraids.sendStatusMessage("You are being raided!");
+		Baseraids.messageManager.sendStatusMessage("You are being raided!");
 		Baseraids.LOGGER.info("Initiating raid");
 
 		resetActiveRaidTicks();
@@ -221,7 +221,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid lost");
-		Baseraids.sendStatusMessage("You lost the raid!");
+		Baseraids.messageManager.sendStatusMessage("You lost the raid!");
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		resetRaidLevel();
@@ -253,7 +253,7 @@ public class RaidManager {
 		if (world == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
-		Baseraids.sendStatusMessage("You won the raid!");
+		Baseraids.messageManager.sendStatusMessage("You won the raid!");
 
 		spawnAndFillRewardChest();
 
@@ -276,7 +276,7 @@ public class RaidManager {
 	 * and related managing instances and killing all mobs spawned by the raid.
 	 */
 	private void endRaid() {
-		Baseraids.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
+		Baseraids.messageManager.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
 		setRaidActive(false);
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
@@ -373,7 +373,7 @@ public class RaidManager {
 		}
 		int reductionTime = (int) (event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
 		reduceTimeUntilRaid(reductionTime);
-		Baseraids.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString(), true);
+		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString(), true);
 	}
 
 	/**

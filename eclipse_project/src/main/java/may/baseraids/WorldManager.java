@@ -22,7 +22,7 @@ public class WorldManager {
 
 	private BaseraidsWorldSavedData baseraidsData;
 	private final BaseraidsCommands commands;
-	final BaseraidsEntityManager entityManager;
+	final BaseraidsEntityManager entityManager;	
 	
 	WorldManager() {
 		MinecraftForge.EVENT_BUS.register(this);

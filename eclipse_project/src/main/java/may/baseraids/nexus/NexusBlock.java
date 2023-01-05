@@ -186,7 +186,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (Baseraids.worldManager.getRaidManager().isRaidActive()) {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
-			Baseraids.sendStatusMessage("The NexusBlock cannot be removed during raid!", event.getPlayer(), true);
+			Baseraids.messageManager.sendStatusMessage("The NexusBlock cannot be removed during raid!", event.getPlayer(), true);
 			return;
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {
@@ -215,7 +215,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		}
 		event.setCanceled(true);
 		Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
-		Baseraids.sendStatusMessage("You cannot toss away the Nexus. It needs to be placed!");
+		Baseraids.messageManager.sendStatusMessage("You cannot toss away the Nexus. It needs to be placed!");
 		// Canceling the event means that the item is not dropped by is still removed
 		// from the inventory.
 		// Therefore, give it the nexus to the player again.
@@ -342,7 +342,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
 		if (!player.addItemStackToInventory(itemStack)) {
 			Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
-			Baseraids.sendStatusMessage("Error: Could not add Nexus to inventory!");
+			Baseraids.messageManager.sendStatusMessage("Error: Could not add Nexus to inventory!");
 			return false;
 		}
 		Baseraids.LOGGER.debug("Successfully added nexus to player's inventory");

@@ -8,7 +8,6 @@ import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffectsTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -17,7 +16,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -26,7 +24,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -76,75 +73,36 @@ public class Baseraids {
 			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
 	public static final WorldManager worldManager = new WorldManager();
+	public static final MessageManager messageManager = new MessageManager();
+
+	public Baseraids() {
+		setup();
+	}
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
 	 * the class {@link Config}.
 	 */
-	public Baseraids() {
-
+	private void setup() {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.config);
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-		// Register the setup method for modloading
 		bus.addListener(worldManager::onFMLCommonSetup);
+		registerDeferredRegistries(bus);
 
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
 
+		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
+	}
+	
+	private void registerDeferredRegistries(IEventBus bus) {
 		// register custom registries
 		BLOCKS.register(bus);
 		ITEMS.register(bus);
 		TILE_ENTITIES.register(bus);
 		ENTITIES.register(bus);
 		SOUNDS.register(bus);
-
-		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
-	}
-
-	/**
-	 * Sends a status message to all players on the server.
-	 * 
-	 * @param message the string that is sent in the chat
-	 */
-	public static void sendStatusMessage(String message) {
-		sendStatusMessage(message, true);
-	}
-
-	/**
-	 * Sends a status message to all players on the server.
-	 * 
-	 * @param message   the string that is sent in the chat
-	 * @param actionBar boolean whether to show the message in the actionBar (true)
-	 *                  or in the chat (false)
-	 */
-	public static void sendStatusMessage(String message, boolean actionBar) {
-		LOGGER.debug("Sending chat message: \"" + message + "\"");
-		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()
-				.forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
-	}
-
-	/**
-	 * Sends a status message to a specific player.
-	 * 
-	 * @param message the string that is sent in the chat
-	 * @param player  the player that the message is sent to
-	 */
-	public static void sendStatusMessage(String message, PlayerEntity player) {
-		sendStatusMessage(message, player, true);
-	}
-
-	/**
-	 * Sends a status message to a specific player.
-	 * 
-	 * @param message   the string that is sent in the chat
-	 * @param player    the player that the message is sent to
-	 * @param actionBar boolean whether to show the message in the actionBar (true)
-	 *                  or in the chat (false)
-	 */
-	public static void sendStatusMessage(String message, PlayerEntity player, boolean actionBar) {
-		LOGGER.debug("Sending chat message: \"" + message + "\" to " + player.getDisplayName().getString());
-		player.sendStatusMessage(new StringTextComponent(message), actionBar);
 	}
 
 	/**
@@ -156,5 +114,5 @@ public class Baseraids {
 	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
 		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
 	}
-	
+
 }
