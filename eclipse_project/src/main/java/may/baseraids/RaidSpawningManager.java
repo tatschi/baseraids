@@ -83,7 +83,7 @@ public class RaidSpawningManager {
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
 		});
 		
-		Baseraids.baseraidsData.setDirty(true);
+		Baseraids.markDirty();
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
 
@@ -166,7 +166,7 @@ public class RaidSpawningManager {
 	 */
 	boolean areAllSpawnedMobsDead() {
 		if (spawnedMobs.isEmpty()) {
-			Baseraids.baseraidsData.setDirty(true);
+			Baseraids.markDirty();
 			return false;
 		}
 
@@ -186,7 +186,7 @@ public class RaidSpawningManager {
 			mob.remove();
 		});
 		spawnedMobs.clear();
-		Baseraids.baseraidsData.setDirty(true);
+		Baseraids.markDirty();
 	}
 	
 	public boolean isEntityRaiding(LivingEntity entity) {
@@ -277,7 +277,7 @@ public class RaidSpawningManager {
 		MobEntity mob = (MobEntity) entity;
 		spawnedMobs.add(mob);
 		BaseraidsEntityManager.setupGoals(mob);
-		Baseraids.baseraidsData.setDirty(true);
+		Baseraids.markDirty();
 	}
 
 }

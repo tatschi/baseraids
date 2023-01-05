@@ -73,60 +73,60 @@ public class BaseraidsCommands {
 	}
 
 	private static int winRaid(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.winRaid();
+		Baseraids.getRaidManager().winRaid();
 		return 0;
 	}
 
 	private static int loseRaid(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.loseRaid();
+		Baseraids.getRaidManager().loseRaid();
 		return 0;
 	}
 
 	private static int getTimeUntilRaid(CommandSource source) {
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.baseraidsData.raidManager.getTimeUntilRaidInSec();
+		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 	
 	private static int setTimeUntilRaid(CommandSource source, int min) {
-		Baseraids.baseraidsData.raidManager.setTimeUntilRaidInMin(min);
+		Baseraids.getRaidManager().setTimeUntilRaidInMin(min);
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.baseraidsData.raidManager.getTimeUntilRaidInSec();
+		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 	
 	private static int reduceTimeUntilRaid(CommandSource source, int min) {
-		Baseraids.baseraidsData.raidManager.reduceTimeUntilRaidInMin(min);
+		Baseraids.getRaidManager().reduceTimeUntilRaidInMin(min);
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.baseraidsData.raidManager.getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.baseraidsData.raidManager.getTimeUntilRaidInSec();
+		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 
 	private static int getRaidLevel(CommandSource source) {
-		int level = Baseraids.baseraidsData.raidManager.getRaidLevel();
+		int level = Baseraids.getRaidManager().getRaidLevel();
 		source.sendFeedback(new StringTextComponent("Raid level: " + level), true);
 		return level;
 	}
 	
 	private static int setRaidLevel(CommandSource source, int level) {
-		Baseraids.baseraidsData.raidManager.setRaidLevel(level);
+		Baseraids.getRaidManager().setRaidLevel(level);
 		source.sendFeedback(new StringTextComponent("Raid level: " + level), true);
 		return level;
 	}
 
 	private static int startRaid(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.startRaid();
+		Baseraids.getRaidManager().startRaid();
 		return 0;
 	}
 
 	private static int restoreDestroyedBlocks(CommandSource source) {
-		Baseraids.baseraidsData.raidManager.restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
+		Baseraids.getRaidManager().restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
 		return 0;
 	}
 }

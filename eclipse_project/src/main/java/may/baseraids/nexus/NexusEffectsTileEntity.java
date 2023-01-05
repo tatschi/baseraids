@@ -43,7 +43,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 			}
 
 			// play sound
-			if (Baseraids.baseraidsData.raidManager.isRaidActive()) {
+			if (Baseraids.getRaidManager().isRaidActive()) {
 				if (Boolean.TRUE.equals(ConfigOptions.enableSoundRaidHeartbeat.get())) {
 					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 300F, 1.0F);
 				}

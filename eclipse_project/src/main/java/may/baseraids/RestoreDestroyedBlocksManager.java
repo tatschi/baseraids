@@ -45,7 +45,7 @@ public class RestoreDestroyedBlocksManager {
 		if(!event.getWorld().equals(world)) {
 			return;
 		}
-		if(!Baseraids.baseraidsData.raidManager.isRaidActive()) {
+		if(!Baseraids.getRaidManager().isRaidActive()) {
 			return;
 		}
 

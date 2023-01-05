@@ -256,11 +256,11 @@ public class RaidManager {
 		spawnAndFillRewardChest();
 
 		// make sure to add these effects before increasing the raid level
-		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.baseraidsData.serverWorld
+		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.getServerWorld()
 				.getTileEntity(NexusBlock.getBlockPos());
 		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 		nexusEntity.setLastWonRaidLevel(getRaidLevel());
-		
+
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		increaseRaidLevel();
@@ -572,7 +572,7 @@ public class RaidManager {
 	}
 
 	private void markDirty() {
-		Baseraids.baseraidsData.markDirty();
+		Baseraids.markDirty();
 	}
 
 	public void setRaidLevel(int level) {

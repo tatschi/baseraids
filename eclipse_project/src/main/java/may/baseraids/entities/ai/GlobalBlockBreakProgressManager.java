@@ -114,7 +114,7 @@ public class GlobalBlockBreakProgressManager {
 		if (event.getPlayer().world.isRemote()) {
 			return;
 		}
-		if (!Baseraids.baseraidsData.raidManager.isRaidActive()) {
+		if (!Baseraids.getRaidManager().isRaidActive()) {
 			return;
 		}
 		resetProgress(event.getPos());
@@ -131,7 +131,7 @@ public class GlobalBlockBreakProgressManager {
 		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if (!Baseraids.baseraidsData.raidManager.isRaidActive()) {
+		if (!Baseraids.getRaidManager().isRaidActive()) {
 			return;
 		}
 		resetProgress(event.getPos());
@@ -148,7 +148,7 @@ public class GlobalBlockBreakProgressManager {
 		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if (!Baseraids.baseraidsData.raidManager.isRaidActive()) {
+		if (!Baseraids.getRaidManager().isRaidActive()) {
 			return;
 		}
 		resetProgress(event.getPos());

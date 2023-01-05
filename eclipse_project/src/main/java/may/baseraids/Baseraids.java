@@ -66,7 +66,7 @@ public class Baseraids {
 			Baseraids.MODID);
 
 	// BLOCKS & ITEMS
-	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", () -> new NexusBlock());
+	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", NexusBlock::new);
 	public static final RegistryObject<BlockItem> NEXUS_ITEM = ITEMS.register("nexus_block",
 			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().group(ItemGroup.COMBAT)));
 
@@ -85,9 +85,7 @@ public class Baseraids {
 	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low",
 			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
-	public static BaseraidsWorldSavedData baseraidsData;
-
-	public static int packetMsgId = 0;
+	private static BaseraidsWorldSavedData baseraidsData;
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
@@ -268,6 +266,18 @@ public class Baseraids {
 	 */
 	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
 		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
+	}
+	
+	public static void markDirty() {
+		baseraidsData.setDirty(true);
+	}
+	
+	public static RaidManager getRaidManager() {
+		return baseraidsData.raidManager;
+	}
+	
+	public static ServerWorld getServerWorld() {
+		return baseraidsData.serverWorld;
 	}
 
 }
