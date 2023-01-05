@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import may.baseraids.entities.BaseraidsEntityManager;
 import may.baseraids.entities.RaidEntitySpawnCountRegistry;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.entity.Entity;
@@ -42,6 +41,7 @@ public class RaidSpawningManager {
 
 	private World world;
 	private RaidManager raidManager;
+	private WorldManager worldManager;
 	/** A list of all spawned mobs for managing active raids */
 	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
 	/**
@@ -55,9 +55,10 @@ public class RaidSpawningManager {
 	private static final int SPAWN_RADIUS_MIN = 40;
 	private static final int SPAWN_RADIUS_MAX = 60;
 
-	public RaidSpawningManager(RaidManager raidManager, World world) {
+	public RaidSpawningManager(RaidManager raidManager, World world, WorldManager worldManager) {
 		this.raidManager = raidManager;
 		this.world = world;
+		this.worldManager = worldManager;
 		MinecraftForge.EVENT_BUS.register(this);
 		RaidEntitySpawnCountRegistry.registerSpawnCounts();
 	}
@@ -83,7 +84,7 @@ public class RaidSpawningManager {
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
 		});
 		
-		Baseraids.markDirty();
+		raidManager.markDirty();
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
 
@@ -117,7 +118,7 @@ public class RaidSpawningManager {
 			}
 
 			if (mobs[i] != null) {
-				BaseraidsEntityManager.setupGoals(mobs[i]);
+				worldManager.entityManager.setupGoals(mobs[i]);
 			}
 		}
 		return mobs;
@@ -166,7 +167,7 @@ public class RaidSpawningManager {
 	 */
 	boolean areAllSpawnedMobsDead() {
 		if (spawnedMobs.isEmpty()) {
-			Baseraids.markDirty();
+			raidManager.markDirty();
 			return false;
 		}
 
@@ -186,7 +187,7 @@ public class RaidSpawningManager {
 			mob.remove();
 		});
 		spawnedMobs.clear();
-		Baseraids.markDirty();
+		raidManager.markDirty();
 	}
 	
 	public boolean isEntityRaiding(LivingEntity entity) {
@@ -276,8 +277,8 @@ public class RaidSpawningManager {
 		spawnedMobsUUIDs.remove(uuid);
 		MobEntity mob = (MobEntity) entity;
 		spawnedMobs.add(mob);
-		BaseraidsEntityManager.setupGoals(mob);
-		Baseraids.markDirty();
+		worldManager.entityManager.setupGoals(mob);
+		raidManager.markDirty();
 	}
 
 }

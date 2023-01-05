@@ -4,13 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import may.baseraids.config.Config;
-import may.baseraids.config.ConfigOptions;
-import may.baseraids.entities.BaseraidsEntityManager;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffectsTileEntity;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -22,18 +18,12 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -85,7 +75,7 @@ public class Baseraids {
 	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low",
 			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
-	private static BaseraidsWorldSavedData baseraidsData;
+	public static final WorldManager worldManager = new WorldManager();
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
@@ -97,7 +87,7 @@ public class Baseraids {
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		// Register the setup method for modloading
-		bus.addListener(this::onFMLCommonSetup);
+		bus.addListener(worldManager::onFMLCommonSetup);
 
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
@@ -110,107 +100,6 @@ public class Baseraids {
 		SOUNDS.register(bus);
 
 		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
-	}
-
-	/**
-	 * Registers the attributes for the custom entity types and registers the
-	 * renderers for the custom entity types. Called through the
-	 * {@link FMLCommonSetupEvent}.
-	 * 
-	 * @param event the event of type {@link FMLCommonSetupEvent} that calls this
-	 *              function
-	 */
-	private void onFMLCommonSetup(final FMLCommonSetupEvent event) {
-		BaseraidsEntityManager.registerSetups();
-	}
-
-	/**
-	 * Initiates the loading process for this mod using the class
-	 * {@link BaseraidsWorldSavedData} when the world is loaded.
-	 * 
-	 * @param event the event of type {@link WorldEvent.Load} that calls this
-	 *              function
-	 */
-	@SubscribeEvent
-	public void onWorldLoaded_loadBaseraidsWorldSavedData(final WorldEvent.Load event) {
-		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
-			return;
-
-		if (event.getWorld() instanceof ServerWorld) {
-			baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-		}
-
-	}
-
-	/**
-	 * Initiates the saving process for this mod using the class
-	 * {@link BaseraidsWorldSavedData} when the world is saved.
-	 * 
-	 * @param event the event of type {@link WorldEvent.Save} that calls this
-	 *              function
-	 */
-	@SubscribeEvent
-	public void onWorldSaved_saveBaseraidsWorldSavedData(final WorldEvent.Save event) {
-		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
-			return;
-		if (event.getWorld() instanceof ServerWorld) {
-			baseraidsData = BaseraidsWorldSavedData.get((ServerWorld) event.getWorld());
-		}
-	}
-
-	/**
-	 * 
-	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
-	 *              this function
-	 */
-	@SubscribeEvent
-	public void onMonsterSpawn(final WorldEvent.PotentialSpawns event) {
-		World world = (World) event.getWorld();
-		if (world.isRemote())
-			return;
-
-		if (!event.isCancelable()) {
-			return;
-		}
-
-		if (onMonsterSpawnOutsideCave_shouldCancelSpawn(event)) {
-			event.setCanceled(true);
-		}
-	}
-
-	/**
-	 * Cancels a monster spawning event, if it is not inside a cave and the config
-	 * option {@link ConfigOptions#deactivateMonsterNightSpawn} is true.
-	 * 
-	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
-	 *              this function
-	 */
-	private boolean onMonsterSpawnOutsideCave_shouldCancelSpawn(final WorldEvent.PotentialSpawns event) {
-		if (!ConfigOptions.deactivateMonsterNightSpawn.get()) {
-			return false;
-		}
-
-		if (!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
-			return false;
-		}
-
-		if (event.getType() != EntityClassification.MONSTER) {
-			return false;
-		}
-
-		if (!event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState())) {
-			return true;
-		}
-
-		if (event.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, event.getPos()).equals(event.getPos())) {
-			return true;
-		}
-
-		if (event.getWorld().canSeeSky(event.getPos())) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -268,16 +157,4 @@ public class Baseraids {
 		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
 	}
 	
-	public static void markDirty() {
-		baseraidsData.setDirty(true);
-	}
-	
-	public static RaidManager getRaidManager() {
-		return baseraidsData.raidManager;
-	}
-	
-	public static ServerWorld getServerWorld() {
-		return baseraidsData.serverWorld;
-	}
-
 }

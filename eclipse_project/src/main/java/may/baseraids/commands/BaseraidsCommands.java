@@ -3,33 +3,29 @@ package may.baseraids.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 
-import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
+import may.baseraids.WorldManager;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /**
  * This class defines the commands for this mod.
  * 
  * @author Natascha May
  */
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class BaseraidsCommands {
 
-	@SubscribeEvent
-	public static void onRegisterCommandEvent(RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSource> commandDispatcher = event.getDispatcher();
-		BaseraidsCommands.register(commandDispatcher);
+	private WorldManager worldManager;
+	
+	public BaseraidsCommands(WorldManager worldManager) {
+		this.worldManager = worldManager;
 	}
 	
-	public static void register(CommandDispatcher<CommandSource> dispatcher) {
+	public void register(CommandDispatcher<CommandSource> dispatcher) {
 	      dispatcher.register(
 	    		Commands.literal("baseraids")
 	    		.requires((commandSource) -> { return commandSource.hasPermissionLevel(2);})
@@ -68,65 +64,65 @@ public class BaseraidsCommands {
 	    		 );
 	}
 
-	private static int giveNexusToPlayer(CommandSource source, ServerPlayerEntity target) {
+	private int giveNexusToPlayer(CommandSource source, ServerPlayerEntity target) {
 		return NexusBlock.giveNexusToPlayer(target) ? 0 : 1;
 	}
 
-	private static int winRaid(CommandSource source) {
-		Baseraids.getRaidManager().winRaid();
+	private int winRaid(CommandSource source) {
+		worldManager.getRaidManager().winRaid();
 		return 0;
 	}
 
-	private static int loseRaid(CommandSource source) {
-		Baseraids.getRaidManager().loseRaid();
+	private int loseRaid(CommandSource source) {
+		worldManager.getRaidManager().loseRaid();
 		return 0;
 	}
 
-	private static int getTimeUntilRaid(CommandSource source) {
+	private int getTimeUntilRaid(CommandSource source) {
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + worldManager.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
+		int timeUntilRaid = worldManager.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 	
-	private static int setTimeUntilRaid(CommandSource source, int min) {
-		Baseraids.getRaidManager().setTimeUntilRaidInMin(min);
+	private int setTimeUntilRaid(CommandSource source, int min) {
+		worldManager.getRaidManager().setTimeUntilRaidInMin(min);
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + worldManager.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
+		int timeUntilRaid = worldManager.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 	
-	private static int reduceTimeUntilRaid(CommandSource source, int min) {
-		Baseraids.getRaidManager().reduceTimeUntilRaidInMin(min);
+	private int reduceTimeUntilRaid(CommandSource source, int min) {
+		worldManager.getRaidManager().reduceTimeUntilRaidInMin(min);
 		source.sendFeedback(new StringTextComponent(
-				"Time until next raid: " + Baseraids.getRaidManager().getTimeUntilRaidInDisplayString()),
+				"Time until next raid: " + worldManager.getRaidManager().getTimeUntilRaidInDisplayString()),
 				true);
-		int timeUntilRaid = Baseraids.getRaidManager().getTimeUntilRaidInSec();
+		int timeUntilRaid = worldManager.getRaidManager().getTimeUntilRaidInSec();
 		return timeUntilRaid;
 	}
 
-	private static int getRaidLevel(CommandSource source) {
-		int level = Baseraids.getRaidManager().getRaidLevel();
+	private int getRaidLevel(CommandSource source) {
+		int level = worldManager.getRaidManager().getRaidLevel();
 		source.sendFeedback(new StringTextComponent("Raid level: " + level), true);
 		return level;
 	}
 	
-	private static int setRaidLevel(CommandSource source, int level) {
-		Baseraids.getRaidManager().setRaidLevel(level);
+	private int setRaidLevel(CommandSource source, int level) {
+		worldManager.getRaidManager().setRaidLevel(level);
 		source.sendFeedback(new StringTextComponent("Raid level: " + level), true);
 		return level;
 	}
 
-	private static int startRaid(CommandSource source) {
-		Baseraids.getRaidManager().startRaid();
+	private int startRaid(CommandSource source) {
+		worldManager.getRaidManager().startRaid();
 		return 0;
 	}
 
-	private static int restoreDestroyedBlocks(CommandSource source) {
-		Baseraids.getRaidManager().restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
+	private int restoreDestroyedBlocks(CommandSource source) {
+		worldManager.getRaidManager().restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
 		return 0;
 	}
 }

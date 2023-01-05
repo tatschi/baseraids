@@ -23,9 +23,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class RestoreDestroyedBlocksManager {
 
 	private World world;
+	private RaidManager raidManager;
 	private ConcurrentHashMap<BlockPos, BlockState> savedBlocks = new ConcurrentHashMap<BlockPos, BlockState>();
 	
-	public RestoreDestroyedBlocksManager(World world) {
+	public RestoreDestroyedBlocksManager(RaidManager raidManager, World world) {
+		this.raidManager = raidManager;
 		this.world = world;
 		MinecraftForge.EVENT_BUS.register(this);
 	}
@@ -45,7 +47,7 @@ public class RestoreDestroyedBlocksManager {
 		if(!event.getWorld().equals(world)) {
 			return;
 		}
-		if(!Baseraids.getRaidManager().isRaidActive()) {
+		if(!raidManager.isRaidActive()) {
 			return;
 		}
 

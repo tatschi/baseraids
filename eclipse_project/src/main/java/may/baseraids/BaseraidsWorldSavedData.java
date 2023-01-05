@@ -28,9 +28,9 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 * 
 	 * @param world the world for which <code>this</code> saves data
 	 */
-	public BaseraidsWorldSavedData(ServerWorld world) {
+	public BaseraidsWorldSavedData(ServerWorld world, WorldManager worldManager) {
 		super(DATA_NAME);
-		raidManager = new RaidManager(world);
+		raidManager = new RaidManager(world, worldManager);
 		this.serverWorld = world;
 	}
 
@@ -81,11 +81,11 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 * @param world the world for which data should be loaded
 	 * @return an instance of this class which contains the loaded data
 	 */
-	public static BaseraidsWorldSavedData get(ServerWorld world) {
+	public static BaseraidsWorldSavedData get(WorldManager worldManager, ServerWorld world) {
 		Baseraids.LOGGER.info("collecting baseraidsSavedData");
 		DimensionSavedDataManager manager = world.getSavedData();
-		BaseraidsWorldSavedData worldSavedDataInstance = manager.getOrCreate(() -> new BaseraidsWorldSavedData(world),
-				DATA_NAME);
+		BaseraidsWorldSavedData worldSavedDataInstance = manager
+				.getOrCreate(() -> new BaseraidsWorldSavedData(world, worldManager), DATA_NAME);
 		return worldSavedDataInstance;
 	}
 

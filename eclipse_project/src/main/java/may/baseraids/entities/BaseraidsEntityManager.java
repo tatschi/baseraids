@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import may.baseraids.Baseraids;
+import may.baseraids.WorldManager;
 import may.baseraids.entities.ai.goal.AttackBlockMeleeGoal;
 import may.baseraids.entities.ai.goal.AttackBlockRangedGoal;
 import may.baseraids.entities.ai.goal.HurtByNotRaidingTargetGoal;
@@ -42,7 +42,13 @@ public class BaseraidsEntityManager {
 
 	private static Map<EntityType<?>, Consumer<MobEntity>> setupsRegistry = new HashMap<EntityType<?>, Consumer<MobEntity>>();
 
-	public static void registerSetups() {
+	private WorldManager worldManager;
+	
+	public BaseraidsEntityManager(WorldManager worldManager) {
+		this.worldManager = worldManager;
+	}
+
+	public void registerSetups() {
 		setupsRegistry.put(EntityType.ZOMBIE, (entity) -> setupZombieGoals((ZombieEntity) entity));
 		setupsRegistry.put(EntityType.SPIDER, (entity) -> setupSpiderGoals((SpiderEntity) entity));
 		setupsRegistry.put(EntityType.SKELETON, (entity) -> setupSkeletonGoals((SkeletonEntity) entity));
@@ -54,13 +60,13 @@ public class BaseraidsEntityManager {
 				(entity) -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
 	}
 
-	public static void setupGoals(MobEntity entity) {
+	public void setupGoals(MobEntity entity) {
 		if (!setupsRegistry.containsKey(entity.getType()))
 			return;
 		setupsRegistry.get(entity.getType()).accept(entity);
 	}
 
-	public static void setupZombieGoals(ZombieEntity entity) {
+	public void setupZombieGoals(ZombieEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class,
 				ZombieEntity.AttackTurtleEggGoal.class, LookRandomlyGoal.class, MoveThroughVillageGoal.class,
@@ -68,9 +74,9 @@ public class BaseraidsEntityManager {
 		removeGoalsFromList(entity, goalClassesToRemove);
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.getRaidManager()));
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
-		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager())
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, worldManager.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager())
 				.setCallsForHelp(ZombifiedPiglinEntity.class));
 		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
 		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
@@ -78,88 +84,88 @@ public class BaseraidsEntityManager {
 		entity.enablePersistence();
 	}
 
-	public static void setupSpiderGoals(SpiderEntity entity) {
+	public void setupSpiderGoals(SpiderEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				SpiderEntity.AttackGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
-		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, worldManager.getRaidManager()));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
-		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager()));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager()));
 
 		entity.enablePersistence();
 	}
 
-	public static void setupSkeletonGoals(SkeletonEntity entity) {
+	public void setupSkeletonGoals(SkeletonEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
 		entity.goalSelector.addGoal(1,
-				new AttackBlockRangedGoal<SkeletonEntity>(entity, Baseraids.getRaidManager()));
-		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager()));
+				new AttackBlockRangedGoal<SkeletonEntity>(entity, worldManager.getRaidManager()));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager()));
 		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
 		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
 
 		entity.enablePersistence();
 	}
 
-	public static void setupPhantomGoals(PhantomEntity entity) {
+	public void setupPhantomGoals(PhantomEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList();
 		removeGoalsFromList(entity, goalClassesToRemove);
 
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusPhantomGoal(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusPhantomGoal(entity, worldManager.getRaidManager()));
 		// entity.goalSelector.addGoal(2, new AttackBlockPhantomGoal(entity,
-		// Baseraids.getRaidManager()));
+		// worldManager.getRaidManager()));
 
 		entity.enablePersistence();
 	}
 
-	public static void setupZombifiedPiglinGoals(ZombifiedPiglinEntity entity) {
+	public void setupZombifiedPiglinGoals(ZombifiedPiglinEntity entity) {
 		// remove unwanted goals
 		removeGoalsFromList(entity, Arrays.asList(WaterAvoidingRandomWalkingGoal.class));
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.getRaidManager()));
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, worldManager.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
 		entity.targetSelector.addGoal(1,
-				new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager()).setCallsForHelp());
+				new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager()).setCallsForHelp());
 
 		entity.enablePersistence();
 	}
 
-	public static void setupCaveSpiderGoals(CaveSpiderEntity entity) {
+	public void setupCaveSpiderGoals(CaveSpiderEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				SpiderEntity.AttackGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
-		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, worldManager.getRaidManager()));
 		entity.goalSelector.addGoal(2, new SpiderEntity.AttackGoal(entity));
-		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager()));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager()));
 
 		entity.enablePersistence();
 	}
 
-	public static void setupWitherSkeletonGoals(WitherSkeletonEntity entity) {
+	public void setupWitherSkeletonGoals(WitherSkeletonEntity entity) {
 		// remove unwanted goals
 		final List<Class<? extends Goal>> goalClassesToRemove = Arrays.asList(LookAtGoal.class, LookRandomlyGoal.class,
 				WaterAvoidingRandomWalkingGoal.class);
 		removeGoalsFromList(entity, goalClassesToRemove);
 		removeTargetsFromList(entity, Arrays.asList(HurtByTargetGoal.class, NearestAttackableTargetGoal.class));
 
-		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, Baseraids.getRaidManager()));
-		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, Baseraids.getRaidManager()));
-		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, Baseraids.getRaidManager()));
+		entity.goalSelector.addGoal(1, new MoveTowardsNexusGoal<>(entity, worldManager.getRaidManager()));
+		entity.goalSelector.addGoal(1, new AttackBlockMeleeGoal<>(entity, worldManager.getRaidManager()));
+		entity.targetSelector.addGoal(1, new HurtByNotRaidingTargetGoal(entity, worldManager.getRaidManager()));
 		entity.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(entity, PlayerEntity.class, true));
 		entity.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(entity, IronGolemEntity.class, true));
 
@@ -172,7 +178,7 @@ public class BaseraidsEntityManager {
 	 * @param entity              the entity from which to remove the goals
 	 * @param goalClassesToRemove a list of classes of the types of goals to remove
 	 */
-	private static void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
+	private void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
 		entity.goalSelector.goals.removeIf((goal) -> goalClassesToRemove.contains(goal.getGoal().getClass()));
 	}
 
@@ -183,7 +189,7 @@ public class BaseraidsEntityManager {
 	 * @param targetClassesToRemove a list of classes of the types of goals to
 	 *                              remove
 	 */
-	private static void removeTargetsFromList(MobEntity entity,
+	private void removeTargetsFromList(MobEntity entity,
 			final List<Class<? extends TargetGoal>> targetClassesToRemove) {
 		entity.targetSelector.goals.removeIf((goal) -> targetClassesToRemove.contains(goal.getGoal().getClass()));
 	}

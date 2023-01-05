@@ -182,7 +182,8 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!(event.getState().getBlock() instanceof NexusBlock)) {
 			return;
 		}
-		if (Baseraids.getRaidManager().isRaidActive()) {
+		
+		if (Baseraids.worldManager.getRaidManager().isRaidActive()) {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
 			Baseraids.sendStatusMessage("The NexusBlock cannot be removed during raid!", event.getPlayer(), true);
@@ -191,7 +192,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
 		}
-		Baseraids.getServerWorld().getTileEntity(getBlockPos()).remove();
+		Baseraids.worldManager.getServerWorld().getTileEntity(getBlockPos()).remove();
 	}
 
 	/**
@@ -305,7 +306,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 
 	private static void setState(NexusState state) {
 		curState = state;
-		Baseraids.markDirty();
+		Baseraids.worldManager.markDirty();
 	}
 
 	public static NexusState getState() {
@@ -314,7 +315,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 
 	private static void setBlockPos(BlockPos pos) {
 		curBlockPos = pos;
-		Baseraids.markDirty();
+		Baseraids.worldManager.markDirty();
 	}
 
 	public static BlockPos getBlockPos() {

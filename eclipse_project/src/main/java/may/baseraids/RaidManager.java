@@ -43,6 +43,7 @@ public class RaidManager {
 
 	// RUNTIME VARIABLES
 	private World world = null;
+	private WorldManager worldManager;
 	private boolean isInitialized = false;
 
 	private Boolean isRaidActive;
@@ -84,12 +85,13 @@ public class RaidManager {
 			new ResourceLocation(Baseraids.MODID, "level8"), new ResourceLocation(Baseraids.MODID, "level9"),
 			new ResourceLocation(Baseraids.MODID, "level10") };
 
-	public RaidManager(World world) {
+	public RaidManager(World world, WorldManager worldManager) {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.world = world;
-		raidSpawningMng = new RaidSpawningManager(this, world);
+		this.worldManager = worldManager;
+		raidSpawningMng = new RaidSpawningManager(this, world, worldManager);
 		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
-		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(world);
+		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(this, world);
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 		isInitialized = true;
@@ -256,7 +258,7 @@ public class RaidManager {
 		spawnAndFillRewardChest();
 
 		// make sure to add these effects before increasing the raid level
-		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) Baseraids.getServerWorld()
+		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) worldManager.getServerWorld()
 				.getTileEntity(NexusBlock.getBlockPos());
 		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 		nexusEntity.setLastWonRaidLevel(getRaidLevel());
@@ -571,8 +573,8 @@ public class RaidManager {
 		markDirty();
 	}
 
-	private void markDirty() {
-		Baseraids.markDirty();
+	void markDirty() {
+		worldManager.markDirty();
 	}
 
 	public void setRaidLevel(int level) {
