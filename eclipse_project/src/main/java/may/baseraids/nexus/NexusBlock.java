@@ -1,12 +1,14 @@
 package may.baseraids.nexus;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import com.google.common.collect.Sets;
 
 import may.baseraids.Baseraids;
 import net.minecraft.block.Block;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -21,6 +23,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.extensions.IForgeBlock;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -58,10 +61,11 @@ import net.minecraftforge.items.IItemHandler;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock {
 
-	static final Properties properties = Block.Properties.create(Material.ROCK).hardnessAndResistance(15f, 30f)
-			.harvestTool(ToolType.PICKAXE).harvestLevel(1).sound(SoundType.GLASS).setLightLevel((light) -> {
-				return 15;
-			});
+	private static final Properties PROPERTIES = AbstractBlock.Properties.create(Material.ROCK)
+			.hardnessAndResistance(15f, 30f).harvestTool(ToolType.PICKAXE).harvestLevel(1).sound(SoundType.GLASS)
+			.setLightLevel(light -> 15);
+	
+	private static Random rand = new Random();
 
 	public enum NexusState {
 		BLOCK, ITEM, UNINITIALIZED
@@ -89,10 +93,10 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * brought into the game, any action with one of the blocks will simply override
 	 * the last known position of any nexus.
 	 */
-	public static BlockPos curBlockPos = new BlockPos(0, 0, 0);
+	private static BlockPos curBlockPos = new BlockPos(0, 0, 0);
 
 	public NexusBlock() {
-		super(properties);
+		super(PROPERTIES);
 	}
 
 	/**
@@ -130,7 +134,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onWorldTick_addDebuff(final TickEvent.WorldTickEvent event) {
+	public static void onWorldTickAddDebuff(final TickEvent.WorldTickEvent event) {
 		World world = event.world;
 		if (world.isRemote) {
 			return;
@@ -159,7 +163,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onNexusPlaced_setStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
+	public static void onNexusPlacedSetStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
 		if (event.getWorld().isRemote())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
@@ -177,17 +181,18 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onNexusBreak_giveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
+	public static void onNexusBreakGiveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
 		if (!(event.getState().getBlock() instanceof NexusBlock)) {
 			return;
 		}
-		
+
 		if (Baseraids.worldManager.getRaidManager().isRaidActive()) {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
-			Baseraids.messageManager.sendStatusMessage("The NexusBlock cannot be removed during raid!", event.getPlayer(), true);
+			Baseraids.messageManager.sendStatusMessage("The NexusBlock cannot be removed during raid!",
+					event.getPlayer(), true);
 			return;
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {
@@ -204,7 +209,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              method
 	 */
 	@SubscribeEvent
-	public static void onNexusDropped_cancelEventAndGiveNexusBack(final ItemTossEvent event) {
+	public static void onNexusDroppedCancelEventAndGiveNexusBack(final ItemTossEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
 		Item item = event.getEntityItem().getItem().getItem();
@@ -232,7 +237,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              triggers this method
 	 */
 	@SubscribeEvent
-	public static void onNexusPickedUp_setStateToITEM(final EntityItemPickupEvent event) {
+	public static void onNexusPickedUpSetStateToITEM(final EntityItemPickupEvent event) {
 		if (event.getPlayer().world.isRemote())
 			return;
 		Item item = event.getItem().getItem().getItem();
@@ -255,13 +260,13 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              that triggers this method
 	 */
 	@SubscribeEvent
-	public static void onPlayerLogInAndStateUNINITIALZED_giveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
+	public static void onPlayerLogInAndStateUNINITIALZEDGiveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
 		PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld();
 		if (world.isRemote())
 			return;
-		Baseraids.LOGGER
-				.debug("PlayerLoggedInEvent: curState = " + curState + ", numOfPlayers = " + world.getPlayers().size());
+		Baseraids.LOGGER.debug("PlayerLoggedInEvent: curState = %s, numOfPlayers = %i", curState,
+				world.getPlayers().size());
 		if (curState != NexusState.UNINITIALIZED) {
 			return;
 		}
@@ -279,7 +284,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 *              that triggers this method
 	 */
 	@SubscribeEvent
-	public static void onPlayerLogOutWithNexus_transferNexusToOtherPlayerOrIgnore(
+	public static void onPlayerLogOutWithNexusTransferNexusToOtherPlayerOrIgnore(
 			final PlayerEvent.PlayerLoggedOutEvent event) {
 		PlayerEntity playerLogOut = event.getPlayer();
 		World world = playerLogOut.world;
@@ -296,12 +301,9 @@ public class NexusBlock extends Block implements IForgeBlock {
 		// Otherwise, this allows the log out with the nexus.
 		List<? extends PlayerEntity> playerList = world.getPlayers();
 		playerList.remove(playerLogOut);
-		if (playerList.size() > 0) {
-			if (giveNexusToRandomPlayerFromList(playerList)) {
-				Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
-				removeNexusFromPlayer(playerLogOut);
-				return;
-			}
+		if (!playerList.isEmpty() && giveNexusToRandomPlayerFromList(playerList)) {			
+			Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
+			removeNexusFromPlayer(playerLogOut);			
 		}
 	}
 
@@ -353,22 +355,22 @@ public class NexusBlock extends Block implements IForgeBlock {
 
 	/**
 	 * Attempts to give the nexus to a random player from a specified list of
-	 * players. As long as it's not successfull, it selects a new random player from
+	 * players. As long as it's not successful, it selects a new random player from
 	 * the remaining list. If the remaining list is empty, it returns false.
 	 * 
 	 * @param playerList list of players to choose from
 	 * @return a flag whether the method was successful
 	 */
 	private static boolean giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
-		Random rand = new Random();
+		
 		do {
-			int rand_index = rand.nextInt(playerList.size());
-			PlayerEntity selectedPlayer = playerList.get(rand_index);
+			int randIndex = rand.nextInt(playerList.size());
+			PlayerEntity selectedPlayer = playerList.get(randIndex);
 			playerList.remove(selectedPlayer);
 			if (giveNexusToPlayer(selectedPlayer)) {
 				return true;
 			}
-		} while (playerList.size() <= 0);
+		} while (playerList.isEmpty());
 		return false;
 	}
 
@@ -380,8 +382,19 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * @return a flag whether the method was successful
 	 */
 	private static boolean removeNexusFromPlayer(PlayerEntity player) {
-		IItemHandler itemHandler = (IItemHandler) player
-				.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseThrow(null);
+		LazyOptional<IItemHandler> capabilityLazyOpt = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+		Optional<Boolean> successful = capabilityLazyOpt.map(NexusBlock::removeNexusFromItemHandler);
+		return successful.orElse(false);
+	}
+	
+	/**
+	 * Removes all nexus items from the given {@link IItemHandler} and returns a flag
+	 * whether it was successful.
+	 * 
+	 * @param itemHandler the {@link IItemHandler} to remove the items from
+	 * @return a flag whether the method was successful
+	 */
+	private static boolean removeNexusFromItemHandler(IItemHandler itemHandler) {
 		ItemStack nexusItemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
 		boolean successful = false;
 		for (int i = 0; i < itemHandler.getSlots(); i++) {
@@ -401,7 +414,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Reads the data stored in the given <code>CompoundNBT</code>. This function
+	 * Reads the data stored in the given {@link CompoundNBT}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
 	 * that the nbt includes certain elements.
 	 * 
@@ -414,10 +427,10 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Writes the necessary data to a <code>CompoundNBT</code> and returns the
-	 * <code>CompoundNBT</code> object.
+	 * Writes the necessary data to a {@link CompoundNBT} and returns the
+	 * {@link CompoundNBT} object.
 	 * 
-	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
 	public static CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();

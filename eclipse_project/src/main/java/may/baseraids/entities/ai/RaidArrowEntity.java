@@ -32,19 +32,45 @@ public class RaidArrowEntity extends ArrowEntity {
 	 * Called when the arrow entity collides with a block.
 	 * Adds breaking progress to the block and reduces the future damage of the arrow.
 	 */
-	protected void func_230299_a_(BlockRayTraceResult p_230299_1_) {
-		super.func_230299_a_(p_230299_1_);
+	@Override
+	protected void func_230299_a_(BlockRayTraceResult rayTraceResult) {
+		super.func_230299_a_(rayTraceResult);
 		if (!raidManager.isRaidActive()) {
 			return;
 		}
- 		raidManager.globalBlockBreakProgressMng.addProgress(p_230299_1_.getPos(), blockBreakDamage);
+ 		raidManager.globalBlockBreakProgressMng.addProgress(rayTraceResult.getPos(), blockBreakDamage);
 		// the damage should decrease with every hit in order to disable infinite loops with falling arrows 
 		blockBreakDamage /= 2;		
 	}
 
+	@Override
 	public void setShooter(@Nullable Entity entityIn) {
 		super.setShooter(entityIn);
 		shooter = entityIn;
 	}
 	
+	@Override
+	public boolean equals(Object object) {
+		if(!super.equals(object)) {
+			return false;
+		}
+		if(!(object instanceof RaidArrowEntity)){
+			return false;
+		}
+		RaidArrowEntity entity = (RaidArrowEntity) object;		
+		if(!shooter.equals(entity.shooter)) {
+			return false;
+		}
+		if(!raidManager.equals(entity.raidManager)) {
+			return false;
+		}
+		return blockBreakDamage == entity.blockBreakDamage;
+	}
+	
+	@Override
+	  public int hashCode() {
+	    //TODO
+		return 0;
+	  }
+
 }

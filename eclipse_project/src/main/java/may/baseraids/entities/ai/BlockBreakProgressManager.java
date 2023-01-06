@@ -105,9 +105,9 @@ public class BlockBreakProgressManager {
 
 	/**
 	 * Saves data relevant for the this class: Writes the necessary data to a
-	 * <code>CompoundNBT</code> and returns the <code>CompoundNBT</code> object.
+	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
 	 * 
-	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
 	public CompoundNBT writeAdditional() {
 		CompoundNBT nbt = new CompoundNBT();
@@ -118,18 +118,13 @@ public class BlockBreakProgressManager {
 	}
 
 	/**
-	 * Reads the data stored in the given <code>CompoundNBT</code>. This function
+	 * Reads the data stored in the given {@link CompoundNBT}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
-	 * that the nbt includes certain elements. If an exception was thrown during the
-	 * reading process (this could very well happen for incompatible versions), the
-	 * parameters that were not set are given a default value using
-	 * <code>setDefaultWriteParametersIfNotSet()</code>.
+	 * that the nbt includes certain elements.
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
-	 * @param serverWorld the world that is loaded. It is used in the
-	 *                    <code>RaidSpawningManager</code> to get references to
-	 *                    previously spawned mobs.
+	 * @param serverWorld the world that is loaded
 	 */
 	public static BlockBreakProgressManager readAdditional(CompoundNBT nbt, ServerWorld serverWorld, BlockPos pos) {
 		try {

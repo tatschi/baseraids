@@ -40,7 +40,7 @@ import net.minecraft.entity.player.PlayerEntity;
  */
 public class BaseraidsEntityManager {
 
-	private static Map<EntityType<?>, Consumer<MobEntity>> setupsRegistry = new HashMap<EntityType<?>, Consumer<MobEntity>>();
+	private static Map<EntityType<?>, Consumer<MobEntity>> setupsRegistry = new HashMap<>();
 
 	private WorldManager worldManager;
 	
@@ -49,15 +49,15 @@ public class BaseraidsEntityManager {
 	}
 
 	public void registerSetups() {
-		setupsRegistry.put(EntityType.ZOMBIE, (entity) -> setupZombieGoals((ZombieEntity) entity));
-		setupsRegistry.put(EntityType.SPIDER, (entity) -> setupSpiderGoals((SpiderEntity) entity));
-		setupsRegistry.put(EntityType.SKELETON, (entity) -> setupSkeletonGoals((SkeletonEntity) entity));
-		setupsRegistry.put(EntityType.PHANTOM, (entity) -> setupPhantomGoals((PhantomEntity) entity));
+		setupsRegistry.put(EntityType.ZOMBIE, entity -> setupZombieGoals((ZombieEntity) entity));
+		setupsRegistry.put(EntityType.SPIDER, entity -> setupSpiderGoals((SpiderEntity) entity));
+		setupsRegistry.put(EntityType.SKELETON, entity -> setupSkeletonGoals((SkeletonEntity) entity));
+		setupsRegistry.put(EntityType.PHANTOM, entity -> setupPhantomGoals((PhantomEntity) entity));
 		setupsRegistry.put(EntityType.ZOMBIFIED_PIGLIN,
-				(entity) -> setupZombifiedPiglinGoals((ZombifiedPiglinEntity) entity));
-		setupsRegistry.put(EntityType.CAVE_SPIDER, (entity) -> setupCaveSpiderGoals((CaveSpiderEntity) entity));
+				entity -> setupZombifiedPiglinGoals((ZombifiedPiglinEntity) entity));
+		setupsRegistry.put(EntityType.CAVE_SPIDER, entity -> setupCaveSpiderGoals((CaveSpiderEntity) entity));
 		setupsRegistry.put(EntityType.WITHER_SKELETON,
-				(entity) -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
+				entity -> setupWitherSkeletonGoals((WitherSkeletonEntity) entity));
 	}
 
 	public void setupGoals(MobEntity entity) {
@@ -122,8 +122,6 @@ public class BaseraidsEntityManager {
 		removeGoalsFromList(entity, goalClassesToRemove);
 
 		entity.goalSelector.addGoal(1, new MoveTowardsNexusPhantomGoal(entity, worldManager.getRaidManager()));
-		// entity.goalSelector.addGoal(2, new AttackBlockPhantomGoal(entity,
-		// worldManager.getRaidManager()));
 
 		entity.enablePersistence();
 	}
@@ -179,7 +177,7 @@ public class BaseraidsEntityManager {
 	 * @param goalClassesToRemove a list of classes of the types of goals to remove
 	 */
 	private void removeGoalsFromList(MobEntity entity, final List<Class<? extends Goal>> goalClassesToRemove) {
-		entity.goalSelector.goals.removeIf((goal) -> goalClassesToRemove.contains(goal.getGoal().getClass()));
+		entity.goalSelector.goals.removeIf(goal -> goalClassesToRemove.contains(goal.getGoal().getClass()));
 	}
 
 	/**
@@ -191,6 +189,6 @@ public class BaseraidsEntityManager {
 	 */
 	private void removeTargetsFromList(MobEntity entity,
 			final List<Class<? extends TargetGoal>> targetClassesToRemove) {
-		entity.targetSelector.goals.removeIf((goal) -> targetClassesToRemove.contains(goal.getGoal().getClass()));
+		entity.targetSelector.goals.removeIf(goal -> targetClassesToRemove.contains(goal.getGoal().getClass()));
 	}
 }
