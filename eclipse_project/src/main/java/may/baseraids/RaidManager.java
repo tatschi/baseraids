@@ -150,7 +150,7 @@ public class RaidManager {
 
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
 		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
-		if (timeUntilRaidInSec <= 5 && Boolean.TRUE.equals(ConfigOptions.enableSoundCountdown.get())) {
+		if (timeUntilRaidInSec <= 5 && ConfigOptions.getEnableSoundCountdown()) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
 					2.0F, 1.0F);
 		}
@@ -226,14 +226,14 @@ public class RaidManager {
 	}
 
 	private void playWinSound() {
-		if (Boolean.TRUE.equals(ConfigOptions.enableSoundWinLose.get())) {
+		if (ConfigOptions.getEnableSoundWinLose()) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F,
 					1.0F);
 		}
 	}
 
 	private void playLoseSound() {
-		if (Boolean.TRUE.equals(ConfigOptions.enableSoundWinLose.get())) {
+		if (ConfigOptions.getEnableSoundWinLose()) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F,
 					1.0F);
 		}
@@ -276,7 +276,7 @@ public class RaidManager {
 		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
 		raidSpawningMng.killAllMobs();
-		if (Boolean.TRUE.equals(ConfigOptions.restoreDestroyedBlocks.get())) {
+		if (ConfigOptions.getRestoreDestroyedBlocks()) {
 			restoreDestroyedBlocksMng.restoreSavedBlocks();
 		}
 		resetDaytimeToDaytimeBeforeRaid();
@@ -290,7 +290,7 @@ public class RaidManager {
 	 */
 	private void spawnAndFillRewardChest() {
 		// spawn chest
-		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.lootChestPositionRelative);
+		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.getLootChestPositionRelative());
 		world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
 
 		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
@@ -319,7 +319,7 @@ public class RaidManager {
 			return;
 		}
 		restrictSleepDuringRaid(event);
-		if (Boolean.TRUE.equals(ConfigOptions.enableTimeReductionFromSleeping.get())) {
+		if (ConfigOptions.getEnableTimeReductionFromSleeping()) {
 			restrictSleepBeforeRaid(event);
 		}
 	}
@@ -363,7 +363,7 @@ public class RaidManager {
 		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if (Boolean.FALSE.equals(ConfigOptions.enableTimeReductionFromSleeping.get())) {
+		if (!ConfigOptions.getEnableTimeReductionFromSleeping()) {
 			return;
 		}
 		int reductionTime = (int) (event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
@@ -412,7 +412,7 @@ public class RaidManager {
 	}
 
 	private boolean isMaxRaidDurationOver() {
-		return activeRaidTicks > ConfigOptions.maxRaidDuration.get();
+		return activeRaidTicks > ConfigOptions.getMaxRaidDuration();
 	}
 
 	/**
@@ -504,7 +504,7 @@ public class RaidManager {
 	}
 
 	private long getNewNextRaidGameTime() {
-		return world.getGameTime() + ConfigOptions.timeBetweenRaids.get();
+		return world.getGameTime() + ConfigOptions.getTimeBetweenRaids();
 	}
 
 	private void resetNextRaidGameTime() {

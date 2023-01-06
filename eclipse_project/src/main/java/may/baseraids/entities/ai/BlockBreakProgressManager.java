@@ -99,7 +99,7 @@ public class BlockBreakProgressManager {
 			return 500;
 		}
 		float hardness = world.getBlockState(pos).getBlockHardness(world, pos);
-		return ConfigOptions.monsterBlockBreakingTimeMultiplier.get() * (int) Math.round(
+		return ConfigOptions.getMonsterBlockBreakingTimeMultiplier() * (int) Math.round(
 				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
 	}
 

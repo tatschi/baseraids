@@ -115,7 +115,7 @@ public class WorldManager {
 	 *              this function
 	 */
 	private boolean onMonsterSpawnOutsideCaveShouldCancelSpawn(final WorldEvent.PotentialSpawns event) {
-		if (Boolean.FALSE.equals(ConfigOptions.deactivateMonsterNightSpawn.get())) {
+		if (!ConfigOptions.getDeactivateMonsterNightSpawn()) {
 			return false;
 		}
 

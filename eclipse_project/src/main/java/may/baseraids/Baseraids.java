@@ -3,7 +3,7 @@ package may.baseraids;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import may.baseraids.config.Config;
+import may.baseraids.config.ConfigLoader;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffectsTileEntity;
 import net.minecraft.block.Block;
@@ -80,10 +80,10 @@ public class Baseraids {
 
 	/**
 	 * Registers all registries, the mod event bus and loads the config file using
-	 * the class {@link Config}.
+	 * the class {@link ConfigLoader}.
 	 */
 	private void setup() {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.config);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigLoader.config);
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		bus.addListener(worldManager::onFMLCommonSetup);
@@ -92,7 +92,7 @@ public class Baseraids {
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
 
-		Config.loadConfig(Config.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
+		ConfigLoader.loadConfig(ConfigLoader.config, FMLPaths.CONFIGDIR.get().resolve(MODID + ".toml").toString());
 	}
 	
 	private void registerDeferredRegistries(IEventBus bus) {

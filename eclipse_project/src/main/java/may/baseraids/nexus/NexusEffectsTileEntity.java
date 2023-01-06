@@ -44,21 +44,21 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 
 			// play sound
 			if (Baseraids.worldManager.getRaidManager().isRaidActive()) {
-				if (Boolean.TRUE.equals(ConfigOptions.enableSoundRaidHeartbeat.get())) {
+				if (ConfigOptions.getEnableSoundRaidHeartbeat()) {
 					this.playSoundWithPos(Baseraids.SOUND_RAID_ACTIVE.get(), 300F, 1.0F);
 				}
 			} else {
-				if (Boolean.TRUE.equals(ConfigOptions.enableSoundNexusAmbient.get())) {
+				if (ConfigOptions.getEnableSoundNexusAmbient()) {
 					this.playSoundWithPos(SoundEvents.BLOCK_BEACON_AMBIENT, 0.25F, 0.5F);
 				}
 			}
 
 		}
 	}
-	
+
 	public void setLastWonRaidLevel(int level) {
 		lastWonRaidLevel = level;
-		curEffects = NexusEffects.effects.get(level-1);
+		curEffects = NexusEffects.effects.get(level - 1);
 	}
 
 	public void playSoundWithPos(SoundEvent sound, float volume, float pitch) {
@@ -81,8 +81,8 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 			return;
 		}
 
-		AxisAlignedBB axisalignedbb = (new AxisAlignedBB(pos)).grow(effectDistance).expand(0.0D,
-				(double) world.getHeight(), 0.0D);
+		AxisAlignedBB axisalignedbb = (new AxisAlignedBB(pos)).grow(effectDistance).expand(0.0D, world.getHeight(),
+				0.0D);
 
 		List<PlayerEntity> list = world.getEntitiesWithinAABB(PlayerEntity.class, axisalignedbb);
 		for (PlayerEntity playerentity : list) {
@@ -94,7 +94,7 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	public void read(BlockState state, CompoundNBT nbt) {
 		super.read(state, nbt);
 		lastWonRaidLevel = nbt.getInt("lastWonRaidLevel");
-		curEffects = NexusEffects.effects.get(lastWonRaidLevel-1);
+		curEffects = NexusEffects.effects.get(lastWonRaidLevel - 1);
 	}
 
 	@Override
@@ -103,6 +103,5 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 		compound.putInt("lastWonRaidLevel", lastWonRaidLevel);
 		return compound;
 	}
-
 
 }

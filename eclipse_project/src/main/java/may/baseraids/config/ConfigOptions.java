@@ -1,5 +1,7 @@
 package may.baseraids.config;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 import may.baseraids.Baseraids;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -12,24 +14,28 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public class ConfigOptions {
 
 	// RAID MANAGER
-	public static ForgeConfigSpec.IntValue timeBetweenRaids;
-	public static ForgeConfigSpec.IntValue maxRaidDuration;	
-	public static ForgeConfigSpec.BooleanValue deactivateMonsterNightSpawn;
-	public static Vector3i lootChestPositionRelative;
+	private static ForgeConfigSpec.IntValue timeBetweenRaids;
+	private static ForgeConfigSpec.IntValue maxRaidDuration;	
+	private static ForgeConfigSpec.BooleanValue deactivateMonsterNightSpawn;
+	private static Vector3i lootChestPositionRelative;
 	
-	public static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
-	public static ForgeConfigSpec.BooleanValue restoreDestroyedBlocks;
+	private static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
+	private static ForgeConfigSpec.BooleanValue restoreDestroyedBlocks;
 	
 	// SOUNDS
-	public static ForgeConfigSpec.BooleanValue enableSoundWinLose;
-	public static ForgeConfigSpec.BooleanValue enableSoundRaidHeartbeat;
-	public static ForgeConfigSpec.BooleanValue enableSoundCountdown;
-	public static ForgeConfigSpec.BooleanValue enableSoundNexusAmbient;
-	public static ForgeConfigSpec.BooleanValue enableTimeReductionFromSleeping;
+	private static ForgeConfigSpec.BooleanValue enableSoundWinLose;
+	private static ForgeConfigSpec.BooleanValue enableSoundRaidHeartbeat;
+	private static ForgeConfigSpec.BooleanValue enableSoundCountdown;
+	private static ForgeConfigSpec.BooleanValue enableSoundNexusAmbient;
+	private static ForgeConfigSpec.BooleanValue enableTimeReductionFromSleeping;
 	
-	protected final static int MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT = 2;
-	public static final int[] LOOT_CHEST_POS_RELATIVE_DEFAULT = {0, 1, 0};
+	private static final int MONSTER_BLOCK_BREAKING_TIME_MULTIPLIER_DEFAULT = 2;
+	private static final int[] LOOT_CHEST_POS_RELATIVE_DEFAULT = {0, 1, 0};
 	
+	
+	private ConfigOptions() {
+		throw new IllegalStateException("Utility class");
+	}
 	
 	public static void init(ForgeConfigSpec.Builder builder) {
 		builder.comment("Baseraids Config");
@@ -40,7 +46,7 @@ public class ConfigOptions {
 		
 		maxRaidDuration = builder
 				.comment("Maximum time a raid can last in ticks. When this limit is reached, the raid is won, because the nexus survived! 1min is 1200")
-				.defineInRange(Baseraids.MODID + ".maxRaidDuration", 3600, 0, (int) 11000);
+				.defineInRange(Baseraids.MODID + ".maxRaidDuration", 3600, 0, 11000);
 		
 		deactivateMonsterNightSpawn = builder
 				.comment("If set to true, the mod deactivates monster spawning at night. They will still spawn in caves.")
@@ -76,6 +82,50 @@ public class ConfigOptions {
 				.define(Baseraids.MODID + ".enableTimeReductionFromSleeping", false);
 		
 		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
+	}
+
+	public static int getTimeBetweenRaids() {
+		return timeBetweenRaids.get();
+	}
+
+	public static int getMaxRaidDuration() {
+		return maxRaidDuration.get();
+	}
+
+	public static boolean getDeactivateMonsterNightSpawn() {
+		return BooleanUtils.toBoolean(deactivateMonsterNightSpawn.get());
+	}
+
+	public static Vector3i getLootChestPositionRelative() {
+		return lootChestPositionRelative;
+	}
+
+	public static int getMonsterBlockBreakingTimeMultiplier() {
+		return monsterBlockBreakingTimeMultiplier.get();
+	}
+
+	public static boolean getRestoreDestroyedBlocks() {		
+		return BooleanUtils.toBoolean(restoreDestroyedBlocks.get());
+	}
+
+	public static boolean getEnableSoundWinLose() {
+		return BooleanUtils.toBoolean(enableSoundWinLose.get());
+	}
+
+	public static boolean getEnableSoundRaidHeartbeat() {
+		return BooleanUtils.toBoolean(enableSoundRaidHeartbeat.get());
+	}
+
+	public static boolean getEnableSoundCountdown() {
+		return BooleanUtils.toBoolean(enableSoundCountdown.get());
+	}
+
+	public static boolean getEnableSoundNexusAmbient() {
+		return BooleanUtils.toBoolean(enableSoundNexusAmbient.get());
+	}
+
+	public static boolean getEnableTimeReductionFromSleeping() {
+		return BooleanUtils.toBoolean(enableTimeReductionFromSleeping.get());
 	}	
 	
 }
