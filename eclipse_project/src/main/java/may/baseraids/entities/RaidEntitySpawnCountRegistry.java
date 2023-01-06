@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 
 public class RaidEntitySpawnCountRegistry {
 
-	private static Map<EntityType<?>, int[]> entitySpawnCountRegistry = new HashMap<>();
+	private static Map<EntityType<? extends Entity>, int[]> entitySpawnCountRegistry = new HashMap<>();
 	
 	private static final int[] SPAWN_COUNT_ZOMBIES = 			{8, 8, 7, 5, 5, 5, 8, 8, 10, 10};
 	private static final int[] SPAWN_COUNT_SKELETONS = 			{0, 2, 2, 4, 5, 5, 8, 8, 10, 10};
@@ -31,8 +32,8 @@ public class RaidEntitySpawnCountRegistry {
 		entitySpawnCountRegistry.put(EntityType.WITHER_SKELETON, SPAWN_COUNT_WITHER_SKELETONS);
 		entitySpawnCountRegistry.put(EntityType.CAVE_SPIDER, SPAWN_COUNT_CAVE_SPIDERS);
 	}
-	
-	public static Set<EntityType<?>> getEntityTypesToSpawn(){
+		
+	public static Set<EntityType<? extends Entity>> getEntityTypesToSpawn(){ // NOSONAR
 		return entitySpawnCountRegistry.keySet();
 	}
 	
@@ -46,4 +47,5 @@ public class RaidEntitySpawnCountRegistry {
 	public static int getSpawnCountForEntityAndLevelAndPlayerCount(EntityType<?> type, int level, int playerCount) {
 		return getSpawnCountForEntityAndLevel(type, level) * playerCount;
 	}
+
 }

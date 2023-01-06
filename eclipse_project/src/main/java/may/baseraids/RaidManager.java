@@ -1,5 +1,6 @@
 package may.baseraids;
 
+import java.util.Objects;
 import java.util.Set;
 
 import org.jline.utils.Log;
@@ -596,5 +597,31 @@ public class RaidManager {
 	private void resetDaytimeToDaytimeBeforeRaid() {
 		((ServerWorld) world).setDayTime(daytimeBeforeRaid);
 		resetDaytimeBeforeRaid();
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(activeRaidTicks, curRaidLevel, daytimeBeforeRaid, globalBlockBreakProgressMng,
+				isInitialized, isRaidActive, nextRaidGameTime, raidSpawningMng, restoreDestroyedBlocksMng,
+				timeUntilRaidInLastWarnPlayersOfRaidRun, world);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RaidManager other = (RaidManager) obj;
+		return activeRaidTicks == other.activeRaidTicks && curRaidLevel == other.curRaidLevel
+				&& daytimeBeforeRaid == other.daytimeBeforeRaid
+				&& Objects.equals(globalBlockBreakProgressMng, other.globalBlockBreakProgressMng)
+				&& isInitialized == other.isInitialized && Objects.equals(isRaidActive, other.isRaidActive)
+				&& nextRaidGameTime == other.nextRaidGameTime && Objects.equals(raidSpawningMng, other.raidSpawningMng)
+				&& Objects.equals(restoreDestroyedBlocksMng, other.restoreDestroyedBlocksMng)
+				&& timeUntilRaidInLastWarnPlayersOfRaidRun == other.timeUntilRaidInLastWarnPlayersOfRaidRun
+				&& Objects.equals(world, other.world);
 	}
 }

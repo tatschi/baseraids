@@ -1,5 +1,7 @@
 package may.baseraids;
 
+import java.util.Objects;
+
 import com.mojang.brigadier.CommandDispatcher;
 
 import may.baseraids.commands.BaseraidsCommands;
@@ -148,5 +150,23 @@ public class WorldManager {
 
 	public ServerWorld getServerWorld() {
 		return baseraidsData.serverWorld;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(baseraidsData, commands, entityManager);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WorldManager other = (WorldManager) obj;
+		return Objects.equals(baseraidsData, other.baseraidsData) && Objects.equals(commands, other.commands)
+				&& Objects.equals(entityManager, other.entityManager);
 	}
 }

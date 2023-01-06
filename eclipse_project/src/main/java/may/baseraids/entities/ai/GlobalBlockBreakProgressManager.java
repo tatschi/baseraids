@@ -1,5 +1,6 @@
 package may.baseraids.entities.ai;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jline.utils.Log;
@@ -202,5 +203,22 @@ public class GlobalBlockBreakProgressManager {
 		} catch (Exception e) {
 			Log.warn("Exception while reading data for GlobalBlockBreakProgressManager. Setting parameters to default. Exception: " + e);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(breakProgress, world);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GlobalBlockBreakProgressManager other = (GlobalBlockBreakProgressManager) obj;
+		return Objects.equals(breakProgress, other.breakProgress) && Objects.equals(world, other.world);
 	}
 }

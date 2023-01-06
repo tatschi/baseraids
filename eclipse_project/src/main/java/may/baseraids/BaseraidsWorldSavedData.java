@@ -1,5 +1,7 @@
 package may.baseraids;
 
+import java.util.Objects;
+
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.server.ServerWorld;
@@ -85,6 +87,23 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 		Baseraids.LOGGER.info("collecting baseraidsSavedData");
 		DimensionSavedDataManager manager = world.getSavedData();
 		return manager.getOrCreate(() -> new BaseraidsWorldSavedData(world, worldManager), DATA_NAME);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(raidManager, serverWorld);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BaseraidsWorldSavedData other = (BaseraidsWorldSavedData) obj;
+		return Objects.equals(raidManager, other.raidManager) && Objects.equals(serverWorld, other.serverWorld);
 	}
 
 }

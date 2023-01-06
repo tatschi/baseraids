@@ -277,4 +277,21 @@ public class RaidSpawningManager {
 		raidManager.markDirty();
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(spawnedMobs, world);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RaidSpawningManager other = (RaidSpawningManager) obj;
+		return Objects.equals(spawnedMobs, other.spawnedMobs) && Objects.equals(world, other.world);
+	}
+
 }

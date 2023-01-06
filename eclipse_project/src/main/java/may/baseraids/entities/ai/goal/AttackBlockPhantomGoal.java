@@ -61,7 +61,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 			--this.tickDelay;
 			if (this.tickDelay <= 0) {
 				entity.attackPhase = PhantomEntity.AttackPhase.SWOOP;
-				this.func_203143_f();
+				this.setOrbitPositionForSwoopPhase();
 				this.tickDelay = 80 + rand.nextInt(1200);
 				entity.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, 10.0F, 0.95F + rand.nextFloat() * 0.1F);
 			}
@@ -101,7 +101,8 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 		attackBlockPhantom();
 	}
 
-	private void func_203143_f() {
+	// copied from PickAttackGoal#func_203143_f
+	private void setOrbitPositionForSwoopPhase() {
 		entity.orbitPosition = target.up(20 + rand.nextInt(20));
 		if (entity.orbitPosition.getY() < entity.world.getSeaLevel()) {
 			entity.orbitPosition = new BlockPos(entity.orbitPosition.getX(), entity.world.getSeaLevel() + 1,

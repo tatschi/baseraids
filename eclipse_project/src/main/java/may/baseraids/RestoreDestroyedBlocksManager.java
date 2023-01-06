@@ -1,5 +1,6 @@
 package may.baseraids;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jline.utils.Log;
@@ -124,6 +125,23 @@ public class RestoreDestroyedBlocksManager {
 					"Exception while reading data for RestoreDestroyedBlocksManager. Setting parameters to default. Exception: "
 							+ e);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(savedBlocks, world);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RestoreDestroyedBlocksManager other = (RestoreDestroyedBlocksManager) obj;
+		return Objects.equals(savedBlocks, other.savedBlocks) && Objects.equals(world, other.world);
 	}
 
 }

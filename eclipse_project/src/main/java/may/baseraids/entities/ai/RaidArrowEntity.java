@@ -1,5 +1,7 @@
 package may.baseraids.entities.ai;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import may.baseraids.RaidManager;
@@ -10,8 +12,9 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.World;
 
 /**
- * This class defines a custom arrow entity that interacts with blocks that it hits.
- * Blocks that are hit by these arrows during a raid add breaking progress for the block.
+ * This class defines a custom arrow entity that interacts with blocks that it
+ * hits. Blocks that are hit by these arrows during a raid add breaking progress
+ * for the block.
  * 
  * @author Natascha May
  */
@@ -29,8 +32,8 @@ public class RaidArrowEntity extends ArrowEntity {
 	}
 
 	/**
-	 * Called when the arrow entity collides with a block.
-	 * Adds breaking progress to the block and reduces the future damage of the arrow.
+	 * Called when the arrow entity collides with a block. Adds breaking progress to
+	 * the block and reduces the future damage of the arrow.
 	 */
 	@Override
 	protected void func_230299_a_(BlockRayTraceResult rayTraceResult) {
@@ -38,9 +41,10 @@ public class RaidArrowEntity extends ArrowEntity {
 		if (!raidManager.isRaidActive()) {
 			return;
 		}
- 		raidManager.globalBlockBreakProgressMng.addProgress(rayTraceResult.getPos(), blockBreakDamage);
-		// the damage should decrease with every hit in order to disable infinite loops with falling arrows 
-		blockBreakDamage /= 2;		
+		raidManager.globalBlockBreakProgressMng.addProgress(rayTraceResult.getPos(), blockBreakDamage);
+		// the damage should decrease with every hit in order to disable infinite loops
+		// with falling arrows
+		blockBreakDamage /= 2;
 	}
 
 	@Override
@@ -48,29 +52,26 @@ public class RaidArrowEntity extends ArrowEntity {
 		super.setShooter(entityIn);
 		shooter = entityIn;
 	}
-	
+
 	@Override
-	public boolean equals(Object object) {
-		if(!super.equals(object)) {
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
 			return false;
-		}
-		if(!(object instanceof RaidArrowEntity)){
+		if (getClass() != obj.getClass())
 			return false;
-		}
-		RaidArrowEntity entity = (RaidArrowEntity) object;		
-		if(!shooter.equals(entity.shooter)) {
-			return false;
-		}
-		if(!raidManager.equals(entity.raidManager)) {
-			return false;
-		}
-		return blockBreakDamage == entity.blockBreakDamage;
+		RaidArrowEntity other = (RaidArrowEntity) obj;
+		return blockBreakDamage == other.blockBreakDamage && Objects.equals(raidManager, other.raidManager)
+				&& Objects.equals(shooter, other.shooter);
 	}
-	
+
 	@Override
-	  public int hashCode() {
-	    //TODO
-		return 0;
-	  }
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Objects.hash(blockBreakDamage, raidManager, shooter);
+		return result;
+	}
 
 }
