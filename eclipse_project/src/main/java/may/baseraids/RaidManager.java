@@ -29,7 +29,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /**
  * This class controls everything concerning raids: spawning, timers, starting
@@ -37,8 +36,6 @@ import net.minecraftforge.fml.common.Mod;
  * 
  * @author Natascha May
  */
-// @Mod.EventBusSubscriber annotation automatically registers STATIC event handlers 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RaidManager {
 
 	// RUNTIME VARIABLES
@@ -53,7 +50,8 @@ public class RaidManager {
 	private int activeRaidTicks = 0;
 	private long daytimeBeforeRaid = 0;
 
-	public static final int MAX_RAID_LEVEL = 10, MIN_RAID_LEVEL = 1;
+	public static final int MAX_RAID_LEVEL = 10;
+	public static final int MIN_RAID_LEVEL = 1;
 
 	/**
 	 * defines the daytime that the {@link ServerWorld#setDayTime(long)} is set to
@@ -75,8 +73,8 @@ public class RaidManager {
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 
 	private RaidSpawningManager raidSpawningMng;
-	public GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
-	public RestoreDestroyedBlocksManager restoreDestroyedBlocksMng;
+	public final GlobalBlockBreakProgressManager globalBlockBreakProgressMng;
+	public final RestoreDestroyedBlocksManager restoreDestroyedBlocksMng;
 
 	private static final ResourceLocation[] REWARD_CHEST_LOOTTABLES = { new ResourceLocation(Baseraids.MODID, "level1"),
 			new ResourceLocation(Baseraids.MODID, "level2"), new ResourceLocation(Baseraids.MODID, "level3"),
@@ -169,10 +167,7 @@ public class RaidManager {
 		if (world.getGameTime() < nextRaidGameTime) {
 			return false;
 		}
-		if (NexusBlock.getState() != NexusState.BLOCK) {
-			return false;
-		}
-		return true;
+		return NexusBlock.getState() != NexusState.BLOCK;
 	}
 
 	/**
@@ -382,12 +377,12 @@ public class RaidManager {
 	 * 
 	 * @return the number of ticks until the next raid
 	 */
-	private int getTimeUntilRaid() {
-		return (int) (nextRaidGameTime - world.getGameTime());
+	private long getTimeUntilRaid() {
+		return nextRaidGameTime - world.getGameTime();
 	}
 
 	public int getTimeUntilRaidInSec() {
-		return getTimeUntilRaid() / 20;
+		return (int) (getTimeUntilRaid() / 20);
 	}
 
 	public int getTimeUntilRaidInMin() {
@@ -403,7 +398,7 @@ public class RaidManager {
 	public String getTimeUntilRaidInDisplayString() {
 		int timeUntilRaidInSec = getTimeUntilRaidInSec();
 
-		int displayTimeMin = (int) timeUntilRaidInSec / 60;
+		int displayTimeMin = timeUntilRaidInSec / 60;
 		int displayTimeSec = timeUntilRaidInSec % 60;
 
 		String displayTime = "";
@@ -424,8 +419,8 @@ public class RaidManager {
 	 * Increases the raid level by one, unless {@link #MAX_RAID_LEVEL} is reached.
 	 */
 	private void increaseRaidLevel() {
-		int new_level = Math.min(curRaidLevel + 1, MAX_RAID_LEVEL);
-		setRaidLevel(new_level);
+		int newLevel = Math.min(curRaidLevel + 1, MAX_RAID_LEVEL);
+		setRaidLevel(newLevel);
 	}
 
 	/**
@@ -521,7 +516,7 @@ public class RaidManager {
 			return;
 		}
 		nextRaidGameTime = time;
-		Baseraids.LOGGER.debug("Set next raid game time to " + time);
+		Baseraids.LOGGER.debug("Set next raid game time to {}", time);
 		markDirty();
 	}
 
@@ -536,12 +531,12 @@ public class RaidManager {
 		setTimeUntilRaid((long) (min) * 60 * 20);
 	}
 
-	private void reduceTimeUntilRaid(int reductionTime) {
+	private void reduceTimeUntilRaid(long reductionTime) {
 		setTimeUntilRaid(getTimeUntilRaid() - reductionTime);
 	}
 
 	public void reduceTimeUntilRaidInMin(int reductionTimeInMin) {
-		reduceTimeUntilRaid(reductionTimeInMin * 60 * 20);
+		reduceTimeUntilRaid((long) reductionTimeInMin * 60 * 20);
 	}
 
 	public boolean isRaidActive() {

@@ -54,6 +54,7 @@ import net.minecraftforge.items.IItemHandler;
  * 
  * @author Natascha May
  */
+//@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock {
 
