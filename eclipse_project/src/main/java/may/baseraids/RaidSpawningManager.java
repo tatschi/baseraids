@@ -65,8 +65,9 @@ public class RaidSpawningManager {
 	}
 
 	/**
-	 * Spawns the mobs for the current level specified by <code>amountOfMobs</code>
-	 * and inputs the spawned entities into the list <code>spawnedMobs</code>.
+	 * Spawns the mobs for the current level specified in the
+	 * {@link RaidEntitySpawnCountRegistry} and saves the spawned entities into the
+	 * list {@link #spawnedMobs}.
 	 */
 	void spawnRaidMobs() {
 		int raidLevel = raidManager.getRaidLevel();
@@ -91,13 +92,13 @@ public class RaidSpawningManager {
 	}
 
 	/**
-	 * Spawns <code>numMobs</code> mobs of the type <code>entityType</code>.
+	 * Spawns the given number of mobs of the given entity type.
 	 * 
-	 * @param <T>        extends <code>Entity</code> the entity class corresponding
-	 *                   to the <code>entityType</code>
+	 * @param <T>        extends {@link Entity} the entity class corresponding to
+	 *                   the {@code entityType}
 	 * @param entityType
 	 * @param numMobs    the amount of mobs to spawn of this type
-	 * @return an array of <code>MobEntity</code> containing the spawned entities
+	 * @return an array of {@link MobEntity} containing the spawned entities
 	 */
 	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 
@@ -162,8 +163,8 @@ public class RaidSpawningManager {
 	}
 
 	/**
-	 * @return <code>true</code>, if and only if all mobs that were spawned by this
-	 *         object are dead.
+	 * @return {@code true} if and only if all mobs that were spawned by this object
+	 *         are dead.
 	 */
 	boolean areAllSpawnedMobsDead() {
 		if (spawnedMobs.isEmpty()) {
@@ -194,15 +195,12 @@ public class RaidSpawningManager {
 
 	/**
 	 * Reads and stores the UUIDs of the mobs stored in the given
-	 * <code>CompoundNBT</code>, so that they can be recovered when they are spawned
-	 * into the world. This function assumes that the nbt was previously written by
-	 * this class or to be precise, that the nbt includes certain elements.
+	 * {@link CompoundNBT} so that they can be recovered when they are spawned into
+	 * the world. This function assumes that the nbt was previously written by this
+	 * class or to be precise, that the nbt includes certain elements.
 	 * 
-	 * @param nbt         the nbt that will be read out. It is assumed to include
-	 *                    certain elements.
-	 * @param serverWorld the world that is loaded. It is used in the
-	 *                    <code>RaidSpawningManager</code> to get references to
-	 *                    previously spawned mobs.
+	 * @param nbt the nbt that will be read out. It is assumed to include certain
+	 *            elements.
 	 */
 	private void readSpawnedMobsList(CompoundNBT nbt) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
@@ -218,10 +216,10 @@ public class RaidSpawningManager {
 	}
 
 	/**
-	 * Saves the UUIDs of the spawned mobs to a <code>CompoundNBT</code> and returns
-	 * the <code>CompoundNBT</code> object.
+	 * Saves the UUIDs of the spawned mobs to a {@link CompoundNBT} and returns the
+	 * {@link CompoundNBT} object.
 	 * 
-	 * @return the adapted <code>CompoundNBT</code> that was written to
+	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
 	CompoundNBT writeAdditional() {
 
@@ -250,8 +248,8 @@ public class RaidSpawningManager {
 	 * Recovers the spawned mobs after saving and loading by comparing the UUIDs
 	 * when they are loaded by the game.
 	 * 
-	 * @param event the event of type <code>EntityJoinWorldEvent</code> that
-	 *              triggers this function
+	 * @param event the event of type {@link EntityJoinWorldEvent} that triggers
+	 *              this function
 	 */
 	@SubscribeEvent
 	public void onEntityJoinWorld(final EntityJoinWorldEvent event) {

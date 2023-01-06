@@ -66,8 +66,8 @@ public class RaidManager {
 
 	/**
 	 * Sets the times (remaining time until raid) at which all players will be
-	 * warned of the coming raid (approximated, in seconds), @see
-	 * {@link RaidManager#warnPlayersOfRaid()}.
+	 * warned of the coming raid (approximated, in seconds).
+	 * @see RaidManager#warnPlayersOfRaid()
 	 */
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -477,7 +477,7 @@ public class RaidManager {
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.readAdditional(raidSpawningNBT);
 			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
-			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT, serverWorld);
+			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT);
 
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
 
