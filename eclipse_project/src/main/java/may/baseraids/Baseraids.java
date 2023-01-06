@@ -33,7 +33,6 @@ import net.minecraftforge.registries.ForgeRegistries;
  * 
  * @author Natascha May
  */
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 //The value here should match an entry in the META-INF/mods.toml file
 @Mod("baseraids")
 public class Baseraids {

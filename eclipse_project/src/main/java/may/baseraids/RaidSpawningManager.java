@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import may.baseraids.entities.RaidEntitySpawnCountRegistry;
 import may.baseraids.nexus.NexusBlock;
@@ -28,7 +29,6 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /**
  * This class controls the spawning, saving and loading and other handling of
@@ -36,24 +36,25 @@ import net.minecraftforge.fml.common.Mod;
  * 
  * @author Natascha May
  */
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RaidSpawningManager {
 
 	private World world;
 	private RaidManager raidManager;
 	private WorldManager worldManager;
 	/** A list of all spawned mobs for managing active raids */
-	private List<MobEntity> spawnedMobs = new ArrayList<MobEntity>();
+	private List<MobEntity> spawnedMobs = new ArrayList<>();
 	/**
 	 * A list of UUIDs for all spawned mobs. Only used and updated when saving and
 	 * loading.
 	 */
-	private List<UUID> spawnedMobsUUIDs = new ArrayList<UUID>();
+	private List<UUID> spawnedMobsUUIDs = new ArrayList<>();
 
 	// spawning parameters
 	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / 100;
 	private static final int SPAWN_RADIUS_MIN = 40;
 	private static final int SPAWN_RADIUS_MAX = 60;
+
+	private Random rand = new Random();
 
 	public RaidSpawningManager(RaidManager raidManager, World world, WorldManager worldManager) {
 		this.raidManager = raidManager;
@@ -72,18 +73,19 @@ public class RaidSpawningManager {
 		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
 		int playerCount = world.getPlayers().size();
-		
+
 		entityTypesToSpawn.forEach(type -> {
-			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel, playerCount);
+			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel,
+					playerCount);
 			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
 			// remove nulls and convert to collection
 			Collection<MobEntity> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
-					.filter((entity) -> entity != null).collect(Collectors.toList());
+					.filter(Objects::nonNull).collect(Collectors.toList());
 
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
 		});
-		
+
 		raidManager.markDirty();
 		Baseraids.LOGGER.info("Spawned all entities for the raid");
 	}
@@ -132,13 +134,12 @@ public class RaidSpawningManager {
 	 * @return compatible spawn position
 	 */
 	private BlockPos findSpawnPos(EntityType<?> entityType) {
-		Random r = new Random();
 
 		// select random radius between SPAWN_RADIUS_MIN and SPAWN_RADIUS_MAX
-		int radius = r.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
+		int radius = rand.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
 
 		// select random angle
-		int randomAngleIndex = r.nextInt(100);
+		int randomAngleIndex = rand.nextInt(100);
 		double angle = randomAngleIndex * SPAWN_ANGLE_INTERVAL;
 
 		// compute coordinates x and z for the radius and angle
@@ -156,8 +157,7 @@ public class RaidSpawningManager {
 			spawnPos = world.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), spawnPosXZ);
 		}
 
-		Baseraids.LOGGER
-				.debug("Spawn " + entityType.getName().getString() + " at radius " + radius + " and angle " + angle);
+		Baseraids.LOGGER.debug("Spawn %s at radius %i and angle %d", entityType.getName().getString(), radius, angle);
 		return spawnPos;
 	}
 
@@ -183,13 +183,11 @@ public class RaidSpawningManager {
 	 * Kills all mobs that were spawned by this object.
 	 */
 	void killAllMobs() {
-		spawnedMobs.forEach(mob -> {
-			mob.remove();
-		});
+		spawnedMobs.forEach(Entity::remove);
 		spawnedMobs.clear();
 		raidManager.markDirty();
 	}
-	
+
 	public boolean isEntityRaiding(LivingEntity entity) {
 		return spawnedMobs.contains(entity);
 	}
@@ -206,15 +204,15 @@ public class RaidSpawningManager {
 	 *                    <code>RaidSpawningManager</code> to get references to
 	 *                    previously spawned mobs.
 	 */
-	private void readSpawnedMobsList(CompoundNBT nbt, ServerWorld serverWorld) {
+	private void readSpawnedMobsList(CompoundNBT nbt) {
 		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
 		spawnedMobsUUIDs.clear();
 
 		for (int index = 0; index < spawnedMobsList.size(); index++) {
-			CompoundNBT compoundNBT = (CompoundNBT) spawnedMobsList.getCompound(index);
+			CompoundNBT compoundNBT = spawnedMobsList.getCompound(index);
 			UUID entityUUID = compoundNBT.getUniqueId("ID" + index);
-			Baseraids.LOGGER.debug("reading entity with ID " + entityUUID);
+			Baseraids.LOGGER.debug("reading entity with ID {}", entityUUID);
 			spawnedMobsUUIDs.add(entityUUID);
 		}
 	}
@@ -235,7 +233,7 @@ public class RaidSpawningManager {
 			CompoundNBT compound = new CompoundNBT();
 
 			compound.putUniqueId("ID" + index, mob.getUniqueID());
-			Baseraids.LOGGER.debug("writing entity with UUID " + mob.getUniqueID());
+			Baseraids.LOGGER.debug("writing entity with UUID {}", mob.getUniqueID());
 			spawnedMobsList.add(compound);
 			index++;
 		}
@@ -244,8 +242,8 @@ public class RaidSpawningManager {
 		return nbt;
 	}
 
-	void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
-		readSpawnedMobsList(nbt, serverWorld);
+	void readAdditional(CompoundNBT nbt) {
+		readSpawnedMobsList(nbt);
 	}
 
 	/**

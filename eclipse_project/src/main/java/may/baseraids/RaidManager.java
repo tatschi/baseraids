@@ -475,7 +475,7 @@ public class RaidManager {
 			daytimeBeforeRaid = nbt.getLong("daytimeBeforeRaid");
 
 			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
-			raidSpawningMng.readAdditional(raidSpawningNBT, serverWorld);
+			raidSpawningMng.readAdditional(raidSpawningNBT);
 			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
 			restoreDestroyedBlocksMng.readAdditional(restoreDestroyedBlocksMngNBT, serverWorld);
 
