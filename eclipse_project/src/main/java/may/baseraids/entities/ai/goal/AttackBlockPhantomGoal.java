@@ -71,7 +71,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 	private void sweepAttack() {		
         entity.orbitOffset = new Vector3d(target.getX(), target.getY(), target.getZ());
         AxisAlignedBB originalBB = entity.getBoundingBox();
-        entity.setBoundingBox(originalBB.grow((double)0.2F));
+        entity.setBoundingBox(originalBB.grow(0.2F));
         if (entity.collidedHorizontally && isBlockInMeleeRange(target)) {
            
            boolean wasBroken = raidManager.globalBlockBreakProgressMng.addProgress(target, PHANTOM_DAMAGE);		
@@ -92,13 +92,11 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 	}
 	
 	private void resetAttack() {
-		/*entity.orbitPosition = entity.world.getHeight(Heightmap.Type.MOTION_BLOCKING, entity.orbitPosition)
-				.up(10 + rand.nextInt(20));
-			*/
 		entity.orbitPosition = entity.getHomePosition();
 		entity.orbitOffset = Vector3d.ZERO;
 	}
 	
+	@Override
 	protected void attackTarget() {
 		attackBlockPhantom();
 	}

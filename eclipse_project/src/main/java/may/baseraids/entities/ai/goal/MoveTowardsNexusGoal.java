@@ -27,28 +27,29 @@ public class MoveTowardsNexusGoal<T extends MobEntity> extends Goal {
 	}
 
 	public boolean shouldExecute() {
-		BlockPos nexusPos = NexusBlock.getBlockPos();		
-		
-		if(entity.getAttackTarget() != null || !raidManager.isRaidActive() || entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceReached) {
+		BlockPos nexusPos = NexusBlock.getBlockPos();
+
+		if (entity.getAttackTarget() != null || !raidManager.isRaidActive()
+				|| entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceReached) {
 			return false;
 		}
-		
+
 		Path path = entity.getNavigator().getPath();
 		return (path == null || path.isFinished());
 	}
 
-	public boolean shouldContinueExecuting() {		
+	@Override
+	public boolean shouldContinueExecuting() {
 		return shouldExecute();
 	}
 
-	public void startExecuting() {
-	}
-
+	@Override
 	public void tick() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
 		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
 	}
 
+	@Override
 	public void resetTask() {
 		entity.getNavigator().clearPath();
 	}

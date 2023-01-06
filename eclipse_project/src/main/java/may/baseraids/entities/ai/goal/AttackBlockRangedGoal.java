@@ -29,11 +29,13 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		super(entity, raidManager);
 	}
 
+	@Override
 	public void resetTask() {
 		super.resetTask();
 		this.entity.resetActiveHand();
 	}
 	
+	@Override
 	public void tick() {
 		super.tick();
 		if(rangedAttackRemainingCooldown != 0) {
@@ -41,6 +43,7 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		}
 	}
 	
+	@Override
 	protected void attackTarget() {
 		super.attackTarget();
 		
@@ -69,7 +72,7 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 	}
 	
 	/**
-	 * Creates an <code>AbstractArrowEntity</code> from ammo held by the entity and adds potion, enchantment and other effects.
+	 * Creates an {@link AbstractArrowEntity} from ammo held by the entity and adds potion, enchantment and other effects.
 	 * @return the create arrow entity
 	 */
 	private AbstractArrowEntity createArrowEntity() {
@@ -96,10 +99,10 @@ public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> e
 		double dX = targetBlock.getX() - entity.getPosX();
 		double dY = targetBlock.getY() + 0.333333D - arrowEntity.getPosY();
 		double dZ = targetBlock.getZ() - entity.getPosZ();
-		double distInXZPlane = (double) MathHelper.sqrt(dX * dX + dZ * dZ);
-		double dYWithDistanceAdjustment = dY + distInXZPlane * (double) 0.2F;
+		double distInXZPlane = MathHelper.sqrt(dX * dX + dZ * dZ);
+		double dYWithDistanceAdjustment = dY + distInXZPlane * 0.2F;
 		arrowEntity.shoot(dX, dYWithDistanceAdjustment, dZ, 1.6F,
-				(float) (14 - entity.world.getDifficulty().getId() * 4));
+				(14 - entity.world.getDifficulty().getId() * 4));
 	}
 
 }

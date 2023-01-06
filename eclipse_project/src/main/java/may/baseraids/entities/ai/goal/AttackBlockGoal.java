@@ -31,6 +31,8 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	protected BlockPos target = null;
 	protected int findTargetTicks = 0;
 	
+	private Random rand = new Random();
+	
 	protected static final int MELEE_DAMAGE = 1;
 	protected static final float MELEE_ATTACK_RANGE = 3f;
 	protected static final float RANGED_ATTACK_RANGE = 20f;
@@ -72,10 +74,12 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 		return true;
 	}
 	
+	@Override
 	public boolean shouldContinueExecuting() {
 		return shouldExecute();
 	}
 	
+	@Override
 	public void tick() {		
 		if(target != null) {
 			attackTarget();
@@ -165,13 +169,10 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 			return false;
 		}		
 		
-		if(!canEntitySeeBlock(pos)) {
-			return false;
-		}
-		
-		return true;
+		return canEntitySeeBlock(pos);
 	}
 	
+	@Override
 	public void resetTask() {
 		super.resetTask();
 		this.entity.setAggroed(false);
@@ -182,19 +183,16 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	 * Swings the active arm of the entity with a certain probability. 
 	 */
 	private void swingArmAtRandom() {
-		if (this.entity.getRNG().nextInt(20) == 0) {
-			if (!this.entity.isSwingInProgress) {
-				this.entity.swingArm(this.entity.getActiveHand());
-			}
+		if (this.entity.getRNG().nextInt(20) == 0 && !this.entity.isSwingInProgress) {
+			this.entity.swingArm(this.entity.getActiveHand());
 		}
 	}
 	
 	/**
 	 * Adds some randomized variation (jitter) to the nexus position and sets this new position as the look position of the entity.
 	 */
-	private void jitterLookPositionAroundNexus() {
-		Random r = new Random();
-		Vector3d jitter = new Vector3d(r.nextDouble(), r.nextDouble(), r.nextDouble()).scale(JITTER_FACTOR);
+	private void jitterLookPositionAroundNexus() {		
+		Vector3d jitter = new Vector3d(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()).scale(JITTER_FACTOR);
 		Vector3d jitteredLookPos = jitter.add(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
 		entity.getLookController().setLookPosition(jitteredLookPos);
 	}

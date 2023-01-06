@@ -21,18 +21,18 @@ public class NexusEffects {
 	 * @return
 	 */
 	public static EffectInstance getEffectInstance(NexusEffect effect) {
-		return new EffectInstance(effect.EFFECT, effect.DURATION, effect.AMPLIFIER);
+		return new EffectInstance(effect.effect, effect.duration, effect.amplifier);
 	}
 
 	public static class NexusEffect {
-		final Effect EFFECT;
-		final int DURATION;
-		final int AMPLIFIER;
+		final Effect effect;
+		final int duration;
+		final int amplifier;
 
 		NexusEffect(Effect effect, int duration, int amplifier) {
-			this.EFFECT = effect;
-			this.DURATION = duration;
-			this.AMPLIFIER = amplifier;
+			this.effect = effect;
+			this.duration = duration;
+			this.amplifier = amplifier;
 		}
 	}
 
@@ -65,8 +65,11 @@ public class NexusEffects {
 	 * For each raid level, this list holds a list of effects that will be applied
 	 * to nearby players.
 	 */
-	public static final List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(NexusEffects.effects1, NexusEffects.effects2,
+	protected static final List<List<NexusEffects.NexusEffect>> effects = Arrays.asList(NexusEffects.effects1, NexusEffects.effects2,
 			NexusEffects.effects3, NexusEffects.effects4, NexusEffects.effects5, NexusEffects.effects6,
 			NexusEffects.effects7, NexusEffects.effects8, NexusEffects.effects9, NexusEffects.effects10);
 	
+	private NexusEffects() {
+		throw new IllegalStateException("Utility class");
+	}
 }

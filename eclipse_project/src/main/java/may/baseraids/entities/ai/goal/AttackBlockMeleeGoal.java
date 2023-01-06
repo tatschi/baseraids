@@ -16,11 +16,13 @@ public class AttackBlockMeleeGoal<T extends MobEntity> extends AttackBlockGoal<T
 		super(entity, raidManager);
 	}
 	
+	@Override
 	protected void attackTarget() {
 		super.attackTarget();
 		attackBlockMelee(target);
 	}
 	
+	@Override
 	protected boolean isAttackableBlock(BlockPos pos) {
 		if(!super.isAttackableBlock(pos)) {
 			return false;

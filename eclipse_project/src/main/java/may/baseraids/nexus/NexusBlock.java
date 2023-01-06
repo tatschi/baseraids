@@ -142,7 +142,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 			return;
 		}
 		// only apply debuff every time half the duration of the effect has passed
-		if (world.getGameTime() % (NexusEffects.DEBUFF.DURATION / 2) != 0L) {
+		if (world.getGameTime() % (NexusEffects.DEBUFF.duration / 2) != 0L) {
 			return;
 		}
 
