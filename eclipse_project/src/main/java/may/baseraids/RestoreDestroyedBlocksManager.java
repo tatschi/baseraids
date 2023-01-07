@@ -84,7 +84,7 @@ public class RestoreDestroyedBlocksManager {
 	 * 
 	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
-	public CompoundNBT writeAdditional() {
+	public CompoundNBT write() {
 		CompoundNBT nbt = new CompoundNBT();
 
 		ListNBT savedBlocksList = new ListNBT();
@@ -107,7 +107,7 @@ public class RestoreDestroyedBlocksManager {
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
 	 */
-	public void readAdditional(CompoundNBT nbt) {
+	public void read(CompoundNBT nbt) {
 		try {
 			savedBlocks.clear();
 			ListNBT savedBlocksList = nbt.getList("savedBlocks", 10);

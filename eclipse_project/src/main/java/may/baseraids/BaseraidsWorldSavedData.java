@@ -44,8 +44,8 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 */
 	@Override
 	public void read(CompoundNBT nbt) {
-		NexusBlock.readAdditional(nbt.getCompound("nexusBlock"));
-		this.raidManager.readAdditional(nbt.getCompound("raidManager"), serverWorld);
+		NexusBlock.read(nbt.getCompound("nexusBlock"));
+		this.raidManager.read(nbt.getCompound("raidManager"), serverWorld);
 	}
 
 	/**
@@ -57,8 +57,8 @@ public class BaseraidsWorldSavedData extends WorldSavedData {
 	 */
 	@Override
 	public CompoundNBT write(CompoundNBT nbt) {
-		nbt.put("raidManager", raidManager.writeAdditional());
-		nbt.put("nexusBlock", NexusBlock.writeAdditional());
+		nbt.put("raidManager", raidManager.write());
+		nbt.put("nexusBlock", NexusBlock.write());
 		return nbt;
 	}
 

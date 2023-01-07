@@ -147,6 +147,10 @@ public class WorldManager {
 	public RaidManager getRaidManager() {
 		return baseraidsData.raidManager;
 	}
+	
+	public RaidTimeManager getRaidTimeManager() {
+		return baseraidsData.raidManager.getRaidTimeManager();
+	}
 
 	public ServerWorld getServerWorld() {
 		return baseraidsData.serverWorld;

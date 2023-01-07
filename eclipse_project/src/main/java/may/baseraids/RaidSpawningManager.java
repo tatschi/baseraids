@@ -221,7 +221,7 @@ public class RaidSpawningManager {
 	 * 
 	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
-	CompoundNBT writeAdditional() {
+	CompoundNBT write() {
 
 		CompoundNBT nbt = new CompoundNBT();
 
@@ -240,7 +240,7 @@ public class RaidSpawningManager {
 		return nbt;
 	}
 
-	void readAdditional(CompoundNBT nbt) {
+	void read(CompoundNBT nbt) {
 		readSpawnedMobsList(nbt);
 	}
 

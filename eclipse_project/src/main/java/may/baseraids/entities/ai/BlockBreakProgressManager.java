@@ -109,7 +109,7 @@ public class BlockBreakProgressManager {
 	 * 
 	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
-	public CompoundNBT writeAdditional() {
+	public CompoundNBT write() {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.putInt("breakProgressAbsolute", breakProgressAbsolute);
 		nbt.putInt("breakProgressRelative", breakProgressRelative);
@@ -126,7 +126,7 @@ public class BlockBreakProgressManager {
 	 *                    certain elements.
 	 * @param serverWorld the world that is loaded
 	 */
-	public static BlockBreakProgressManager readAdditional(CompoundNBT nbt, ServerWorld serverWorld, BlockPos pos) {
+	public static BlockBreakProgressManager read(CompoundNBT nbt, ServerWorld serverWorld, BlockPos pos) {
 		try {
 			int breakBlockId = nbt.getInt("breakBlockId");
 			BlockBreakProgressManager mng = new BlockBreakProgressManager(serverWorld, pos, breakBlockId);

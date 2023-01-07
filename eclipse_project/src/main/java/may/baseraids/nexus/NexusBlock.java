@@ -421,7 +421,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * @param nbt the nbt that will be read out. It is assumed to include certain
 	 *            elements.
 	 */
-	public static void readAdditional(CompoundNBT nbt) {
+	public static void read(CompoundNBT nbt) {
 		curState = NexusState.valueOf(nbt.getString("curState"));
 		curBlockPos = new BlockPos(nbt.getInt("curBlockPosX"), nbt.getInt("curBlockPosY"), nbt.getInt("curBlockPosZ"));
 	}
@@ -432,7 +432,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 	 * 
 	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
-	public static CompoundNBT writeAdditional() {
+	public static CompoundNBT write() {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.putString("curState", curState.name());
 		nbt.putInt("curBlockPosX", curBlockPos.getX());

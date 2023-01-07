@@ -99,20 +99,20 @@ public class BaseraidsCommands {
 	}
 
 	private int getTimeUntilRaid(CommandSource source) {
-		sendFeedback(source, "Time until raid: " + worldManager.getRaidManager().getTimeUntilRaidInDisplayString());
-		return worldManager.getRaidManager().getTimeUntilRaidInSec();
+		sendFeedback(source, "Time until raid: " + worldManager.getRaidTimeManager().getTimeUntilRaidInDisplayString());
+		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
 	}
 
 	private int setTimeUntilRaid(CommandSource source, int min) {
-		worldManager.getRaidManager().setTimeUntilRaidInMin(min);
+		worldManager.getRaidTimeManager().setTimeUntilRaidInMin(min);
 		sendTimeUntilRaidFeedback(source);
-		return worldManager.getRaidManager().getTimeUntilRaidInSec();
+		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
 	}
 
 	private int reduceTimeUntilRaid(CommandSource source, int min) {
-		worldManager.getRaidManager().reduceTimeUntilRaidInMin(min);
+		worldManager.getRaidTimeManager().reduceTimeUntilRaidInMin(min);
 		sendTimeUntilRaidFeedback(source);
-		return worldManager.getRaidManager().getTimeUntilRaidInSec();
+		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
 	}
 
 	private int getRaidLevel(CommandSource source) {
@@ -141,7 +141,7 @@ public class BaseraidsCommands {
 
 	private void sendTimeUntilRaidFeedback(CommandSource source) {
 		sendFeedback(source,
-				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidManager().getTimeUntilRaidInDisplayString());
+				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidTimeManager().getTimeUntilRaidInDisplayString());
 	}
 
 	private void sendFeedback(CommandSource source, String text) {

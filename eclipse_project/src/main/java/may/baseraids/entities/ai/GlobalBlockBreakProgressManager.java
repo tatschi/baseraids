@@ -161,14 +161,14 @@ public class GlobalBlockBreakProgressManager {
 	 * 
 	 * @return the adapted {@link CompoundNBT} that was written to
 	 */
-	public CompoundNBT writeAdditional() {
+	public CompoundNBT write() {
 		CompoundNBT nbt = new CompoundNBT();
 		
 		ListNBT breakProgressList = new ListNBT();
 		breakProgress.forEach((key, value) -> {
 			CompoundNBT keyValuePairNBT = new CompoundNBT();
 			keyValuePairNBT.put("BlockPos", NBTUtil.writeBlockPos(key));
-			keyValuePairNBT.put("BlockBreakProgressManager", value.writeAdditional());
+			keyValuePairNBT.put("BlockBreakProgressManager", value.write());
 			breakProgressList.add(keyValuePairNBT);
 		});		
 		
@@ -185,14 +185,14 @@ public class GlobalBlockBreakProgressManager {
 	 *                    certain elements.
 	 * @param serverWorld the world that is loaded
 	 */
-	public void readAdditional(CompoundNBT nbt, ServerWorld serverWorld) {
+	public void read(CompoundNBT nbt, ServerWorld serverWorld) {
 		try {
 			breakProgress.clear();
 			ListNBT breakProgressList = nbt.getList("breakProgress", 10);
 			breakProgressList.forEach(c -> {
 				CompoundNBT com = (CompoundNBT) c;
 				BlockPos key = NBTUtil.readBlockPos(com.getCompound("BlockPos"));
-				BlockBreakProgressManager value = BlockBreakProgressManager.readAdditional(com.getCompound("BlockBreakProgressManager"), serverWorld, key);
+				BlockBreakProgressManager value = BlockBreakProgressManager.read(com.getCompound("BlockBreakProgressManager"), serverWorld, key);
 				if(value != null) {
 					breakProgress.put(key, value);					
 				}
