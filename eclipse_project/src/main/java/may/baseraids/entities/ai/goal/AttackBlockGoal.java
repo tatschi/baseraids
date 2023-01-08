@@ -3,19 +3,14 @@ package may.baseraids.entities.ai.goal;
 import java.util.EnumSet;
 import java.util.Random;
 
+import com.mojang.math.Vector3d;
+
 import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceContext.BlockMode;
-import net.minecraft.util.math.RayTraceContext.FluidMode;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
 
 /**
  * This class defines an abstract AI goal to attack blocks that are in the way towards
@@ -43,7 +38,7 @@ public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
 	protected AttackBlockGoal(T entity, RaidManager raidManager) {
 		this.entity = entity;
 		this.raidManager = raidManager;
-		this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.LOOK));
+		this.setFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.LOOK));
 	}
 	
 	@Override

@@ -12,25 +12,7 @@ import may.baseraids.entities.ai.goal.AttackBlockRangedGoal;
 import may.baseraids.entities.ai.goal.HurtByNotRaidingTargetGoal;
 import may.baseraids.entities.ai.goal.MoveTowardsNexusGoal;
 import may.baseraids.entities.ai.goal.MoveTowardsNexusPhantomGoal;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.HurtByTargetGoal;
-import net.minecraft.entity.ai.goal.LookAtGoal;
-import net.minecraft.entity.ai.goal.LookRandomlyGoal;
-import net.minecraft.entity.ai.goal.MoveThroughVillageGoal;
-import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
-import net.minecraft.entity.ai.goal.TargetGoal;
-import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
-import net.minecraft.entity.monster.CaveSpiderEntity;
-import net.minecraft.entity.monster.PhantomEntity;
-import net.minecraft.entity.monster.SkeletonEntity;
-import net.minecraft.entity.monster.SpiderEntity;
-import net.minecraft.entity.monster.WitherSkeletonEntity;
-import net.minecraft.entity.monster.ZombieEntity;
-import net.minecraft.entity.monster.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.EntityType;
 
 /**
  * This class is used for setting up the default monsters with custom AI for

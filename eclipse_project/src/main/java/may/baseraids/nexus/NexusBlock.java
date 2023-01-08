@@ -7,21 +7,11 @@ import java.util.Random;
 import com.google.common.collect.Sets;
 
 import may.baseraids.Baseraids;
-import net.minecraft.block.Block;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ToolType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
@@ -59,7 +49,7 @@ import net.minecraftforge.items.IItemHandler;
  */
 //@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class NexusBlock extends Block implements IForgeBlock {
+public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 
 	private static final Properties PROPERTIES = AbstractBlock.Properties.create(Material.ROCK)
 			.hardnessAndResistance(15f, 30f).harvestTool(ToolType.PICKAXE).harvestLevel(1).sound(SoundType.GLASS)
@@ -198,7 +188,7 @@ public class NexusBlock extends Block implements IForgeBlock {
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
 		}
-		Baseraids.worldManager.getServerWorld().getTileEntity(getBlockPos()).remove();
+		Baseraids.worldManager.getServerLevel().getTileEntity(getBlockPos()).remove();
 	}
 
 	/**
@@ -414,31 +404,37 @@ public class NexusBlock extends Block implements IForgeBlock {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function
+	 * Reads the data stored in the given {@link CompoundTag}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
 	 * that the nbt includes certain elements.
 	 * 
 	 * @param nbt the nbt that will be read out. It is assumed to include certain
 	 *            elements.
 	 */
-	public static void read(CompoundNBT nbt) {
+	public static void read(CompoundTag nbt) {
 		curState = NexusState.valueOf(nbt.getString("curState"));
 		curBlockPos = new BlockPos(nbt.getInt("curBlockPosX"), nbt.getInt("curBlockPosY"), nbt.getInt("curBlockPosZ"));
 	}
 
 	/**
-	 * Writes the necessary data to a {@link CompoundNBT} and returns the
-	 * {@link CompoundNBT} object.
+	 * Writes the necessary data to a {@link CompoundTag} and returns the
+	 * {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public static CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public static CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 		nbt.putString("curState", curState.name());
 		nbt.putInt("curBlockPosX", curBlockPos.getX());
 		nbt.putInt("curBlockPosY", curBlockPos.getY());
 		nbt.putInt("curBlockPosZ", curBlockPos.getZ());
 		return nbt;
+	}
+
+	@Override
+	public BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

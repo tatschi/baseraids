@@ -2,16 +2,10 @@ package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
 import may.baseraids.entities.ai.RaidArrowEntity;
-import net.minecraft.entity.IRangedAttackMob;
-import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.entity.projectile.AbstractArrowEntity;
-import net.minecraft.entity.projectile.ProjectileHelper;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * This class defines the AI goal to attack blocks that are in the way towards

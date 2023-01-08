@@ -7,12 +7,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import may.baseraids.commands.BaseraidsCommands;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
-import net.minecraft.block.Blocks;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -21,7 +17,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class WorldManager {
 
-	private BaseraidsWorldSavedData baseraidsData;
+	private BaseraidsSavedData baseraidsData;
 	private final BaseraidsCommands commands;
 	final BaseraidsEntityManager entityManager;
 
@@ -39,7 +35,7 @@ public class WorldManager {
 	 */
 	@SubscribeEvent
 	public void onRegisterCommandEvent(final RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSource> commandDispatcher = event.getDispatcher();
+		CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
 		commands.register(commandDispatcher);
 	}
 
@@ -56,7 +52,7 @@ public class WorldManager {
 
 	/**
 	 * Initiates the loading process for this mod using the class
-	 * {@link BaseraidsWorldSavedData} when the world is loaded.
+	 * {@link BaseraidsSavedData} when the world is loaded.
 	 * 
 	 * @param event the event of type {@link WorldEvent.Load} that calls this
 	 *              function
@@ -66,15 +62,15 @@ public class WorldManager {
 		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
 			return;
 
-		if (event.getWorld() instanceof ServerWorld) {
-			baseraidsData = BaseraidsWorldSavedData.get(this, (ServerWorld) event.getWorld());
+		if (event.getWorld() instanceof ServerLevel) {
+			baseraidsData = BaseraidsSavedData.get(this, (ServerLevel) event.getWorld());
 		}
 
 	}
 
 	/**
 	 * Initiates the saving process for this mod using the class
-	 * {@link BaseraidsWorldSavedData} when the world is saved.
+	 * {@link BaseraidsSavedData} when the world is saved.
 	 * 
 	 * @param event the event of type {@link WorldEvent.Save} that calls this
 	 *              function
@@ -83,8 +79,8 @@ public class WorldManager {
 	public void onWorldSavedSaveBaseraidsWorldSavedData(final WorldEvent.Save event) {
 		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
 			return;
-		if (event.getWorld() instanceof ServerWorld) {
-			baseraidsData = BaseraidsWorldSavedData.get(this, (ServerWorld) event.getWorld());
+		if (event.getWorld() instanceof ServerLevel) {
+			baseraidsData = BaseraidsSavedData.get(this, (ServerLevel) event.getWorld());
 		}
 	}
 
@@ -152,7 +148,7 @@ public class WorldManager {
 		return baseraidsData.raidManager.getRaidTimeManager();
 	}
 
-	public ServerWorld getServerWorld() {
+	public ServerLevel getServerLevel() {
 		return baseraidsData.serverWorld;
 	}
 

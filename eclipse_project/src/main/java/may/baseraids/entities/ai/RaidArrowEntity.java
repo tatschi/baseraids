@@ -5,11 +5,8 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import may.baseraids.RaidManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * This class defines a custom arrow entity that interacts with blocks that it

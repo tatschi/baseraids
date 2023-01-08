@@ -9,16 +9,12 @@ import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffects;
 import may.baseraids.nexus.NexusEffectsTileEntity;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,7 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  */
 public class RaidManager {
 
-	private World world = null;
+	private Level level = null;
 	private WorldManager worldManager;
 	private boolean isInitialized = false;
 
@@ -53,14 +49,14 @@ public class RaidManager {
 			new ResourceLocation(Baseraids.MODID, "level8"), new ResourceLocation(Baseraids.MODID, "level9"),
 			new ResourceLocation(Baseraids.MODID, "level10") };
 
-	public RaidManager(World world, WorldManager worldManager) {
+	public RaidManager(Level level, WorldManager worldManager) {
 		MinecraftForge.EVENT_BUS.register(this);
-		this.world = world;
+		this.level = level;
 		this.worldManager = worldManager;
-		raidSpawningMng = new RaidSpawningManager(this, world, worldManager);
-		raidTimeMng = new RaidTimeManager(this, world);
-		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, world);
-		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(this, world);
+		raidSpawningMng = new RaidSpawningManager(this, level, worldManager);
+		raidTimeMng = new RaidTimeManager(this, level);
+		globalBlockBreakProgressMng = new GlobalBlockBreakProgressManager(this, level);
+		restoreDestroyedBlocksMng = new RestoreDestroyedBlocksManager(this, level);
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 		isInitialized = true;
@@ -77,9 +73,9 @@ public class RaidManager {
 	public void onWorldTick(TickEvent.WorldTickEvent event) {
 		if (event.phase != TickEvent.Phase.START)
 			return;
-		if (world.isRemote())
+		if (level.isRemote())
 			return;
-		if (!world.getDimensionKey().equals(World.OVERWORLD))
+		if (!level.getDimensionKey().equals(Level.OVERWORLD))
 			return;
 
 		raidTimeMng.warnPlayersOfRaid();
@@ -98,7 +94,7 @@ public class RaidManager {
 		if (Boolean.FALSE.equals(isRaidActive)) {
 			return;
 		}
-		if (world.getDifficulty() == Difficulty.PEACEFUL) {
+		if (level.getDifficulty() == Difficulty.PEACEFUL) {
 			Baseraids.messageManager.sendStatusMessage("Raid was ended because difficulty is peaceful", true);
 			endRaid();
 		}
@@ -138,7 +134,7 @@ public class RaidManager {
 	 * {@link RaidManager#endRaid()}.
 	 */
 	public void loseRaid() {
-		if (world == null)
+		if (level == null)
 			return;
 		Baseraids.LOGGER.info("Raid lost");
 		Baseraids.messageManager.sendStatusMessage("You lost the raid!");
@@ -152,14 +148,14 @@ public class RaidManager {
 
 	private void playWinSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 300F,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 300F,
 					1.0F);
 		}
 	}
 
 	private void playLoseSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 300F,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 300F,
 					1.0F);
 		}
 	}
@@ -170,7 +166,7 @@ public class RaidManager {
 	 * {@link RaidManager#endRaid()} and playing the win sound.
 	 */
 	public void winRaid() {
-		if (world == null)
+		if (level == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
 		Baseraids.messageManager.sendStatusMessage("You won the raid!");
@@ -178,7 +174,7 @@ public class RaidManager {
 		spawnAndFillRewardChest();
 
 		// make sure to add these effects before increasing the raid level
-		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) worldManager.getServerWorld()
+		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) worldManager.getServerLevel()
 				.getTileEntity(NexusBlock.getBlockPos());
 		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 		nexusEntity.setLastWonRaidLevel(getRaidLevel());
@@ -198,7 +194,7 @@ public class RaidManager {
 	private void endRaid() {
 		Baseraids.messageManager.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
 		setRaidActive(false);
-		world.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
+		level.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
 		raidSpawningMng.killAllMobs();
 		if (ConfigOptions.getRestoreDestroyedBlocks()) {
@@ -216,13 +212,13 @@ public class RaidManager {
 	private void spawnAndFillRewardChest() {
 		// spawn chest
 		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.getLootChestPositionRelative());
-		world.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
+		level.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
 
-		if (world.getTileEntity(chestPos) instanceof ChestTileEntity) {
-			ChestTileEntity chestEntity = (ChestTileEntity) world.getTileEntity(chestPos);
+		if (level.getTileEntity(chestPos) instanceof ChestTileEntity) {
+			ChestTileEntity chestEntity = (ChestTileEntity) level.getTileEntity(chestPos);
 			// fill chest
-			for (int i = 0; i < world.getPlayers().size(); i++) {
-				chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], world.getRandom().nextLong());
+			for (int i = 0; i < level.getPlayers().size(); i++) {
+				chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], level.getRandom().nextLong());
 				chestEntity.fillWithLoot(null);
 			}
 			Baseraids.LOGGER.info("Added loot to loot chest");
@@ -248,27 +244,27 @@ public class RaidManager {
 
 	/**
 	 * Saves data relevant for the RaidManager: Writes the necessary data to a
-	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
+	 * {@link CompoundTag} and returns the {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 		nbt.putBoolean("isRaidActive", isRaidActive);
 		nbt.putInt("curRaidLevel", curRaidLevel);
 
-		CompoundNBT raidSpawning = raidSpawningMng.write();
+		CompoundTag raidSpawning = raidSpawningMng.write();
 		nbt.put("raidSpawningManager", raidSpawning);
-		CompoundNBT raidTime = raidTimeMng.write();
+		CompoundTag raidTime = raidTimeMng.write();
 		nbt.put("raidTimeManager", raidTime);
-		CompoundNBT restoreDestroyedBlocksMngNBT = restoreDestroyedBlocksMng.write();
+		CompoundTag restoreDestroyedBlocksMngNBT = restoreDestroyedBlocksMng.write();
 		nbt.put("restoreDestroyedBlocksManager", restoreDestroyedBlocksMngNBT);
 
 		return nbt;
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function assumes
+	 * Reads the data stored in the given {@link CompoundTag}. This function assumes
 	 * that the nbt was previously written by this class or to be precise, that the
 	 * nbt includes certain elements. If an exception was thrown during the reading
 	 * process (this could very well happen for incompatible versions), the
@@ -281,16 +277,16 @@ public class RaidManager {
 	 *                    {@link RaidSpawningManager} to get references to
 	 *                    previously spawned mobs.
 	 */
-	public void read(CompoundNBT nbt, ServerWorld serverWorld) {
+	public void read(CompoundTag nbt, ServerLevel serverWorld) {
 		try {
 			isRaidActive = nbt.getBoolean("isRaidActive");
 			curRaidLevel = nbt.getInt("curRaidLevel");
 
-			CompoundNBT raidSpawningNBT = nbt.getCompound("raidSpawningManager");
+			CompoundTag raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.read(raidSpawningNBT);
-			CompoundNBT raidTimeNBT = nbt.getCompound("raidTimeManager");
+			CompoundTag raidTimeNBT = nbt.getCompound("raidTimeManager");
 			raidTimeMng.read(raidTimeNBT);
-			CompoundNBT restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
+			CompoundTag restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
 			restoreDestroyedBlocksMng.read(restoreDestroyedBlocksMngNBT);
 
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
@@ -350,7 +346,7 @@ public class RaidManager {
 	@Override
 	public int hashCode() {
 		return Objects.hash(curRaidLevel, globalBlockBreakProgressMng, isInitialized, isRaidActive, raidSpawningMng,
-				raidTimeMng, restoreDestroyedBlocksMng, world);
+				raidTimeMng, restoreDestroyedBlocksMng, level);
 	}
 
 	@Override
@@ -368,7 +364,7 @@ public class RaidManager {
 				&& Objects.equals(raidSpawningMng, other.raidSpawningMng)
 				&& Objects.equals(raidTimeMng, other.raidTimeMng)
 				&& Objects.equals(restoreDestroyedBlocksMng, other.restoreDestroyedBlocksMng)
-				&& Objects.equals(world, other.world);
+				&& Objects.equals(level, other.level);
 	}
 
 }

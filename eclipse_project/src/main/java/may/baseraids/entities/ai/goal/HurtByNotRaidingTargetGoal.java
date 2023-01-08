@@ -1,8 +1,7 @@
 package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 
 /**
  * This class replaces the vanilla {@link HurtByTargetGoal} for raid monsters so that they do not attack other raid monsters.

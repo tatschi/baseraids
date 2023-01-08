@@ -10,12 +10,9 @@ import com.google.common.collect.Sets;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusBlock.NexusState;
-import net.minecraft.entity.player.PlayerEntity.SleepResult;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.SleepFinishedTimeEvent;
@@ -23,7 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class RaidTimeManager {
 
-	private World world;
+	private Level level;
 	private RaidManager raidManager;
 	
 	private int timeUntilRaidInLastWarnPlayersOfRaidRun = -1;
@@ -32,7 +29,7 @@ public class RaidTimeManager {
 	private long daytimeBeforeRaid = 0;
 	
 	/**
-	 * defines the daytime that the {@link ServerWorld#setDayTime(long)} is set to
+	 * defines the daytime that the {@link ServerLevel#setDayTime(long)} is set to
 	 * when a raid is started (one day = 24000)
 	 */
 	private static final int START_RAID_DAY_TIME = 14000;
@@ -50,10 +47,10 @@ public class RaidTimeManager {
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 	
-	public RaidTimeManager(RaidManager raidManager, World world) {
+	public RaidTimeManager(RaidManager raidManager, Level level) {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.raidManager = raidManager;
-		this.world = world;
+		this.level = level;
 	}
 	
 	/**
@@ -77,7 +74,7 @@ public class RaidTimeManager {
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
 		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString());
 		if (timeUntilRaidInSec <= 5 && ConfigOptions.getEnableSoundCountdown()) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
 					300F, 1.0F);
 		}
 	}
@@ -90,7 +87,7 @@ public class RaidTimeManager {
 	 * @return a flag whether a raid should start or not
 	 */
 	boolean shouldStartRaid() {
-		if (world.getGameTime() < nextRaidGameTime) {
+		if (level.getGameTime() < nextRaidGameTime) {
 			return false;
 		}
 		return NexusBlock.getState() == NexusState.BLOCK;
@@ -105,7 +102,7 @@ public class RaidTimeManager {
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-		if (event.getPlayer().world.isRemote()) {
+		if (event.getPlayer().level.isRemote()) {
 			return;
 		}
 		restrictSleepDuringRaid(event);
@@ -156,7 +153,7 @@ public class RaidTimeManager {
 		if (!ConfigOptions.getEnableTimeReductionFromSleeping()) {
 			return;
 		}
-		MCDuration subtractionTime = new MCDuration(event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
+		MCDuration subtractionTime = new MCDuration(event.getNewTime() - ((ServerLevel) event.getWorld()).getDayTime());
 		subtractFromTimeUntilRaid(subtractionTime);
 		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString(), true);
 	}
@@ -168,7 +165,7 @@ public class RaidTimeManager {
 	 * @return the number of ticks until the next raid
 	 */
 	public MCDuration getTimeUntilRaid() {
-		return new MCDuration(nextRaidGameTime - world.getGameTime());
+		return new MCDuration(nextRaidGameTime - level.getGameTime());
 	}
 
 	boolean isMaxRaidDurationOver() {
@@ -196,7 +193,7 @@ public class RaidTimeManager {
 	}
 	
 	private long getNewNextRaidGameTime() {
-		return world.getGameTime() + ConfigOptions.getTimeBetweenRaids();
+		return level.getGameTime() + ConfigOptions.getTimeBetweenRaids();
 	}
 
 	void resetNextRaidGameTime() {
@@ -204,7 +201,7 @@ public class RaidTimeManager {
 	}
 
 	private void setNextRaidGameTime(long time) {
-		if (time < world.getGameTime()) {
+		if (time < level.getGameTime()) {
 			return;
 		}
 		nextRaidGameTime = time;
@@ -216,7 +213,7 @@ public class RaidTimeManager {
 		if (time < 0) {
 			return;
 		}
-		setNextRaidGameTime(world.getGameTime() + time);
+		setNextRaidGameTime(level.getGameTime() + time);
 	}
 	
 	public void setTimeUntilRaid(MCDuration time) {
@@ -232,12 +229,12 @@ public class RaidTimeManager {
 	}
 	
 	void setTimeToNighttime() {
-		setDaytimeBeforeRaid(world.getDayTime());
-		((ServerWorld) world).setDayTime(START_RAID_DAY_TIME);
+		setDaytimeBeforeRaid(level.getDayTime());
+		((ServerLevel) level).setDayTime(START_RAID_DAY_TIME);
 	}
 
 	void resetDaytimeToDaytimeBeforeRaid() {
-		((ServerWorld) world).setDayTime(daytimeBeforeRaid);
+		((ServerLevel) level).setDayTime(daytimeBeforeRaid);
 		resetDaytimeBeforeRaid();
 	}
 	
@@ -247,12 +244,12 @@ public class RaidTimeManager {
 	
 	/**
 	 * Saves data relevant for the RaidManager: Writes the necessary data to a
-	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
+	 * {@link CompoundTag} and returns the {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 		nbt.putLong("nextRaidGameTime", nextRaidGameTime);
 		nbt.putInt("activeRaidTicks", activeRaidTicks);
 		nbt.putLong("daytimeBeforeRaid", daytimeBeforeRaid);
@@ -260,7 +257,7 @@ public class RaidTimeManager {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function assumes
+	 * Reads the data stored in the given {@link CompoundTag}. This function assumes
 	 * that the nbt was previously written by this class or to be precise, that the
 	 * nbt includes certain elements. If an exception was thrown during the reading
 	 * process (this could very well happen for incompatible versions), the
@@ -270,7 +267,7 @@ public class RaidTimeManager {
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
 	 */
-	public void read(CompoundNBT nbt) {
+	public void read(CompoundTag nbt) {
 		try {
 			nextRaidGameTime = nbt.getLong("nextRaidGameTime");
 			activeRaidTicks = nbt.getInt("activeRaidTicks");

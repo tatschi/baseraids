@@ -2,9 +2,8 @@ package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.entity.monster.PhantomEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 
 public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<PhantomEntity> {
 
@@ -55,9 +54,9 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<PhantomEnt
 	 */
 	private boolean isOrbitPositionCloseEnoughToNexus() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
-		Vector3i orbitPosAtNexusHeight = new Vector3i(entity.orbitPosition.getX(), nexusPos.getY(),
+		Vec3i orbitPosAtNexusHeight = new Vec3i(entity.orbitPosition.getX(), nexusPos.getY(),
 				entity.orbitPosition.getZ());
-		Vector3i nexusPosVec = new Vector3i(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
+		Vec3i nexusPosVec = new Vec3i(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
 		return orbitPosAtNexusHeight.distanceSq(nexusPosVec) < distanceReached;
 	}
 

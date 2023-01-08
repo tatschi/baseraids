@@ -4,10 +4,9 @@ import java.util.EnumSet;
 
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
 
 /**
  * This class defines the AI goal to move toward the nexus.

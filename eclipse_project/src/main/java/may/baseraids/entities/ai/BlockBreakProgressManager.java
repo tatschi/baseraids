@@ -4,10 +4,10 @@ import org.jline.utils.Log;
 
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 /**
  * This class manages all information on breaking a block for a given BlockPos
@@ -17,7 +17,7 @@ import net.minecraft.world.server.ServerWorld;
  */
 public class BlockBreakProgressManager {
 
-	private final World world;
+	private final Level level;
 
 	private final BlockPos pos;
 
@@ -40,8 +40,8 @@ public class BlockBreakProgressManager {
 	 */
 	public final int breakBlockId;
 
-	public BlockBreakProgressManager(World world, BlockPos pos, int breakBlockId) {
-		this.world = world;
+	public BlockBreakProgressManager(Level world, BlockPos pos, int breakBlockId) {
+		this.level = world;
 		this.pos = pos;
 
 		breakProgressAbsolute = 0;
@@ -72,9 +72,9 @@ public class BlockBreakProgressManager {
 		// and requires the correct order of computation
 		breakProgressRelative = breakProgressAbsolute * 10 / damageUntilBlockBreaks;
 		if (prev != breakProgressRelative) {
-			world.playEvent(1019, pos, 0);
-			world.sendBlockBreakProgress(breakBlockId, pos, -1);
-			world.sendBlockBreakProgress(breakBlockId, pos, breakProgressRelative);
+			level.playEvent(1019, pos, 0);
+			level.sendBlockBreakProgress(breakBlockId, pos, -1);
+			level.sendBlockBreakProgress(breakBlockId, pos, breakProgressRelative);
 		}
 	}
 
@@ -98,19 +98,19 @@ public class BlockBreakProgressManager {
 		if (NexusBlock.getBlockPos().equals(pos)) {
 			return 500;
 		}
-		float hardness = world.getBlockState(pos).getBlockHardness(world, pos);
+		float hardness = level.getBlockState(pos).getBlockHardness(level, pos);
 		return ConfigOptions.getMonsterBlockBreakingTimeMultiplier() * (int) Math.round(
 				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
 	}
 
 	/**
 	 * Saves data relevant for the this class: Writes the necessary data to a
-	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
+	 * {@link CompoundTag} and returns the {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 		nbt.putInt("breakProgressAbsolute", breakProgressAbsolute);
 		nbt.putInt("breakProgressRelative", breakProgressRelative);
 		nbt.putInt("breakBlockId", breakBlockId);		
@@ -118,18 +118,18 @@ public class BlockBreakProgressManager {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function
+	 * Reads the data stored in the given {@link CompoundTag}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
 	 * that the nbt includes certain elements.
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
-	 * @param serverWorld the world that is loaded
+	 * @param serverLevel the world that is loaded
 	 */
-	public static BlockBreakProgressManager read(CompoundNBT nbt, ServerWorld serverWorld, BlockPos pos) {
+	public static BlockBreakProgressManager read(CompoundTag nbt, ServerLevel serverLevel, BlockPos pos) {
 		try {
 			int breakBlockId = nbt.getInt("breakBlockId");
-			BlockBreakProgressManager mng = new BlockBreakProgressManager(serverWorld, pos, breakBlockId);
+			BlockBreakProgressManager mng = new BlockBreakProgressManager(serverLevel, pos, breakBlockId);
 			mng.breakProgressAbsolute = nbt.getInt("breakProgressAbsolute");
 			mng.breakProgressRelative = nbt.getInt("breakProgressRelative");
 			return mng;

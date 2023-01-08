@@ -8,13 +8,12 @@ import org.jline.utils.Log;
 import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.block.Block;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,7 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class GlobalBlockBreakProgressManager {
 
 	private RaidManager raidManager;
-	private World world;
+	private Level level;
 
 	/**
 	 * Holds the {@link BlockBreakProgressManager} for each block that has been
@@ -36,8 +35,8 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	private ConcurrentHashMap<BlockPos, BlockBreakProgressManager> breakProgress = new ConcurrentHashMap<>();
 
-	public GlobalBlockBreakProgressManager(RaidManager raidManager, World world) {
-		this.world = world;
+	public GlobalBlockBreakProgressManager(RaidManager raidManager, Level level) {
+		this.level = level;
 		this.raidManager = raidManager;
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
@@ -52,7 +51,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	public boolean addProgress(BlockPos pos, int damage) {
 		BlockBreakProgressManager mng = breakProgress.computeIfAbsent(pos,
-				p -> new BlockBreakProgressManager(world, pos, breakProgress.size()));
+				p -> new BlockBreakProgressManager(level, pos, breakProgress.size()));
 		if (mng.addProgress(damage)) {
 			breakBlock(pos);
 			return true;
@@ -73,21 +72,21 @@ public class GlobalBlockBreakProgressManager {
 		Baseraids.LOGGER.debug("GlobalBlockBreakProgressManager#breakBlock");
 		resetProgress(pos);
 
-		world.playEvent(1021, pos, 0);
-		world.playEvent(2001, pos, Block.getStateId(world.getBlockState(pos)));
+		level.playEvent(1021, pos, 0);
+		level.playEvent(2001, pos, Block.getStateId(level.getBlockState(pos)));
 
 		if (NexusBlock.getBlockPos().equals(pos)) {
 			raidManager.loseRaid();
 			return;
 		}
-		world.removeBlock(pos, false);
+		level.removeBlock(pos, false);
 	}
 
 	/**
 	 * Resets all progress and parameters that are recorded by this class.
 	 */
 	public synchronized void resetAllProgress() {
-		breakProgress.forEach(0, (k, v) -> world.sendBlockBreakProgress(v.breakBlockId, k, -1));
+		breakProgress.forEach(0, (k, v) -> level.sendBlockBreakProgress(v.breakBlockId, k, -1));
 		breakProgress.clear();
 	}
 
@@ -99,7 +98,7 @@ public class GlobalBlockBreakProgressManager {
 	public synchronized void resetProgress(BlockPos pos) {
 		BlockBreakProgressManager mng = breakProgress.get(pos);
 		if (mng != null) {
-			world.sendBlockBreakProgress(mng.breakBlockId, pos, -1);
+			level.sendBlockBreakProgress(mng.breakBlockId, pos, -1);
 			breakProgress.remove(pos);
 		}
 	}
@@ -157,17 +156,17 @@ public class GlobalBlockBreakProgressManager {
 	
 	/**
 	 * Saves data relevant for the this class: Writes the necessary data to a
-	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
+	 * {@link CompoundTag} and returns the {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 		
-		ListNBT breakProgressList = new ListNBT();
+		ListTag breakProgressList = new ListTag();
 		breakProgress.forEach((key, value) -> {
-			CompoundNBT keyValuePairNBT = new CompoundNBT();
-			keyValuePairNBT.put("BlockPos", NBTUtil.writeBlockPos(key));
+			CompoundTag keyValuePairNBT = new CompoundTag();
+			keyValuePairNBT.put("BlockPos", NbtUtils.writeBlockPos(key));
 			keyValuePairNBT.put("BlockBreakProgressManager", value.write());
 			breakProgressList.add(keyValuePairNBT);
 		});		
@@ -177,22 +176,22 @@ public class GlobalBlockBreakProgressManager {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function
+	 * Reads the data stored in the given {@link CompoundTag}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
 	 * that the nbt includes certain elements.
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
-	 * @param serverWorld the world that is loaded
+	 * @param serverLevel the world that is loaded
 	 */
-	public void read(CompoundNBT nbt, ServerWorld serverWorld) {
+	public void read(CompoundTag nbt, ServerLevel serverLevel) {
 		try {
 			breakProgress.clear();
-			ListNBT breakProgressList = nbt.getList("breakProgress", 10);
+			ListTag breakProgressList = nbt.getList("breakProgress", 10);
 			breakProgressList.forEach(c -> {
-				CompoundNBT com = (CompoundNBT) c;
-				BlockPos key = NBTUtil.readBlockPos(com.getCompound("BlockPos"));
-				BlockBreakProgressManager value = BlockBreakProgressManager.read(com.getCompound("BlockBreakProgressManager"), serverWorld, key);
+				CompoundTag com = (CompoundTag) c;
+				BlockPos key = NbtUtils.readBlockPos(com.getCompound("BlockPos"));
+				BlockBreakProgressManager value = BlockBreakProgressManager.read(com.getCompound("BlockBreakProgressManager"), serverLevel, key);
 				if(value != null) {
 					breakProgress.put(key, value);					
 				}
@@ -207,7 +206,7 @@ public class GlobalBlockBreakProgressManager {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(breakProgress, world);
+		return Objects.hash(breakProgress, level);
 	}
 
 	@Override
@@ -219,6 +218,6 @@ public class GlobalBlockBreakProgressManager {
 		if (getClass() != obj.getClass())
 			return false;
 		GlobalBlockBreakProgressManager other = (GlobalBlockBreakProgressManager) obj;
-		return Objects.equals(breakProgress, other.breakProgress) && Objects.equals(world, other.world);
+		return Objects.equals(breakProgress, other.breakProgress) && Objects.equals(level, other.level);
 	}
 }

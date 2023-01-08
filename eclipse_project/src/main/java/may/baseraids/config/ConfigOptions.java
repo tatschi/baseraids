@@ -3,7 +3,7 @@ package may.baseraids.config;
 import org.apache.commons.lang3.BooleanUtils;
 
 import may.baseraids.Baseraids;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.core.Vec3i;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
@@ -17,7 +17,7 @@ public class ConfigOptions {
 	private static ForgeConfigSpec.IntValue timeBetweenRaids;
 	private static ForgeConfigSpec.IntValue maxRaidDuration;	
 	private static ForgeConfigSpec.BooleanValue deactivateMonsterNightSpawn;
-	private static Vector3i lootChestPositionRelative;
+	private static Vec3i lootChestPositionRelative;
 	
 	private static ForgeConfigSpec.IntValue monsterBlockBreakingTimeMultiplier;
 	private static ForgeConfigSpec.BooleanValue restoreDestroyedBlocks;
@@ -81,7 +81,7 @@ public class ConfigOptions {
 				.comment("If set to true, the time until the next raid is reduced when you sleep in a bed.")
 				.define(Baseraids.MODID + ".enableTimeReductionFromSleeping", false);
 		
-		lootChestPositionRelative = new Vector3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
+		lootChestPositionRelative = new Vec3i(LOOT_CHEST_POS_RELATIVE_DEFAULT[0], LOOT_CHEST_POS_RELATIVE_DEFAULT[1], LOOT_CHEST_POS_RELATIVE_DEFAULT[2]);
 	}
 
 	public static int getTimeBetweenRaids() {
@@ -96,7 +96,7 @@ public class ConfigOptions {
 		return BooleanUtils.toBoolean(deactivateMonsterNightSpawn.get());
 	}
 
-	public static Vector3i getLootChestPositionRelative() {
+	public static Vec3i getLootChestPositionRelative() {
 		return lootChestPositionRelative;
 	}
 

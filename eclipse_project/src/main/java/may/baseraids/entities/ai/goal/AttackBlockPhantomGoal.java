@@ -2,12 +2,10 @@ package may.baseraids.entities.ai.goal;
 
 import java.util.Random;
 
+import com.mojang.math.Vector3d;
+
 import may.baseraids.RaidManager;
-import net.minecraft.entity.monster.PhantomEntity;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.core.BlockPos;
 
 public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 

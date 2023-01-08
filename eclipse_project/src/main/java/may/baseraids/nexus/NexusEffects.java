@@ -3,9 +3,7 @@ package may.baseraids.nexus;
 import java.util.Arrays;
 import java.util.List;
 
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
+import net.minecraft.client.renderer.EffectInstance;
 
 /**
  * This class holds and provides the effects for the nexus.

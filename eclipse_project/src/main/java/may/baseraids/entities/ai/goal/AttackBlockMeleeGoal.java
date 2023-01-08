@@ -1,8 +1,7 @@
 package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 /**
  * This class defines the AI goal to attack blocks that are in the way towards

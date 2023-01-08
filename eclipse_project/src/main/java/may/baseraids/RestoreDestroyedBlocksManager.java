@@ -5,12 +5,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jline.utils.Log;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,19 +24,19 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  */
 public class RestoreDestroyedBlocksManager {
 
-	private World world;
+	private Level level;
 	private RaidManager raidManager;
 	private ConcurrentHashMap<BlockPos, BlockState> savedBlocks = new ConcurrentHashMap<>();
 
-	public RestoreDestroyedBlocksManager(RaidManager raidManager, World world) {
+	public RestoreDestroyedBlocksManager(RaidManager raidManager, Level world) {
 		this.raidManager = raidManager;
-		this.world = world;
+		this.level = world;
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	/**
 	 * Saves all blocks that are destroyed during a raid to
-	 * {@link BaseraidsWorldSavedData}.
+	 * {@link BaseraidsSavedData}.
 	 * 
 	 * @param event the event of type {@link BlockEvent.BreakEvent} that calls this
 	 *              function
@@ -46,7 +46,7 @@ public class RestoreDestroyedBlocksManager {
 		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if (!event.getWorld().equals(world)) {
+		if (!event.getWorld().equals(level)) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {
@@ -60,7 +60,7 @@ public class RestoreDestroyedBlocksManager {
 	 * Restores all currently saved blocks.
 	 */
 	public void restoreSavedBlocks() {
-		savedBlocks.forEach((pos, state) -> world.setBlockState(pos, state));
+		savedBlocks.forEach((pos, state) -> level.setBlockState(pos, state));
 	}
 
 	/**
@@ -80,18 +80,18 @@ public class RestoreDestroyedBlocksManager {
 
 	/**
 	 * Saves data relevant for the this class: Writes the necessary data to a
-	 * {@link CompoundNBT} and returns the {@link CompoundNBT} object.
+	 * {@link CompoundTag} and returns the {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	public CompoundNBT write() {
-		CompoundNBT nbt = new CompoundNBT();
+	public CompoundTag write() {
+		CompoundTag nbt = new CompoundTag();
 
-		ListNBT savedBlocksList = new ListNBT();
+		ListTag savedBlocksList = new ListTag();
 		savedBlocks.forEach((key, value) -> {
-			CompoundNBT keyValuePairNBT = new CompoundNBT();
-			keyValuePairNBT.put("BlockPos", NBTUtil.writeBlockPos(key));
-			keyValuePairNBT.put("BlockState", NBTUtil.writeBlockState(value));
+			CompoundTag keyValuePairNBT = new CompoundTag();
+			keyValuePairNBT.put("BlockPos", NbtUtils.writeBlockPos(key));
+			keyValuePairNBT.put("BlockState", NbtUtils.writeBlockState(value));
 			savedBlocksList.add(keyValuePairNBT);
 		});
 
@@ -100,21 +100,21 @@ public class RestoreDestroyedBlocksManager {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundNBT}. This function
+	 * Reads the data stored in the given {@link CompoundTag}. This function
 	 * assumes that the nbt was previously written by this class or to be precise,
 	 * that the nbt includes certain elements.
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
 	 */
-	public void read(CompoundNBT nbt) {
+	public void read(CompoundTag nbt) {
 		try {
 			savedBlocks.clear();
-			ListNBT savedBlocksList = nbt.getList("savedBlocks", 10);
+			ListTag savedBlocksList = nbt.getList("savedBlocks", 10);
 			savedBlocksList.forEach(c -> {
-				CompoundNBT com = (CompoundNBT) c;
-				BlockPos key = NBTUtil.readBlockPos(com.getCompound("BlockPos"));
-				BlockState value = NBTUtil.readBlockState(com.getCompound("BlockState"));
+				CompoundTag com = (CompoundTag) c;
+				BlockPos key = NbtUtils.readBlockPos(com.getCompound("BlockPos"));
+				BlockState value = NbtUtils.readBlockState(com.getCompound("BlockState"));
 				savedBlocks.put(key, value);
 			});
 
@@ -129,7 +129,7 @@ public class RestoreDestroyedBlocksManager {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(savedBlocks, world);
+		return Objects.hash(savedBlocks, level);
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class RestoreDestroyedBlocksManager {
 		if (getClass() != obj.getClass())
 			return false;
 		RestoreDestroyedBlocksManager other = (RestoreDestroyedBlocksManager) obj;
-		return Objects.equals(savedBlocks, other.savedBlocks) && Objects.equals(world, other.world);
+		return Objects.equals(savedBlocks, other.savedBlocks) && Objects.equals(level, other.level);
 	}
 
 }

@@ -4,24 +4,14 @@ import java.util.List;
 
 import may.baseraids.Baseraids;
 import may.baseraids.config.ConfigOptions;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * This class handles sound and effects from the nexus.
  * 
  * @author Natascha May
  */
-public class NexusEffectsTileEntity extends TileEntity implements ITickableTileEntity {
+public class NexusEffectsTileEntity extends BlockEntity implements ITickableTileEntity {
 
 	List<NexusEffects.NexusEffect> curEffects = null;
 	int lastWonRaidLevel = 0;
@@ -91,14 +81,14 @@ public class NexusEffectsTileEntity extends TileEntity implements ITickableTileE
 	}
 
 	@Override
-	public void read(BlockState state, CompoundNBT nbt) {
+	public void read(BlockState state, CompoundTag nbt) {
 		super.read(state, nbt);
 		lastWonRaidLevel = nbt.getInt("lastWonRaidLevel");
 		curEffects = NexusEffects.effects.get(lastWonRaidLevel - 1);
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound) {
+	public CompoundTag write(CompoundTag compound) {
 		super.write(compound);
 		compound.putInt("lastWonRaidLevel", lastWonRaidLevel);
 		return compound;

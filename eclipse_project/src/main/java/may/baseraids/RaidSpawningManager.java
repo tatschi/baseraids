@@ -12,20 +12,12 @@ import java.util.Objects;
 
 import may.baseraids.entities.RaidEntitySpawnCountRegistry;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntitySpawnPlacementRegistry;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ILivingEntityData;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,7 +30,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  */
 public class RaidSpawningManager {
 
-	private World world;
+	private Level level;
 	private RaidManager raidManager;
 	private WorldManager worldManager;
 	/** A list of all spawned mobs for managing active raids */
@@ -56,9 +48,9 @@ public class RaidSpawningManager {
 
 	private Random rand = new Random();
 
-	public RaidSpawningManager(RaidManager raidManager, World world, WorldManager worldManager) {
+	public RaidSpawningManager(RaidManager raidManager, Level world, WorldManager worldManager) {
 		this.raidManager = raidManager;
-		this.world = world;
+		this.level = world;
 		this.worldManager = worldManager;
 		MinecraftForge.EVENT_BUS.register(this);
 		RaidEntitySpawnCountRegistry.registerSpawnCounts();
@@ -73,7 +65,7 @@ public class RaidSpawningManager {
 		int raidLevel = raidManager.getRaidLevel();
 		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
-		int playerCount = world.getPlayers().size();
+		int playerCount = level.getPlayers().size();
 
 		entityTypesToSpawn.forEach(type -> {
 			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel,
@@ -109,14 +101,14 @@ public class RaidSpawningManager {
 			BlockPos spawnPos = findSpawnPos(entityType);
 
 			if (entityType.equals(EntityType.PHANTOM)) {
-				mobs[i] = EntityType.PHANTOM.create(world);
+				mobs[i] = EntityType.PHANTOM.create(level);
 				mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
-				ilivingentitydata = mobs[i].onInitialSpawn((IServerWorld) world,
-						world.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata,
-						(CompoundNBT) null);
-				((IServerWorld) world).func_242417_l(mobs[i]);
+				ilivingentitydata = mobs[i].onInitialSpawn((IServerLevel) level,
+						level.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata,
+						(CompoundTag) null);
+				((IServerLevel) level).func_242417_l(mobs[i]);
 			} else {
-				mobs[i] = (MobEntity) entityType.spawn((ServerWorld) world, null, null, spawnPos,
+				mobs[i] = (MobEntity) entityType.spawn((ServerLevel) level, null, null, spawnPos,
 						SpawnReason.MOB_SUMMONED, false, false);
 			}
 
@@ -153,9 +145,9 @@ public class RaidSpawningManager {
 		BlockPos spawnPos;
 		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
 				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
-			spawnPos = world.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
+			spawnPos = level.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
 		} else {
-			spawnPos = world.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), spawnPosXZ);
+			spawnPos = level.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), spawnPosXZ);
 		}
 
 		Baseraids.LOGGER.debug("Spawn %s at radius %i and angle %d", entityType.getName().getString(), radius, angle);
@@ -195,40 +187,40 @@ public class RaidSpawningManager {
 
 	/**
 	 * Reads and stores the UUIDs of the mobs stored in the given
-	 * {@link CompoundNBT} so that they can be recovered when they are spawned into
+	 * {@link CompoundTag} so that they can be recovered when they are spawned into
 	 * the world. This function assumes that the nbt was previously written by this
 	 * class or to be precise, that the nbt includes certain elements.
 	 * 
 	 * @param nbt the nbt that will be read out. It is assumed to include certain
 	 *            elements.
 	 */
-	private void readSpawnedMobsList(CompoundNBT nbt) {
-		ListNBT spawnedMobsList = nbt.getList("spawnedMobs", 10);
+	private void readSpawnedMobsList(CompoundTag nbt) {
+		ListTag spawnedMobsList = nbt.getList("spawnedMobs", 10);
 		spawnedMobs.clear();
 		spawnedMobsUUIDs.clear();
 
 		for (int index = 0; index < spawnedMobsList.size(); index++) {
-			CompoundNBT compoundNBT = spawnedMobsList.getCompound(index);
-			UUID entityUUID = compoundNBT.getUniqueId("ID" + index);
+			CompoundTag CompoundTag = spawnedMobsList.getCompound(index);
+			UUID entityUUID = CompoundTag.getUniqueId("ID" + index);
 			Baseraids.LOGGER.debug("reading entity with ID {}", entityUUID);
 			spawnedMobsUUIDs.add(entityUUID);
 		}
 	}
 
 	/**
-	 * Saves the UUIDs of the spawned mobs to a {@link CompoundNBT} and returns the
-	 * {@link CompoundNBT} object.
+	 * Saves the UUIDs of the spawned mobs to a {@link CompoundTag} and returns the
+	 * {@link CompoundTag} object.
 	 * 
-	 * @return the adapted {@link CompoundNBT} that was written to
+	 * @return the adapted {@link CompoundTag} that was written to
 	 */
-	CompoundNBT write() {
+	CompoundTag write() {
 
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt = new CompoundTag();
 
-		ListNBT spawnedMobsList = new ListNBT();
+		ListTag spawnedMobsList = new ListTag();
 		int index = 0;
 		for (MobEntity mob : spawnedMobs) {
-			CompoundNBT compound = new CompoundNBT();
+			CompoundTag compound = new CompoundTag();
 
 			compound.putUniqueId("ID" + index, mob.getUniqueID());
 			Baseraids.LOGGER.debug("writing entity with UUID {}", mob.getUniqueID());
@@ -240,7 +232,7 @@ public class RaidSpawningManager {
 		return nbt;
 	}
 
-	void read(CompoundNBT nbt) {
+	void read(CompoundTag nbt) {
 		readSpawnedMobsList(nbt);
 	}
 
@@ -256,7 +248,7 @@ public class RaidSpawningManager {
 		if (event.getWorld().isRemote()) {
 			return;
 		}
-		if (!event.getWorld().equals(world)) {
+		if (!event.getWorld().equals(level)) {
 			return;
 		}
 
@@ -279,7 +271,7 @@ public class RaidSpawningManager {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(spawnedMobs, world);
+		return Objects.hash(spawnedMobs, level);
 	}
 
 	@Override
@@ -291,7 +283,7 @@ public class RaidSpawningManager {
 		if (getClass() != obj.getClass())
 			return false;
 		RaidSpawningManager other = (RaidSpawningManager) obj;
-		return Objects.equals(spawnedMobs, other.spawnedMobs) && Objects.equals(world, other.world);
+		return Objects.equals(spawnedMobs, other.spawnedMobs) && Objects.equals(level, other.level);
 	}
 
 }
