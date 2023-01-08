@@ -4,7 +4,13 @@ import java.util.List;
 
 import may.baseraids.Baseraids;
 import may.baseraids.config.ConfigOptions;
+import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * This class handles sound and effects from the nexus.
@@ -22,10 +28,10 @@ public class NexusEffectsTileEntity extends BlockEntity implements ITickableTile
 	}
 
 	public void tick() {
-		if (world.isRemote)
+		if (level.isClientSide)
 			return;
 
-		if (this.world.getGameTime() % 40L == 0L) {
+		if (level.getGameTime() % 40L == 0L) {
 
 			// add effects
 			if (curEffects != null) {
@@ -56,7 +62,7 @@ public class NexusEffectsTileEntity extends BlockEntity implements ITickableTile
 	}
 
 	public void playSound(SoundEvent sound, BlockPos pos, float volume, float pitch) {
-		this.world.playSound((PlayerEntity) null, pos, sound, SoundCategory.BLOCKS, volume, pitch);
+		level.playSound((PlayerEntity) null, pos, sound, SoundSource.BLOCKS, volume, pitch);
 	}
 
 	/**
@@ -64,7 +70,7 @@ public class NexusEffectsTileEntity extends BlockEntity implements ITickableTile
 	 * {@link #effectDistance}.
 	 */
 	public void addEffectsToPlayers(EffectInstance effect) {
-		if (world.isRemote) {
+		if (level.isClientSide) {
 			return;
 		}
 		if (effect == null) {
@@ -74,7 +80,7 @@ public class NexusEffectsTileEntity extends BlockEntity implements ITickableTile
 		AxisAlignedBB axisalignedbb = (new AxisAlignedBB(pos)).grow(effectDistance).expand(0.0D, world.getHeight(),
 				0.0D);
 
-		List<PlayerEntity> list = world.getEntitiesWithinAABB(PlayerEntity.class, axisalignedbb);
+		List<PlayerEntity> list = level.getEntitiesWithinAABB(PlayerEntity.class, axisalignedbb);
 		for (PlayerEntity playerentity : list) {
 			playerentity.addPotionEffect(effect);
 		}

@@ -73,8 +73,8 @@ public class BlockBreakProgressManager {
 		breakProgressRelative = breakProgressAbsolute * 10 / damageUntilBlockBreaks;
 		if (prev != breakProgressRelative) {
 			level.playEvent(1019, pos, 0);
-			level.sendBlockBreakProgress(breakBlockId, pos, -1);
-			level.sendBlockBreakProgress(breakBlockId, pos, breakProgressRelative);
+			level.destroyBlockProgress(breakBlockId, pos, -1);
+			level.destroyBlockProgress(breakBlockId, pos, breakProgressRelative);
 		}
 	}
 

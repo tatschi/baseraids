@@ -9,6 +9,8 @@ import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -59,11 +61,11 @@ public class WorldManager {
 	 */
 	@SubscribeEvent
 	public void onWorldLoadedLoadBaseraidsWorldSavedData(final WorldEvent.Load event) {
-		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
+		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
 			return;
 
-		if (event.getWorld() instanceof ServerLevel) {
-			baseraidsData = BaseraidsSavedData.get(this, (ServerLevel) event.getWorld());
+		if (event.getWorld() instanceof ServerLevel serverLevel) {
+			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 
 	}
@@ -77,23 +79,24 @@ public class WorldManager {
 	 */
 	@SubscribeEvent
 	public void onWorldSavedSaveBaseraidsWorldSavedData(final WorldEvent.Save event) {
-		if (event.getWorld().isRemote() || !((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD))
+		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
 			return;
-		if (event.getWorld() instanceof ServerLevel) {
-			baseraidsData = BaseraidsSavedData.get(this, (ServerLevel) event.getWorld());
+
+		if (event.getWorld() instanceof ServerLevel serverLevel) {
+			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 	}
 
 	/**
 	 * Called for potential spawns in the world.
 	 * 
-	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
+	 * @param event the event of type {@link WorldEvent.CreateSpawnPosition} that calls
 	 *              this function
 	 */
 	@SubscribeEvent
-	public void onMonsterSpawn(final WorldEvent.PotentialSpawns event) {
-		World world = (World) event.getWorld();
-		if (world.isRemote())
+	public void onMonsterSpawn(final WorldEvent.CreateSpawnPosition event) {
+		Level level = (Level) event.getWorld();
+		if (level.isClientSide)
 			return;
 
 		if (!event.isCancelable()) {
@@ -109,18 +112,18 @@ public class WorldManager {
 	 * Cancels a monster spawning event, if it is not inside a cave and the config
 	 * option {@link ConfigOptions#deactivateMonsterNightSpawn} is true.
 	 * 
-	 * @param event the event of type {@link WorldEvent.PotentialSpawns} that calls
+	 * @param event the event of type {@link WorldEvent.CreateSpawnPosition} that calls
 	 *              this function
 	 */
-	private boolean onMonsterSpawnOutsideCaveShouldCancelSpawn(final WorldEvent.PotentialSpawns event) {
+	private boolean onMonsterSpawnOutsideCaveShouldCancelSpawn(final WorldEvent.CreateSpawnPosition event) {
 		if (!ConfigOptions.getDeactivateMonsterNightSpawn()) {
 			return false;
 		}
 
-		if (!((World) event.getWorld()).getDimensionKey().equals(World.OVERWORLD)) {
+		if (!((Level) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
 			return false;
 		}
-
+		
 		if (event.getType() != EntityClassification.MONSTER) {
 			return false;
 		}
@@ -149,7 +152,7 @@ public class WorldManager {
 	}
 
 	public ServerLevel getServerLevel() {
-		return baseraidsData.serverWorld;
+		return baseraidsData.serverLevel;
 	}
 
 	@Override

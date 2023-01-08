@@ -12,9 +12,13 @@ import may.baseraids.nexus.NexusEffectsTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -73,9 +77,9 @@ public class RaidManager {
 	public void onWorldTick(TickEvent.WorldTickEvent event) {
 		if (event.phase != TickEvent.Phase.START)
 			return;
-		if (level.isRemote())
+		if (level.isClientSide)
 			return;
-		if (!level.getDimensionKey().equals(Level.OVERWORLD))
+		if (!level.dimension().equals(Level.OVERWORLD))
 			return;
 
 		raidTimeMng.warnPlayersOfRaid();
@@ -148,14 +152,14 @@ public class RaidManager {
 
 	private void playWinSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 300F,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundSource.BLOCKS, 300F,
 					1.0F);
 		}
 	}
 
 	private void playLoseSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 300F,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundSource.BLOCKS, 300F,
 					1.0F);
 		}
 	}
@@ -175,7 +179,7 @@ public class RaidManager {
 
 		// make sure to add these effects before increasing the raid level
 		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) worldManager.getServerLevel()
-				.getTileEntity(NexusBlock.getBlockPos());
+				.getBlockEntity(NexusBlock.getBlockPos());
 		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 		nexusEntity.setLastWonRaidLevel(getRaidLevel());
 
@@ -194,7 +198,7 @@ public class RaidManager {
 	private void endRaid() {
 		Baseraids.messageManager.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
 		setRaidActive(false);
-		level.sendBlockBreakProgress(-1, NexusBlock.getBlockPos(), -1);
+		level.destroyBlockProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();
 		raidSpawningMng.killAllMobs();
 		if (ConfigOptions.getRestoreDestroyedBlocks()) {
@@ -211,15 +215,14 @@ public class RaidManager {
 	 */
 	private void spawnAndFillRewardChest() {
 		// spawn chest
-		BlockPos chestPos = NexusBlock.getBlockPos().add(ConfigOptions.getLootChestPositionRelative());
-		level.setBlockState(chestPos, Blocks.CHEST.getDefaultState());
+		BlockPos chestPos = NexusBlock.getBlockPos().offset(ConfigOptions.getLootChestPositionRelative());
+		level.setBlockAndUpdate(chestPos, Blocks.CHEST.defaultBlockState());
 
-		if (level.getTileEntity(chestPos) instanceof ChestTileEntity) {
-			ChestTileEntity chestEntity = (ChestTileEntity) level.getTileEntity(chestPos);
+		if (level.getBlockEntity(chestPos) instanceof ChestBlockEntity chestEntity) {
 			// fill chest
-			for (int i = 0; i < level.getPlayers().size(); i++) {
+			for (int i = 0; i < level.players().size(); i++) {
 				chestEntity.setLootTable(REWARD_CHEST_LOOTTABLES[curRaidLevel - 1], level.getRandom().nextLong());
-				chestEntity.fillWithLoot(null);
+				chestEntity.unpackLootTable(null);
 			}
 			Baseraids.LOGGER.info("Added loot to loot chest");
 		} else {
@@ -273,11 +276,11 @@ public class RaidManager {
 	 * 
 	 * @param nbt         the nbt that will be read out. It is assumed to include
 	 *                    certain elements.
-	 * @param serverWorld the world that is loaded. It is used in the
+	 * @param serverLevel the world that is loaded. It is used in the
 	 *                    {@link RaidSpawningManager} to get references to
 	 *                    previously spawned mobs.
 	 */
-	public void read(CompoundTag nbt, ServerLevel serverWorld) {
+	public void read(CompoundTag nbt, ServerLevel serverLevel) {
 		try {
 			isRaidActive = nbt.getBoolean("isRaidActive");
 			curRaidLevel = nbt.getInt("curRaidLevel");

@@ -172,7 +172,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusBreakGiveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
-		if (event.getPlayer().world.isRemote())
+		if (event.getPlayer().level.isClientSide)
 			return;
 		if (!(event.getState().getBlock() instanceof NexusBlock)) {
 			return;
@@ -200,7 +200,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusDroppedCancelEventAndGiveNexusBack(final ItemTossEvent event) {
-		if (event.getPlayer().world.isRemote())
+		if (event.getPlayer().level.isClientSide)
 			return;
 		Item item = event.getEntityItem().getItem().getItem();
 		if (!(item instanceof BlockItem)) {
@@ -228,7 +228,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusPickedUpSetStateToITEM(final EntityItemPickupEvent event) {
-		if (event.getPlayer().world.isRemote())
+		if (event.getPlayer().level.isClientSide)
 			return;
 		Item item = event.getItem().getItem().getItem();
 		if (!(item instanceof BlockItem)) {
@@ -253,7 +253,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	public static void onPlayerLogInAndStateUNINITIALZEDGiveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
 		PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld();
-		if (world.isRemote())
+		if (level.isClientSide)
 			return;
 		Baseraids.LOGGER.debug("PlayerLoggedInEvent: curState = %s, numOfPlayers = %i", curState,
 				world.getPlayers().size());
@@ -278,7 +278,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 			final PlayerEvent.PlayerLoggedOutEvent event) {
 		PlayerEntity playerLogOut = event.getPlayer();
 		World world = playerLogOut.world;
-		if (world.isRemote())
+		if (level.isClientSide)
 			return;
 		if (!playerHasNexus(playerLogOut)) {
 			return;

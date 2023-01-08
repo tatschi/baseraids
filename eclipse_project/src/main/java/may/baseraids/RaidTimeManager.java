@@ -102,7 +102,7 @@ public class RaidTimeManager {
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-		if (event.getPlayer().level.isRemote()) {
+		if (event.getPlayer().level.isClientSide) {
 			return;
 		}
 		restrictSleepDuringRaid(event);

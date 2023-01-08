@@ -1,5 +1,7 @@
 package may.baseraids;
 
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fmllegacy.server.ServerLifecycleHooks;
 
 public class MessageManager {
@@ -23,7 +25,7 @@ public class MessageManager {
 	public void sendStatusMessage(String message, boolean actionBar) {
 		Baseraids.LOGGER.debug("Sending chat message: \"{}\"", message);
 		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()
-				.forEach(x -> x.sendStatusMessage(new StringTextComponent(message), actionBar));
+				.forEach(x -> x.sendStatusMessage(new TextComponent(message), actionBar));
 	}
 
 	/**
@@ -32,7 +34,7 @@ public class MessageManager {
 	 * @param message the string that is sent in the chat
 	 * @param player  the player that the message is sent to
 	 */
-	public void sendStatusMessage(String message, PlayerEntity player) {
+	public void sendStatusMessage(String message, ServerPlayer player) {
 		sendStatusMessage(message, player, true);
 	}
 
@@ -44,8 +46,8 @@ public class MessageManager {
 	 * @param actionBar boolean whether to show the message in the actionBar (true)
 	 *                  or in the chat (false)
 	 */
-	public void sendStatusMessage(String message, PlayerEntity player, boolean actionBar) {
+	public void sendStatusMessage(String message, ServerPlayer player, boolean actionBar) {
 		Baseraids.LOGGER.debug("Sending chat message: \"%1$s\" to %2$s", message, player.getDisplayName().getString());
-		player.sendStatusMessage(new StringTextComponent(message), actionBar);
+		player.sendStatusMessage(new TextComponent(message), actionBar);
 	}
 }

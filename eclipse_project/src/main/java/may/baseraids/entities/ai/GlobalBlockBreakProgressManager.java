@@ -86,7 +86,7 @@ public class GlobalBlockBreakProgressManager {
 	 * Resets all progress and parameters that are recorded by this class.
 	 */
 	public synchronized void resetAllProgress() {
-		breakProgress.forEach(0, (k, v) -> level.sendBlockBreakProgress(v.breakBlockId, k, -1));
+		breakProgress.forEach(0, (k, v) -> level.destroyBlockProgress(v.breakBlockId, k, -1));
 		breakProgress.clear();
 	}
 
@@ -98,7 +98,7 @@ public class GlobalBlockBreakProgressManager {
 	public synchronized void resetProgress(BlockPos pos) {
 		BlockBreakProgressManager mng = breakProgress.get(pos);
 		if (mng != null) {
-			level.sendBlockBreakProgress(mng.breakBlockId, pos, -1);
+			level.destroyBlockProgress(mng.breakBlockId, pos, -1);
 			breakProgress.remove(pos);
 		}
 	}
@@ -111,7 +111,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	@SubscribeEvent
 	public void onBreakBlockResetAllInfoForThisBlockPos(final BlockEvent.BreakEvent event) {
-		if (event.getPlayer().world.isRemote()) {
+		if (event.getPlayer().level.isClientSide) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {
@@ -128,7 +128,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	@SubscribeEvent
 	public void onPlaceBlockResetAllInfoForThisBlockPos(final BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide()) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {
@@ -145,7 +145,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	@SubscribeEvent
 	public void onPlaceFluidResetAllInfoForThisBlockPos(final BlockEvent.FluidPlaceBlockEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide()) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {

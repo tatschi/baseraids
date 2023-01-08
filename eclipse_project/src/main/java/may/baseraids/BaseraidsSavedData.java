@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /**
@@ -16,19 +17,19 @@ public class BaseraidsSavedData extends SavedData {
 	private static final String DATA_NAME = Baseraids.MODID + "_WorldSavedData";
 
 	public final RaidManager raidManager;
-	public final ServerLevel serverWorld;
+	public final ServerLevel serverLevel;
 
 	/**
 	 * Creates a {@link WorldSavedData} object with the name {@link #DATA_NAME},
-	 * creates and sets the {@link #raidManager} and {@link #serverWorld}.
+	 * creates and sets the {@link #raidManager} and {@link #serverLevel}.
 	 * 
-	 * @param world        the world for which this instance saves data
+	 * @param level        the world for which this instance saves data
 	 * @param worldManager the {@link WorldManager} that created this instance
 	 */
-	public BaseraidsSavedData(ServerLevel world, WorldManager worldManager) {
+	public BaseraidsSavedData(ServerLevel level, WorldManager worldManager) {
 		super(DATA_NAME);
-		raidManager = new RaidManager(world, worldManager);
-		this.serverWorld = world;
+		raidManager = new RaidManager(level, worldManager);
+		this.serverLevel = level;
 	}
 
 	/**
@@ -43,7 +44,7 @@ public class BaseraidsSavedData extends SavedData {
 	@Override
 	public void read(CompoundTag nbt) {
 		NexusBlock.read(nbt.getCompound("nexusBlock"));
-		this.raidManager.read(nbt.getCompound("raidManager"), serverWorld);
+		this.raidManager.read(nbt.getCompound("raidManager"), serverLevel);
 	}
 
 	/**
@@ -89,7 +90,7 @@ public class BaseraidsSavedData extends SavedData {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(raidManager, serverWorld);
+		return Objects.hash(raidManager, serverLevel);
 	}
 
 	@Override
@@ -101,7 +102,7 @@ public class BaseraidsSavedData extends SavedData {
 		if (getClass() != obj.getClass())
 			return false;
 		BaseraidsSavedData other = (BaseraidsSavedData) obj;
-		return Objects.equals(raidManager, other.raidManager) && Objects.equals(serverWorld, other.serverWorld);
+		return Objects.equals(raidManager, other.raidManager) && Objects.equals(serverLevel, other.serverLevel);
 	}
 
 }
