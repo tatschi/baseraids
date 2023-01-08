@@ -1,6 +1,7 @@
 package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 
 /**
@@ -12,8 +13,8 @@ public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 
 	private RaidManager raidManager;
 	
-	public HurtByNotRaidingTargetGoal(CreatureEntity creatureIn, RaidManager raidManager) {
-		super(creatureIn);
+	public HurtByNotRaidingTargetGoal(PathfinderMob mob, RaidManager raidManager) {
+		super(mob);
 		this.raidManager = raidManager;
 	}
 
@@ -23,7 +24,7 @@ public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 			return false;
 		}
 		
-		return !raidManager.isEntityRaiding(this.goalOwner.getRevengeTarget());
+		return !raidManager.isEntityRaiding(this.targetMob);
 	}
 
 }

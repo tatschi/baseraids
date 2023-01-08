@@ -9,6 +9,7 @@ import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.pathfinder.Path;
 
@@ -18,7 +19,7 @@ import net.minecraft.world.level.pathfinder.Path;
  * 
  * @author Natascha May
  */
-public abstract class AttackBlockGoal<T extends MobEntity> extends Goal{
+public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 
 	protected T entity;
 	protected RaidManager raidManager;

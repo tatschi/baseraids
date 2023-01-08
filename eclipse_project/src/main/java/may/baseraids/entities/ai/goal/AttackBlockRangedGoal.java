@@ -3,6 +3,7 @@ package may.baseraids.entities.ai.goal;
 import may.baseraids.RaidManager;
 import may.baseraids.entities.ai.RaidArrowEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -13,7 +14,7 @@ import net.minecraft.world.item.Items;
  * 
  * @author Natascha May
  */
-public class AttackBlockRangedGoal<T extends MonsterEntity & IRangedAttackMob> extends AttackBlockGoal<T> {
+public class AttackBlockRangedGoal<T extends Monster & IRangedAttackMob> extends AttackBlockGoal<T> {
 
 	// cooldown in ticks
 	private static final int RANGED_ATTACK_COOLDOWN = 20;	

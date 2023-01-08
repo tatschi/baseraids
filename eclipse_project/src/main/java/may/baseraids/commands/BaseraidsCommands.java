@@ -13,6 +13,9 @@ import may.baseraids.nexus.NexusBlock;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * This class defines the commands for this mod.
@@ -92,7 +95,7 @@ public class BaseraidsCommands {
 										new MCDuration(LongArgumentType.getLong(commandSource, NAME_ARG_TICKS))))));
 	}
 
-	private int giveNexusToPlayer(CommandSourceStack commandSourceStack, ServerPlayerEntity target) {
+	private int giveNexusToPlayer(CommandSourceStack commandSourceStack, ServerPlayer target) {
 		boolean success = NexusBlock.giveNexusToPlayer(target);
 		if (success) {
 			sendFeedback(commandSourceStack, "Added nexus block to inventory");
@@ -166,6 +169,6 @@ public class BaseraidsCommands {
 	}
 
 	private void sendFeedback(CommandSourceStack commandSourceStack, String text) {
-		commandSourceStack.sendFeedback(new StringTextComponent(text), true);
+		commandSourceStack.sendFeedback(new TextComponent(text), true);
 	}
 }

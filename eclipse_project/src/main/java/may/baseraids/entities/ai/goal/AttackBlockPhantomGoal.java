@@ -6,14 +6,15 @@ import com.mojang.math.Vector3d;
 
 import may.baseraids.RaidManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.monster.Phantom;
 
-public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
+public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 
 	private int tickDelay;
 	private Random rand = new Random();
 	protected static final int PHANTOM_DAMAGE = 10;
 
-	public AttackBlockPhantomGoal(PhantomEntity entity, RaidManager raidManager) {
+	public AttackBlockPhantomGoal(Phantom entity, RaidManager raidManager) {
 		super(entity, raidManager);
 	}
 
@@ -42,23 +43,23 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 
 	@Override
 	public void startExecuting() {
-		entity.attackPhase = PhantomEntity.AttackPhase.CIRCLE;
+		entity.attackPhase = Phantom.AttackPhase.CIRCLE;
 	}
 
 	public void attackBlockPhantom() {
-		if(entity.attackPhase == PhantomEntity.AttackPhase.CIRCLE) {
+		if(entity.attackPhase == Phantom.AttackPhase.CIRCLE) {
 			pickAttack();
 		}
-		if(entity.attackPhase == PhantomEntity.AttackPhase.SWOOP) {
+		if(entity.attackPhase == Phantom.AttackPhase.SWOOP) {
 			sweepAttack();
 		}		
 	}
 	
 	private void pickAttack() {
-		if (entity.attackPhase == PhantomEntity.AttackPhase.CIRCLE) {
+		if (entity.attackPhase == Phantom.AttackPhase.CIRCLE) {
 			--this.tickDelay;
 			if (this.tickDelay <= 0) {
-				entity.attackPhase = PhantomEntity.AttackPhase.SWOOP;
+				entity.attackPhase = Phantom.AttackPhase.SWOOP;
 				this.setOrbitPositionForSwoopPhase();
 				this.tickDelay = 80 + rand.nextInt(1200);
 				entity.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, 10.0F, 0.95F + rand.nextFloat() * 0.1F);
@@ -76,7 +77,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
 			if(wasBroken) {
 				target = null;
 			}				
-			entity.attackPhase = PhantomEntity.AttackPhase.CIRCLE;
+			entity.attackPhase = Phantom.AttackPhase.CIRCLE;
            if (!entity.isSilent()) {
         	   entity.world.playEvent(1039, entity.getPosition(), 0);
            }
@@ -85,7 +86,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<PhantomEntity> {
         }
         entity.setBoundingBox(originalBB);
         if (entity.hurtTime > 0) {
-        	entity.attackPhase = PhantomEntity.AttackPhase.CIRCLE;
+        	entity.attackPhase = Phantom.AttackPhase.CIRCLE;
         }
 	}
 	

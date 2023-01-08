@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import may.baseraids.RaidManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 /**
  * This class defines a custom arrow entity that interacts with blocks that it
@@ -22,8 +23,8 @@ public class RaidArrowEntity extends ArrowEntity {
 	private static final int DEFAULT_DAMAGE = 25;
 	private int blockBreakDamage;
 
-	public RaidArrowEntity(World world, LivingEntity shooter, RaidManager raidManager) {
-		super(world, shooter);
+	public RaidArrowEntity(Level level, LivingEntity shooter, RaidManager raidManager) {
+		super(level, shooter);
 		this.raidManager = raidManager;
 		this.blockBreakDamage = DEFAULT_DAMAGE;
 	}

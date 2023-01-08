@@ -11,7 +11,11 @@ import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.SleepStatus;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
@@ -74,7 +78,7 @@ public class RaidTimeManager {
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
 		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString());
 		if (timeUntilRaidInSec <= 5 && ConfigOptions.getEnableSoundCountdown()) {
-			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
+			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundSource.BLOCKS,
 					300F, 1.0F);
 		}
 	}
@@ -119,9 +123,9 @@ public class RaidTimeManager {
 	 *              cancelled
 	 */
 	private void restrictSleepBeforeRaid(PlayerSleepInBedEvent event) {
-		if (getTimeUntilRaid().getTicks() < SLEEP_RESTRICTION_TICKS) {
-			event.setResult(SleepResult.OTHER_PROBLEM);
-			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before a raid!"), true);
+		if (getTimeUntilRaid().getTicks() < SLEEP_RESTRICTION_TICKS) {			
+			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
+			event.getPlayer().sendStatusMessage(new TextComponent("You cannot sleep before a raid!"), true);
 		}
 	}
 
@@ -133,8 +137,8 @@ public class RaidTimeManager {
 	 */
 	private void restrictSleepDuringRaid(PlayerSleepInBedEvent event) {
 		if (raidManager.isRaidActive()) {
-			event.setResult(SleepResult.OTHER_PROBLEM);
-			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep during a raid!"), true);
+			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
+			event.getPlayer().sendStatusMessage(new TextComponent("You cannot sleep during a raid!"), true);
 		}
 	}
 
@@ -147,7 +151,7 @@ public class RaidTimeManager {
 	 */
 	@SubscribeEvent
 	public void onSleepFinished(SleepFinishedTimeEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide()) {
 			return;
 		}
 		if (!ConfigOptions.getEnableTimeReductionFromSleeping()) {

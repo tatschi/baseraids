@@ -25,7 +25,7 @@ public class MessageManager {
 	public void sendStatusMessage(String message, boolean actionBar) {
 		Baseraids.LOGGER.debug("Sending chat message: \"{}\"", message);
 		ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()
-				.forEach(x -> x.sendStatusMessage(new TextComponent(message), actionBar));
+				.forEach(x -> x.displayClientMessage(new TextComponent(message), actionBar));
 	}
 
 	/**
@@ -48,6 +48,6 @@ public class MessageManager {
 	 */
 	public void sendStatusMessage(String message, ServerPlayer player, boolean actionBar) {
 		Baseraids.LOGGER.debug("Sending chat message: \"%1$s\" to %2$s", message, player.getDisplayName().getString());
-		player.sendStatusMessage(new TextComponent(message), actionBar);
+		player.displayClientMessage(new TextComponent(message), actionBar);
 	}
 }

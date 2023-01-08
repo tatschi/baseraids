@@ -8,10 +8,20 @@ import com.google.common.collect.Sets;
 
 import may.baseraids.Baseraids;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
@@ -51,9 +61,9 @@ import net.minecraftforge.items.IItemHandler;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 
-	private static final Properties PROPERTIES = AbstractBlock.Properties.create(Material.ROCK)
-			.hardnessAndResistance(15f, 30f).harvestTool(ToolType.PICKAXE).harvestLevel(1).sound(SoundType.GLASS)
-			.setLightLevel(light -> 15);
+	private static final Properties PROPERTIES = BlockBehaviour.Properties.of(Material.STONE).strength(15f, 30f).sound(SoundType.GLASS)
+			.lightLevel(light -> 15);
+	//.harvestTool(ToolType.PICKAXE)
 	
 	private static Random rand = new Random();
 
@@ -125,8 +135,8 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onWorldTickAddDebuff(final TickEvent.WorldTickEvent event) {
-		World world = event.world;
-		if (world.isRemote) {
+		Level level = event.world;
+		if (level.isClientSide) {
 			return;
 		}
 		if (event.phase != TickEvent.Phase.START) {
@@ -136,12 +146,12 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 			return;
 		}
 		// only apply debuff every time half the duration of the effect has passed
-		if (world.getGameTime() % (NexusEffects.DEBUFF.duration / 2) != 0L) {
+		if (level.getGameTime() % (NexusEffects.DEBUFF.duration / 2) != 0L) {
 			return;
 		}
 
-		for (PlayerEntity playerentity : world.getPlayers()) {
-			playerentity.addPotionEffect(NexusEffects.getEffectInstance(NexusEffects.DEBUFF));
+		for (Player player : level.players()) {
+			player.addEffect(NexusEffects.getEffectInstance(NexusEffects.DEBUFF));
 		}
 	}
 
@@ -154,7 +164,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusPlacedSetStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isRemote())
+		if (event.getWorld().isClientSide())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
 			setState(NexusState.BLOCK);
@@ -182,7 +192,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
 			Baseraids.messageManager.sendStatusMessage("The NexusBlock cannot be removed during raid!",
-					event.getPlayer(), true);
+					(ServerPlayer) event.getPlayer(), true);
 			return;
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {
@@ -251,12 +261,12 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLogInAndStateUNINITIALZEDGiveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
-		PlayerEntity player = event.getPlayer();
-		World world = player.getEntityWorld();
+		Player player = event.getPlayer();
+		Level level = player.level;
 		if (level.isClientSide)
 			return;
 		Baseraids.LOGGER.debug("PlayerLoggedInEvent: curState = %s, numOfPlayers = %i", curState,
-				world.getPlayers().size());
+				level.players().size());
 		if (curState != NexusState.UNINITIALIZED) {
 			return;
 		}
@@ -276,8 +286,8 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	@SubscribeEvent
 	public static void onPlayerLogOutWithNexusTransferNexusToOtherPlayerOrIgnore(
 			final PlayerEvent.PlayerLoggedOutEvent event) {
-		PlayerEntity playerLogOut = event.getPlayer();
-		World world = playerLogOut.world;
+		Player playerLogOut = event.getPlayer();
+		Level level = playerLogOut.level;
 		if (level.isClientSide)
 			return;
 		if (!playerHasNexus(playerLogOut)) {
@@ -289,7 +299,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 		// If there are other players on the server, randomly gives the nexus to one of
 		// the other players.
 		// Otherwise, this allows the log out with the nexus.
-		List<? extends PlayerEntity> playerList = world.getPlayers();
+		List<? extends Player> playerList = level.players();
 		playerList.remove(playerLogOut);
 		if (!playerList.isEmpty() && giveNexusToRandomPlayerFromList(playerList)) {			
 			Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
@@ -322,7 +332,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 * @param player the player that the nexus should be given to
 	 * @return a flag whether the method was successful
 	 */
-	public static boolean giveNexusToPlayer(PlayerEntity player) {
+	public static boolean giveNexusToPlayer(Player player) {
 		if (playerHasNexus(player)) {
 			// In some situations, the nexus could be in the inventory and the state could
 			// be State.BLOCK at the same time.
@@ -333,7 +343,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 			return true;
 		}
 		ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
-		if (!player.addItemStackToInventory(itemStack)) {
+		if (!player.addItem(itemStack)) {
 			Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
 			Baseraids.messageManager.sendStatusMessage("Error: Could not add Nexus to inventory!");
 			return false;
@@ -351,11 +361,11 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 * @param playerList list of players to choose from
 	 * @return a flag whether the method was successful
 	 */
-	private static boolean giveNexusToRandomPlayerFromList(List<? extends PlayerEntity> playerList) {
+	private static boolean giveNexusToRandomPlayerFromList(List<? extends Player> playerList) {
 		
 		do {
 			int randIndex = rand.nextInt(playerList.size());
-			PlayerEntity selectedPlayer = playerList.get(randIndex);
+			Player selectedPlayer = playerList.get(randIndex);
 			playerList.remove(selectedPlayer);
 			if (giveNexusToPlayer(selectedPlayer)) {
 				return true;
@@ -371,7 +381,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 * @param player the player to remove the items from
 	 * @return a flag whether the method was successful
 	 */
-	private static boolean removeNexusFromPlayer(PlayerEntity player) {
+	private static boolean removeNexusFromPlayer(Player player) {
 		LazyOptional<IItemHandler> capabilityLazyOpt = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 		Optional<Boolean> successful = capabilityLazyOpt.map(NexusBlock::removeNexusFromItemHandler);
 		return successful.orElse(false);
@@ -389,7 +399,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 		boolean successful = false;
 		for (int i = 0; i < itemHandler.getSlots(); i++) {
 			ItemStack stackInSlot = itemHandler.getStackInSlot(i);
-			if (ItemStack.areItemsEqual(stackInSlot, nexusItemStack)) {
+			if (ItemStack.isSameItemSameTags(stackInSlot, nexusItemStack)) {
 				itemHandler.extractItem(i, itemHandler.getStackInSlot(i).getCount(), false);
 				Baseraids.LOGGER.debug("PlayerLoggedOutEvent Found and removed nexus stack");
 				successful = true;
@@ -399,8 +409,8 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 		return successful;
 	}
 
-	private static boolean playerHasNexus(PlayerEntity player) {
-		return player.inventory.hasAny(Sets.newHashSet(Baseraids.NEXUS_ITEM.get()));
+	private static boolean playerHasNexus(Player player) {
+		return player.getInventory().hasAnyOf(Sets.newHashSet(Baseraids.NEXUS_ITEM.get()));
 	}
 
 	/**

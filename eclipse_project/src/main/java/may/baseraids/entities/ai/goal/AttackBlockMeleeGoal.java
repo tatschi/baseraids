@@ -2,6 +2,7 @@ package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Mob;
 
 /**
  * This class defines the AI goal to attack blocks that are in the way towards
@@ -9,7 +10,7 @@ import net.minecraft.core.BlockPos;
  * 
  * @author Natascha May
  */
-public class AttackBlockMeleeGoal<T extends MobEntity> extends AttackBlockGoal<T> {
+public class AttackBlockMeleeGoal<T extends Mob> extends AttackBlockGoal<T> {
 
 	public AttackBlockMeleeGoal(T entity, RaidManager raidManager) {
 		super(entity, raidManager);

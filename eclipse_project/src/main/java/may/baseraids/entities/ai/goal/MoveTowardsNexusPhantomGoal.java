@@ -4,19 +4,20 @@ import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.entity.monster.Phantom;
 
-public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<PhantomEntity> {
+public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 
 	private int tickDelay;
 
-	public MoveTowardsNexusPhantomGoal(PhantomEntity entity, RaidManager raidManager) {
+	public MoveTowardsNexusPhantomGoal(Phantom entity, RaidManager raidManager) {
 		super(entity, raidManager);
 		distanceReached = 25;
 	}
 
 	@Override
 	public boolean shouldExecute() {
-		if (entity.getAttackTarget() != null || !raidManager.isRaidActive()) {
+		if (entity.getTarget() != null || !raidManager.isRaidActive()) {
 			return false;
 		}
 

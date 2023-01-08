@@ -15,10 +15,17 @@ import may.baseraids.nexus.NexusBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -35,7 +42,7 @@ public class RaidSpawningManager {
 	private RaidManager raidManager;
 	private WorldManager worldManager;
 	/** A list of all spawned mobs for managing active raids */
-	private List<MobEntity> spawnedMobs = new ArrayList<>();
+	private List<Mob> spawnedMobs = new ArrayList<>();
 	/**
 	 * A list of UUIDs for all spawned mobs. Only used and updated when saving and
 	 * loading.
@@ -66,15 +73,15 @@ public class RaidSpawningManager {
 		int raidLevel = raidManager.getRaidLevel();
 		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
-		int playerCount = level.getPlayers().size();
+		int playerCount = level.players().size();
 
 		entityTypesToSpawn.forEach(type -> {
 			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel,
 					playerCount);
-			MobEntity[] spawnedMobsArray = spawnSpecificEntities(type, count);
+			Mob[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
 			// remove nulls and convert to collection
-			Collection<MobEntity> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
+			Collection<Mob> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
 					.filter(Objects::nonNull).collect(Collectors.toList());
 
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
@@ -91,26 +98,24 @@ public class RaidSpawningManager {
 	 *                   the {@code entityType}
 	 * @param entityType
 	 * @param numMobs    the amount of mobs to spawn of this type
-	 * @return an array of {@link MobEntity} containing the spawned entities
+	 * @return an array of {@link Mob} containing the spawned entities
 	 */
-	private <T extends Entity> MobEntity[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
+	private <T extends Entity> Mob[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 
-		ILivingEntityData ilivingentitydata = null;
-		MobEntity[] mobs = new MobEntity[numMobs];
+		SpawnGroupData spawnGroupData = null;
+		Mob[] mobs = new Mob[numMobs];
 		for (int i = 0; i < numMobs; i++) {
 
 			BlockPos spawnPos = findSpawnPos(entityType);
 
 			if (entityType.equals(EntityType.PHANTOM)) {
 				mobs[i] = EntityType.PHANTOM.create(level);
-				mobs[i].moveToBlockPosAndAngles(spawnPos, 0.0F, 0.0F);
-				ilivingentitydata = mobs[i].onInitialSpawn((IServerLevel) level,
-						level.getDifficultyForLocation(spawnPos), SpawnReason.NATURAL, ilivingentitydata,
-						(CompoundTag) null);
-				((IServerLevel) level).func_242417_l(mobs[i]);
+				mobs[i].moveTo(spawnPos, 0.0F, 0.0F);
+				spawnGroupData = mobs[i].finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.NATURAL, spawnGroupData, (CompoundTag) null);
+				((ServerLevelAccessor) level).func_242417_l(mobs[i]);
 			} else {
-				mobs[i] = (MobEntity) entityType.spawn((ServerLevel) level, null, null, spawnPos,
-						SpawnReason.MOB_SUMMONED, false, false);
+				mobs[i] = (Mob) entityType.spawn((ServerLevel) level, null, null, spawnPos,
+						MobSpawnType.MOB_SUMMONED, false, false);
 			}
 
 			if (mobs[i] != null) {
@@ -146,12 +151,12 @@ public class RaidSpawningManager {
 		BlockPos spawnPos;
 		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
 				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
-			spawnPos = level.getHeight(Heightmap.Type.WORLD_SURFACE, spawnPosXZ).add(0, 5, 0);
+			spawnPos = spawnPosXZ.offset(0, level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z), 0);
 		} else {
-			spawnPos = level.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), spawnPosXZ);
+			spawnPos = spawnPosXZ.offset(0, level.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), x, z), 0);
 		}
 
-		Baseraids.LOGGER.debug("Spawn %s at radius %i and angle %d", entityType.getName().getString(), radius, angle);
+		Baseraids.LOGGER.debug("Spawn %s at radius %i and angle %d", entityType.getRegistryName().toDebugFileName(), radius, angle);
 		return spawnPos;
 	}
 
@@ -165,7 +170,7 @@ public class RaidSpawningManager {
 			return false;
 		}
 
-		for (MobEntity mob : spawnedMobs) {
+		for (Mob mob : spawnedMobs) {
 			if (mob.isAlive()) {
 				return false;
 			}
@@ -201,8 +206,8 @@ public class RaidSpawningManager {
 		spawnedMobsUUIDs.clear();
 
 		for (int index = 0; index < spawnedMobsList.size(); index++) {
-			CompoundTag CompoundTag = spawnedMobsList.getCompound(index);
-			UUID entityUUID = CompoundTag.getUniqueId("ID" + index);
+			CompoundTag compoundTag = spawnedMobsList.getCompound(index);
+			UUID entityUUID = compoundTag.getUUID("ID" + index);
 			Baseraids.LOGGER.debug("reading entity with ID {}", entityUUID);
 			spawnedMobsUUIDs.add(entityUUID);
 		}
@@ -220,11 +225,11 @@ public class RaidSpawningManager {
 
 		ListTag spawnedMobsList = new ListTag();
 		int index = 0;
-		for (MobEntity mob : spawnedMobs) {
+		for (Mob mob : spawnedMobs) {
 			CompoundTag compound = new CompoundTag();
 
-			compound.putUniqueId("ID" + index, mob.getUniqueID());
-			Baseraids.LOGGER.debug("writing entity with UUID {}", mob.getUniqueID());
+			compound.putUUID("ID" + index, mob.getUUID());
+			Baseraids.LOGGER.debug("writing entity with UUID {}", mob.getUUID());
 			spawnedMobsList.add(compound);
 			index++;
 		}
@@ -246,7 +251,7 @@ public class RaidSpawningManager {
 	 */
 	@SubscribeEvent
 	public void onEntityJoinWorld(final EntityJoinWorldEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide) {
 			return;
 		}
 		if (!event.getWorld().equals(level)) {
@@ -254,17 +259,17 @@ public class RaidSpawningManager {
 		}
 
 		Entity entity = event.getEntity();
-		if (!(entity instanceof MobEntity)) {
+		if (!(entity instanceof Mob)) {
 			return;
 		}
 
-		UUID uuid = entity.getUniqueID();
+		UUID uuid = entity.getUUID();
 		if (!spawnedMobsUUIDs.contains(uuid)) {
 			return;
 		}
 
 		spawnedMobsUUIDs.remove(uuid);
-		MobEntity mob = (MobEntity) entity;
+		Mob mob = (Mob) entity;
 		spawnedMobs.add(mob);
 		worldManager.entityManager.setupGoals(mob);
 		raidManager.markDirty();

@@ -98,9 +98,9 @@ public class BlockBreakProgressManager {
 		if (NexusBlock.getBlockPos().equals(pos)) {
 			return 500;
 		}
-		float hardness = level.getBlockState(pos).getBlockHardness(level, pos);
+		float hardness = level.getBlockState(pos).get.getBlockHardness(level, pos); float resistance = level.getBlockState(pos).get.get
 		return ConfigOptions.getMonsterBlockBreakingTimeMultiplier() * (int) Math.round(
-				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
+				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50); resistance +1
 	}
 
 	/**

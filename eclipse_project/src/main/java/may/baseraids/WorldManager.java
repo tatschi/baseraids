@@ -7,12 +7,16 @@ import com.mojang.brigadier.CommandDispatcher;
 import may.baseraids.commands.BaseraidsCommands;
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -90,11 +94,11 @@ public class WorldManager {
 	/**
 	 * Called for potential spawns in the world.
 	 * 
-	 * @param event the event of type {@link WorldEvent.CreateSpawnPosition} that calls
+	 * @param event the event of type {@link LivingSpawnEvent.CheckSpawn} that calls
 	 *              this function
 	 */
 	@SubscribeEvent
-	public void onMonsterSpawn(final WorldEvent.CreateSpawnPosition event) {
+	public void onMonsterSpawn(final LivingSpawnEvent.CheckSpawn event) {
 		Level level = (Level) event.getWorld();
 		if (level.isClientSide)
 			return;
@@ -112,10 +116,10 @@ public class WorldManager {
 	 * Cancels a monster spawning event, if it is not inside a cave and the config
 	 * option {@link ConfigOptions#deactivateMonsterNightSpawn} is true.
 	 * 
-	 * @param event the event of type {@link WorldEvent.CreateSpawnPosition} that calls
+	 * @param event the event of type {@link LivingSpawnEvent.CheckSpawn} that calls
 	 *              this function
 	 */
-	private boolean onMonsterSpawnOutsideCaveShouldCancelSpawn(final WorldEvent.CreateSpawnPosition event) {
+	private boolean onMonsterSpawnOutsideCaveShouldCancelSpawn(final LivingSpawnEvent.CheckSpawn event) {
 		if (!ConfigOptions.getDeactivateMonsterNightSpawn()) {
 			return false;
 		}
@@ -124,19 +128,20 @@ public class WorldManager {
 			return false;
 		}
 		
-		if (event.getType() != EntityClassification.MONSTER) {
+		if (event.getEntityLiving().getClassification(false) != MobCategory.MONSTER) {
 			return false;
 		}
-
-		if (!event.getWorld().getBlockState(event.getPos()).equals(Blocks.CAVE_AIR.getDefaultState())) {
+		
+		BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+		if (!event.getWorld().getBlockState(pos).equals(Blocks.CAVE_AIR.defaultBlockState())) {
 			return true;
 		}
 
-		if (event.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, event.getPos()).equals(event.getPos())) {
+		if (event.getWorld().getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) == pos.getY()) {
 			return true;
 		}
 
-		return event.getWorld().canSeeSky(event.getPos());
+		return event.getWorld().canSeeSky(pos);
 	}
 
 	public void markDirty() {
