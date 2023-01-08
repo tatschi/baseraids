@@ -1,9 +1,12 @@
 package may.baseraids.commands;
 
+import java.util.function.BiFunction;
+
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
+import may.baseraids.MCDuration;
 import may.baseraids.RaidManager;
 import may.baseraids.WorldManager;
 import may.baseraids.nexus.NexusBlock;
@@ -20,8 +23,9 @@ import net.minecraft.util.text.StringTextComponent;
  */
 public class BaseraidsCommands {
 
+	private static final String NAME_ARG_TICKS = "ticks";
 	private static final String TEXT_TIME_UNTIL_NEXT_RAID = "Set time until next raid to ";
-	private static final String NAME_ARGUMENT_LEVEL = "levelArg";
+	private static final String NAME_ARG_LEVEL = "level";
 	private WorldManager worldManager;
 
 	public BaseraidsCommands(WorldManager worldManager) {
@@ -37,26 +41,21 @@ public class BaseraidsCommands {
 	private LiteralArgumentBuilder<CommandSource> registerTimeUntilRaidCommand() {
 		return Commands.literal("timeUntilRaid")
 				.then(Commands.literal("query").executes(commandSource -> getTimeUntilRaid(commandSource.getSource())))
-				.then(Commands.literal("set")
-						.then(Commands.argument("min", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
-								.executes(commandSource -> setTimeUntilRaid(commandSource.getSource(),
-										IntegerArgumentType.getInteger(commandSource, "min")))))
-				.then(Commands.literal("reduce")
-						.then(Commands.argument("min", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
-								.executes(commandSource -> reduceTimeUntilRaid(commandSource.getSource(),
-										IntegerArgumentType.getInteger(commandSource, "min")))));
+				.then(registerTimeInputCommand("set", this::setTimeUntilRaid))
+				.then(registerTimeInputCommand("subtract", this::subtractTimeUntilRaid))
+				.then(registerTimeInputCommand("add", this::addTimeUntilRaid));
 	}
 
 	private LiteralArgumentBuilder<CommandSource> registerLevelCommand() {
-		return Commands.literal("level")
+		return Commands.literal(NAME_ARG_LEVEL)
 				.then(Commands.literal("query").executes(commandSource -> getRaidLevel(commandSource.getSource())))
 				.then(Commands.literal("set")
 						.then(Commands
-								.argument(NAME_ARGUMENT_LEVEL,
+								.argument(NAME_ARG_LEVEL,
 										IntegerArgumentType.integer(RaidManager.MIN_RAID_LEVEL,
 												RaidManager.MAX_RAID_LEVEL))
 								.executes(commandSource -> setRaidLevel(commandSource.getSource(),
-										IntegerArgumentType.getInteger(commandSource, NAME_ARGUMENT_LEVEL)))));
+										IntegerArgumentType.getInteger(commandSource, NAME_ARG_LEVEL)))));
 	}
 
 	private LiteralArgumentBuilder<CommandSource> registerRaidCommand() {
@@ -76,6 +75,23 @@ public class BaseraidsCommands {
 	private LiteralArgumentBuilder<CommandSource> registerRestoreDestroyedBlocksCommand() {
 		return Commands.literal("restoreDestroyedBlocks")
 				.executes(commandSource -> restoreDestroyedBlocks(commandSource.getSource()));
+	}
+
+	private LiteralArgumentBuilder<CommandSource> registerTimeInputCommand(String leadingLiteral,
+			BiFunction<CommandSource, MCDuration, Integer> func) {
+		return Commands.literal(leadingLiteral)
+				.then(Commands.literal("min")
+						.then(Commands.argument("minutes", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+								.executes(commandSource -> func.apply(commandSource.getSource(),
+										new MCDuration().setMin(IntegerArgumentType.getInteger(commandSource, "minutes"))))))
+				.then(Commands.literal("sec")
+						.then(Commands.argument("seconds", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+								.executes(commandSource -> func.apply(commandSource.getSource(),
+										new MCDuration().setSec(IntegerArgumentType.getInteger(commandSource, "seconds"))))))
+				.then(Commands.literal(NAME_ARG_TICKS)
+						.then(Commands.argument(NAME_ARG_TICKS, LongArgumentType.longArg(1, Long.MAX_VALUE))
+								.executes(commandSource -> func.apply(commandSource.getSource(),
+										new MCDuration(LongArgumentType.getLong(commandSource, NAME_ARG_TICKS))))));
 	}
 
 	private int giveNexusToPlayer(CommandSource source, ServerPlayerEntity target) {
@@ -99,20 +115,27 @@ public class BaseraidsCommands {
 	}
 
 	private int getTimeUntilRaid(CommandSource source) {
-		sendFeedback(source, "Time until raid: " + worldManager.getRaidTimeManager().getTimeUntilRaidInDisplayString());
-		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
+		sendFeedback(source,
+				"Time until raid: " + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
+		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
 
-	private int setTimeUntilRaid(CommandSource source, int min) {
-		worldManager.getRaidTimeManager().setTimeUntilRaidInMin(min);
+	private int setTimeUntilRaid(CommandSource source, MCDuration time) {
+		worldManager.getRaidTimeManager().setTimeUntilRaid(time);
 		sendTimeUntilRaidFeedback(source);
-		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
+		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
 
-	private int reduceTimeUntilRaid(CommandSource source, int min) {
-		worldManager.getRaidTimeManager().reduceTimeUntilRaidInMin(min);
+	private int addTimeUntilRaid(CommandSource source, MCDuration time) {
+		worldManager.getRaidTimeManager().addTimeUntilRaid(time);
 		sendTimeUntilRaidFeedback(source);
-		return worldManager.getRaidTimeManager().getTimeUntilRaidInSec();
+		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
+	}
+	
+	private int subtractTimeUntilRaid(CommandSource source, MCDuration time) {
+		worldManager.getRaidTimeManager().subtractFromTimeUntilRaid(time);
+		sendTimeUntilRaidFeedback(source);
+		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
 
 	private int getRaidLevel(CommandSource source) {
@@ -141,7 +164,7 @@ public class BaseraidsCommands {
 
 	private void sendTimeUntilRaidFeedback(CommandSource source) {
 		sendFeedback(source,
-				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidTimeManager().getTimeUntilRaidInDisplayString());
+				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
 	}
 
 	private void sendFeedback(CommandSource source, String text) {

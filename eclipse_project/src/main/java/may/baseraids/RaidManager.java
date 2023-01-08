@@ -152,14 +152,14 @@ public class RaidManager {
 
 	private void playWinSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 2.0F,
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_WON.get(), SoundCategory.BLOCKS, 300F,
 					1.0F);
 		}
 	}
 
 	private void playLoseSound() {
 		if (ConfigOptions.getEnableSoundWinLose()) {
-			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 2.0F,
+			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_LOST.get(), SoundCategory.BLOCKS, 300F,
 					1.0F);
 		}
 	}
@@ -313,8 +313,6 @@ public class RaidManager {
 			isRaidActive = false;
 		}
 	}
-
-	
 
 	public boolean isRaidActive() {
 		return isRaidActive;

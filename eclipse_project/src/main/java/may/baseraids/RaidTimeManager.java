@@ -45,7 +45,7 @@ public class RaidTimeManager {
 	/**
 	 * Sets the times (remaining time until raid) at which all players will be
 	 * warned of the coming raid (approximated, in seconds).
-	 * @see RaidManager#warnPlayersOfRaid()
+	 * @see #warnPlayersOfRaid()
 	 */
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -59,10 +59,10 @@ public class RaidTimeManager {
 	/**
 	 * Warns all players in the world of an upcoming raid via chat messages and
 	 * sounds. The times at which to warn are specified in the field
-	 * {@link RaidManager#TIMES_TO_WARN_PLAYERS_OF_RAID}.
+	 * {@link #TIMES_TO_WARN_PLAYERS_OF_RAID}.
 	 */
 	void warnPlayersOfRaid() {
-		int timeUntilRaidInSec = getTimeUntilRaidInSec();
+		int timeUntilRaidInSec = getTimeUntilRaid().getSec();
 		// Because this method is called multiple times per second,
 		// avoid multiple messages for the same second by remembering the last warning
 		// time
@@ -75,10 +75,10 @@ public class RaidTimeManager {
 		}
 
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
-		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString());
+		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString());
 		if (timeUntilRaidInSec <= 5 && ConfigOptions.getEnableSoundCountdown()) {
 			world.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundCategory.BLOCKS,
-					2.0F, 1.0F);
+					300F, 1.0F);
 		}
 	}
 	
@@ -93,7 +93,7 @@ public class RaidTimeManager {
 		if (world.getGameTime() < nextRaidGameTime) {
 			return false;
 		}
-		return NexusBlock.getState() != NexusState.BLOCK;
+		return NexusBlock.getState() == NexusState.BLOCK;
 	}
 	
 	/**
@@ -116,13 +116,13 @@ public class RaidTimeManager {
 
 	/**
 	 * Forbids the player to sleep in bed when a raid is coming in less than
-	 * {@link RaidManager#SLEEP_RESTRICTION_TICKS}.
+	 * {@link #SLEEP_RESTRICTION_TICKS}.
 	 * 
 	 * @param event the event of type {@link PlayerSleepInBedEvent} that may be
 	 *              cancelled
 	 */
 	private void restrictSleepBeforeRaid(PlayerSleepInBedEvent event) {
-		if (getTimeUntilRaid() < SLEEP_RESTRICTION_TICKS) {
+		if (getTimeUntilRaid().getTicks() < SLEEP_RESTRICTION_TICKS) {
 			event.setResult(SleepResult.OTHER_PROBLEM);
 			event.getPlayer().sendStatusMessage(new StringTextComponent("You cannot sleep before a raid!"), true);
 		}
@@ -156,9 +156,9 @@ public class RaidTimeManager {
 		if (!ConfigOptions.getEnableTimeReductionFromSleeping()) {
 			return;
 		}
-		int reductionTime = (int) (event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
-		reduceTimeUntilRaid(reductionTime);
-		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaidInDisplayString(), true);
+		MCDuration subtractionTime = new MCDuration(event.getNewTime() - ((ServerWorld) event.getWorld()).getDayTime());
+		subtractFromTimeUntilRaid(subtractionTime);
+		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString(), true);
 	}
 	
 	/**
@@ -167,38 +167,8 @@ public class RaidTimeManager {
 	 * 
 	 * @return the number of ticks until the next raid
 	 */
-	private long getTimeUntilRaid() {
-		return nextRaidGameTime - world.getGameTime();
-	}
-
-	public int getTimeUntilRaidInSec() {
-		return (int) (getTimeUntilRaid() / 20);
-	}
-
-	public int getTimeUntilRaidInMin() {
-		return getTimeUntilRaidInSec() / 60;
-	}
-
-	/**
-	 * Converts the time until the next raid into a string that can be used for all
-	 * displaying purposes.
-	 * 
-	 * @return a formatted String showing the time until the next raid
-	 */
-	public String getTimeUntilRaidInDisplayString() {
-		int timeUntilRaidInSec = getTimeUntilRaidInSec();
-
-		int displayTimeMin = timeUntilRaidInSec / 60;
-		int displayTimeSec = timeUntilRaidInSec % 60;
-
-		String displayTime = "";
-		if (displayTimeMin > 0) {
-			displayTime += displayTimeMin + "min";
-		}
-		if (displayTimeSec > 0) {
-			displayTime += displayTimeSec + "s";
-		}
-		return displayTime;
+	public MCDuration getTimeUntilRaid() {
+		return new MCDuration(nextRaidGameTime - world.getGameTime());
 	}
 
 	boolean isMaxRaidDurationOver() {
@@ -248,17 +218,17 @@ public class RaidTimeManager {
 		}
 		setNextRaidGameTime(world.getGameTime() + time);
 	}
-
-	public void setTimeUntilRaidInMin(int min) {
-		setTimeUntilRaid((long) (min) * 60 * 20);
+	
+	public void setTimeUntilRaid(MCDuration time) {
+		setTimeUntilRaid(time.getTicks());
 	}
 
-	private void reduceTimeUntilRaid(long reductionTime) {
-		setTimeUntilRaid(getTimeUntilRaid() - reductionTime);
+	public void addTimeUntilRaid(MCDuration addTime) {
+		setTimeUntilRaid(getTimeUntilRaid().addDuration(addTime).getTicks());
 	}
-
-	public void reduceTimeUntilRaidInMin(int reductionTimeInMin) {
-		reduceTimeUntilRaid((long) reductionTimeInMin * 60 * 20);
+	
+	public void subtractFromTimeUntilRaid(MCDuration subtractionTime) {
+		setTimeUntilRaid(getTimeUntilRaid().subtractDuration(subtractionTime).getTicks());
 	}
 	
 	void setTimeToNighttime() {
