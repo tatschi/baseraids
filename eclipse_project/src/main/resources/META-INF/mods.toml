@@ -6,7 +6,7 @@
 # The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
 modLoader="javafml" #mandatory
 # A version range to match for said mod loader - for regular FML @Mod it will be the forge version
-loaderVersion="[35,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+loaderVersion="[37,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 # The license for this mod.
 license="All rights reserved" #mandatory
 # A URL to refer people to when problems occur with this mod
@@ -36,7 +36,7 @@ description='''
 This mod adds monster raids on your base that will destroy parts of your base or earn you valuable goods.
 
 It adds a nexus block that will be the heart of your base and the attacks target. You must have a nexus block in your base. If the nexus is destroyed, you lose the raid. If you can kill all attackers or the nexus survives for long enough, you earn a reward!
-The raids have multiple levels(15?) of increasing difficulty and reward. Defending off a raid will increase the next raid level, however, if you lose a raid, the level will be reset to 1.
+The raids have levels of increasing difficulty and reward. Defending off a raid will increase the next raid level, however, if you lose a raid, the level will be reset to 1.
 
 After you have defended the highest raid level, you will be able to avoid raids.
 Raids are intended to occur every couple of days, but there will be a the possibility to change this setting.
@@ -58,6 +58,6 @@ Raise your defense, secure your base and nexus, fight! The raids are coming.
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     #side="SERVER"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.16.4,1.17)"
+    versionRange="[1.17.1,1.18)"
     ordering="NONE"
     side="BOTH"

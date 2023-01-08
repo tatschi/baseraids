@@ -1,0 +1,9 @@
+List of things I did for updating to a new mc version.
+The list might not be exhaustive or correctly ordered yet, adapt in the future.
+
+backup project folder
+go into build.gradle and under dependencies change the forge version to a respective new version
+get the mdk from the forge download page for the new forge version and compare the build.gradle -> update the changes in your build.gradle
+run gradlew genEclipseRuns and gradlew eclipse
+update src/main/resources/pack.mcmeta and src/main/resources/mods.toml
+refresh gradle project
