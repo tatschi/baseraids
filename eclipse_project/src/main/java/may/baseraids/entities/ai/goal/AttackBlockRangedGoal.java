@@ -1,12 +1,16 @@
 package may.baseraids.entities.ai.goal;
 
 import may.baseraids.RaidManager;
-import may.baseraids.entities.ai.RaidArrowEntity;
+import may.baseraids.entities.ai.RaidArrow;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 /**
  * This class defines the AI goal to attack blocks that are in the way towards
@@ -14,7 +18,7 @@ import net.minecraft.world.item.Items;
  * 
  * @author Natascha May
  */
-public class AttackBlockRangedGoal<T extends Monster & IRangedAttackMob> extends AttackBlockGoal<T> {
+public class AttackBlockRangedGoal<T extends Monster & RangedAttackMob> extends AttackBlockGoal<T> {
 
 	// cooldown in ticks
 	private static final int RANGED_ATTACK_COOLDOWN = 20;	
@@ -22,12 +26,6 @@ public class AttackBlockRangedGoal<T extends Monster & IRangedAttackMob> extends
 
 	public AttackBlockRangedGoal(T entity, RaidManager raidManager) {
 		super(entity, raidManager);
-	}
-
-	@Override
-	public void resetTask() {
-		super.resetTask();
-		this.entity.resetActiveHand();
 	}
 	
 	@Override
@@ -60,26 +58,26 @@ public class AttackBlockRangedGoal<T extends Monster & IRangedAttackMob> extends
 	 * @param targetBlock the block to be attacked
 	 */
 	private void attackBlockWithRangedAttack(BlockPos targetBlock) {
-		AbstractArrowEntity arrowEntity = createArrowEntity();		
+		AbstractArrow arrowEntity = createArrowEntity();		
 		shootArrowEntityAtBlock(arrowEntity, targetBlock);
-		entity.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (entity.getRNG().nextFloat() * 0.4F + 0.8F));
-		entity.world.addEntity(arrowEntity);		
+		entity.playSound(SoundEvents.ARROW_SHOOT, 1.0F, 1.0F / (entity.getRandom().nextFloat() * 0.4F + 0.8F));
+		entity.level.addFreshEntity(arrowEntity);		
 	}
 	
 	/**
 	 * Creates an {@link AbstractArrowEntity} from ammo held by the entity and adds potion, enchantment and other effects.
 	 * @return the create arrow entity
 	 */
-	private AbstractArrowEntity createArrowEntity() {
-		ItemStack itemstack = entity.findAmmo(entity.getHeldItem(ProjectileHelper.getHandWith(entity, Items.BOW)));
-		RaidArrowEntity arrowEntity = new RaidArrowEntity(entity.world, entity, raidManager);
-		arrowEntity.setPotionEffect(itemstack);
-		float distanceFactor = BowItem.getArrowVelocity(entity.getItemInUseMaxCount());
+	private AbstractArrow createArrowEntity() {
+		InteractionHand interactionhand = ProjectileUtil.getWeaponHoldingHand(entity, BowItem.class::isInstance);
+	    ItemStack itemstack = entity.getItemInHand(interactionhand);
+		RaidArrow arrowEntity = new RaidArrow(entity.level, entity, raidManager);
+		arrowEntity.setEffectsFromItem(itemstack);
+		float distanceFactor = BowItem.getPowerForTime(entity.getUseItem().getMaxStackSize());
 		arrowEntity.setEnchantmentEffectsFromEntity(entity, distanceFactor);
 		
-		if (entity.getHeldItemMainhand().getItem() instanceof net.minecraft.item.BowItem) {
-			arrowEntity = (RaidArrowEntity) ((net.minecraft.item.BowItem) entity.getHeldItemMainhand().getItem())
-					.customArrow(arrowEntity);
+		if (entity.getMainHandItem().getItem() instanceof BowItem bowItem) {
+			arrowEntity = (RaidArrow) bowItem.customArrow(arrowEntity);
 		}
 		
 		return arrowEntity;
@@ -90,14 +88,14 @@ public class AttackBlockRangedGoal<T extends Monster & IRangedAttackMob> extends
 	 * @param arrowEntity the arrow entity to be shot
 	 * @param targetBlock the block position to be shot at
 	 */
-	private void shootArrowEntityAtBlock(AbstractArrowEntity arrowEntity, BlockPos targetBlock) {
-		double dX = targetBlock.getX() - entity.getPosX();
-		double dY = targetBlock.getY() + 0.333333D - arrowEntity.getPosY();
-		double dZ = targetBlock.getZ() - entity.getPosZ();
-		double distInXZPlane = MathHelper.sqrt(dX * dX + dZ * dZ);
+	private void shootArrowEntityAtBlock(AbstractArrow arrowEntity, BlockPos targetBlock) {
+		double dX = targetBlock.getX() - entity.getX();
+		double dY = targetBlock.getY() + 0.333333D - arrowEntity.getY();
+		double dZ = targetBlock.getZ() - entity.getZ();
+		double distInXZPlane = Math.sqrt(dX * dX + dZ * dZ);
 		double dYWithDistanceAdjustment = dY + distInXZPlane * 0.2F;
 		arrowEntity.shoot(dX, dYWithDistanceAdjustment, dZ, 1.6F,
-				(14 - entity.world.getDifficulty().getId() * 4));
+				(14 - entity.level.getDifficulty().getId() * 4));
 	}
 
 }

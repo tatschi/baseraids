@@ -43,7 +43,7 @@ public class RestoreDestroyedBlocksManager {
 	 */
 	@SubscribeEvent
 	public void onBlockDestroyedDuringRaidSaveBlock(final BlockEvent.BreakEvent event) {
-		if (event.getWorld().isRemote()) {
+		if (event.getWorld().isClientSide()) {
 			return;
 		}
 		if (!event.getWorld().equals(level)) {
@@ -60,7 +60,7 @@ public class RestoreDestroyedBlocksManager {
 	 * Restores all currently saved blocks.
 	 */
 	public void restoreSavedBlocks() {
-		savedBlocks.forEach((pos, state) -> level.setBlockState(pos, state));
+		savedBlocks.forEach((pos, state) -> level.setBlockAndUpdate(pos, state));
 	}
 
 	/**

@@ -19,8 +19,8 @@ public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 	}
 
 	@Override
-	public boolean shouldExecute() {
-		if(!super.shouldExecute()) {
+	public boolean canUse() {
+		if(!super.canUse()) {
 			return false;
 		}
 		

@@ -16,7 +16,7 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	}
 
 	@Override
-	public boolean shouldExecute() {
+	public boolean canUse() {
 		if (entity.getTarget() != null || !raidManager.isRaidActive()) {
 			return false;
 		}
@@ -25,7 +25,7 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	}
 
 	@Override
-	public void startExecuting() {
+	public void start() {
 		tickDelay = 20;
 	}
 
@@ -42,7 +42,7 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	}
 
 	@Override
-	public void resetTask() {
+	public void stop() {
 		// override parent method to do nothing instead
 	}
 
@@ -58,7 +58,7 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 		Vec3i orbitPosAtNexusHeight = new Vec3i(entity.orbitPosition.getX(), nexusPos.getY(),
 				entity.orbitPosition.getZ());
 		Vec3i nexusPosVec = new Vec3i(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
-		return orbitPosAtNexusHeight.distanceSq(nexusPosVec) < distanceReached;
+		return orbitPosAtNexusHeight.distSqr(nexusPosVec) < distanceReached;
 	}
 
 	/**
@@ -66,9 +66,9 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	 * above the nexus.
 	 */
 	private void setOrbitPositionAtNexus() {
-		entity.orbitPosition = NexusBlock.getBlockPos().up(20 + entity.getRNG().nextInt(20));
-		if (entity.orbitPosition.getY() < entity.world.getSeaLevel()) {
-			entity.orbitPosition = new BlockPos(entity.orbitPosition.getX(), entity.world.getSeaLevel() + 1,
+		entity.orbitPosition = NexusBlock.getBlockPos().up(20 + entity.getRandom().nextInt(20));
+		if (entity.orbitPosition.getY() < entity.level.getSeaLevel()) {
+			entity.orbitPosition = new BlockPos(entity.orbitPosition.getX(), entity.level.getSeaLevel() + 1,
 					entity.orbitPosition.getZ());
 		}
 	}

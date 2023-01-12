@@ -16,6 +16,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -110,8 +111,8 @@ public class Baseraids {
 	 * @param pos the given {@link BlockPos}
 	 * @return the {@link Vector3d} converted from the {@link BlockPos}
 	 */
-	public static Vector3d getVector3dFromBlockPos(BlockPos pos) {
-		return new Vector3d(pos.getX(), pos.getY(), pos.getZ());
+	public static Vec3 getVector3dFromBlockPos(BlockPos pos) {
+		return new Vec3(pos.getX(), pos.getY(), pos.getZ());
 	}
 
 }

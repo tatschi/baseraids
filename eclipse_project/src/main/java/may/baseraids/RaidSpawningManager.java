@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -132,7 +133,7 @@ public class RaidSpawningManager {
 	 * @param entityType
 	 * @return compatible spawn position
 	 */
-	private BlockPos findSpawnPos(EntityType<?> entityType) {
+	private <T extends Entity> BlockPos findSpawnPos(EntityType<T> entityType) {
 
 		// select random radius between SPAWN_RADIUS_MIN and SPAWN_RADIUS_MAX
 		int radius = rand.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
@@ -144,11 +145,14 @@ public class RaidSpawningManager {
 		// compute coordinates x and z for the radius and angle
 		int x = (int) (radius * Math.cos(angle));
 		int z = (int) (radius * Math.sin(angle));
-		BlockPos centerSpawnPos = NexusBlock.getBlockPos().add(0, 1, 0);
-		BlockPos spawnPosXZ = centerSpawnPos.add(x, 0, z);
+		BlockPos centerSpawnPos = NexusBlock.getBlockPos().offset(0, 1, 0);
+		BlockPos spawnPosXZ = centerSpawnPos.offset(x, 0, z);
 
 		// find the right height at which this entity type can be spawned
 		BlockPos spawnPos;
+		if(T instanceof Monster monsterType) {
+			Monster.checkMonsterSpawnRules(monsterType);		
+		}
 		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
 				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
 			spawnPos = spawnPosXZ.offset(0, level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z), 0);

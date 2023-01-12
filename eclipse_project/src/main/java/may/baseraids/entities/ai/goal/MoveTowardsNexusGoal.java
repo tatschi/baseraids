@@ -26,32 +26,27 @@ public class MoveTowardsNexusGoal<T extends Mob> extends Goal {
 		this.setFlags(EnumSet.of(Goal.Flag.MOVE));
 	}
 
-	public boolean shouldExecute() {
+	public boolean canUse() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
 
 		if (entity.getTarget() != null || !raidManager.isRaidActive()
-				|| entity.getDistanceSq(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceReached) {
+				|| entity.distanceToSqr(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ()) < distanceReached) {
 			return false;
 		}
 
-		Path path = entity.getNavigator().getPath();
-		return (path == null || path.isFinished());
-	}
-
-	@Override
-	public boolean shouldContinueExecuting() {
-		return shouldExecute();
+		Path path = entity.getNavigation().getPath();
+		return (path == null || path.isDone());
 	}
 
 	@Override
 	public void tick() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
-		entity.getNavigator().tryMoveToXYZ(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
+		entity.getNavigation().moveTo(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
 	}
 
 	@Override
-	public void resetTask() {
-		entity.getNavigator().clearPath();
+	public void stop() {
+		entity.getNavigation().stop();
 	}
 
 }

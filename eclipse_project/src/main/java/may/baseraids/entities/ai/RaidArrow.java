@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 import may.baseraids.RaidManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * This class defines a custom arrow entity that interacts with blocks that it
@@ -16,14 +18,14 @@ import net.minecraft.world.level.Level;
  * 
  * @author Natascha May
  */
-public class RaidArrowEntity extends ArrowEntity {
+public class RaidArrow extends Arrow {
 
 	Entity shooter;
 	RaidManager raidManager;
 	private static final int DEFAULT_DAMAGE = 25;
 	private int blockBreakDamage;
 
-	public RaidArrowEntity(Level level, LivingEntity shooter, RaidManager raidManager) {
+	public RaidArrow(Level level, LivingEntity shooter, RaidManager raidManager) {
 		super(level, shooter);
 		this.raidManager = raidManager;
 		this.blockBreakDamage = DEFAULT_DAMAGE;
@@ -34,20 +36,20 @@ public class RaidArrowEntity extends ArrowEntity {
 	 * the block and reduces the future damage of the arrow.
 	 */
 	@Override
-	protected void func_230299_a_(BlockRayTraceResult rayTraceResult) {
-		super.func_230299_a_(rayTraceResult);
+	protected void onHitBlock(BlockHitResult hitResult) {
+		super.onHitBlock(hitResult);
 		if (!raidManager.isRaidActive()) {
 			return;
 		}
-		raidManager.globalBlockBreakProgressMng.addProgress(rayTraceResult.getPos(), blockBreakDamage);
+		raidManager.globalBlockBreakProgressMng.addProgress(hitResult.getBlockPos(), blockBreakDamage);
 		// the damage should decrease with every hit in order to disable infinite loops
 		// with falling arrows
 		blockBreakDamage /= 2;
 	}
 
 	@Override
-	public void setShooter(@Nullable Entity entityIn) {
-		super.setShooter(entityIn);
+	public void setOwner(@Nullable Entity entityIn) {
+		super.setOwner(entityIn);
 		shooter = entityIn;
 	}
 
@@ -59,7 +61,7 @@ public class RaidArrowEntity extends ArrowEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RaidArrowEntity other = (RaidArrowEntity) obj;
+		RaidArrow other = (RaidArrow) obj;
 		return blockBreakDamage == other.blockBreakDamage && Objects.equals(raidManager, other.raidManager)
 				&& Objects.equals(shooter, other.shooter);
 	}

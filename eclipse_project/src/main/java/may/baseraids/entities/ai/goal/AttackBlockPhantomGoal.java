@@ -19,7 +19,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 	}
 
 	@Override
-	public boolean shouldExecute() {
+	public boolean canUse() {
 		if (!raidManager.isRaidActive()) {
 			return false;
 		}
@@ -42,7 +42,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 	}
 
 	@Override
-	public void startExecuting() {
+	public void start() {
 		entity.attackPhase = Phantom.AttackPhase.CIRCLE;
 	}
 

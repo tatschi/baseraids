@@ -12,6 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * This class defines an abstract AI goal to attack blocks that are in the way towards
@@ -43,17 +46,17 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	}
 	
 	@Override
-	public boolean shouldExecute() {
+	public boolean canUse() {
 		if (!raidManager.isRaidActive()) {
 			return false;
 		}		
 		
-		if (entity.getAttackTarget() != null) {
+		if (entity.getTarget() != null) {
 			return false;
 		}
 		
-		Path path = entity.getNavigator().getPath();
-		if (path != null && !path.isFinished()) {
+		Path path = entity.getNavigation().getPath();
+		if (path != null && !path.isDone()) {
 			return false;
 		}
 		
@@ -68,11 +71,6 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 		}
 		
 		return true;
-	}
-	
-	@Override
-	public boolean shouldContinueExecuting() {
-		return shouldExecute();
 	}
 	
 	@Override
@@ -91,8 +89,8 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * This method is expected to be extended by every implementing class.
 	 */
 	protected void attackTarget() {
-		entity.setAggroed(true);
-		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(target));
+		entity.setAggressive(true);
+		entity.getLookControl().setLookAt(Baseraids.getVector3dFromBlockPos(target));
 	}
 	
 	/**
@@ -104,7 +102,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 
 		boolean wasBroken = raidManager.globalBlockBreakProgressMng.addProgress(target, MELEE_DAMAGE);		
 		if(wasBroken) {
-			entity.getNavigator().clearPath();
+			entity.getNavigation().recomputePath();
 			target = null;
 		}
 	}
@@ -113,8 +111,8 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * Attempts to find a target block and saves the result in the field <code>target</code>.
 	 * Prioritizes the nexus direction, otherwise jitters the look direction of the entity to find a possible target.
 	 */
-	protected void findTarget() {				
-		entity.getLookController().setLookPosition(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
+	protected void findTarget() {
+		entity.getLookControl().setLookAt(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
 		BlockPos focusedBlock = getFocusedBlock();
 		
 		if(isAttackableBlock(focusedBlock)) {
@@ -137,9 +135,10 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * @return the BlockPos of the first block in the look direction
 	 */
 	protected BlockPos getFocusedBlock() {
-		Vector3d posVec = new Vector3d(entity.getLookController().getLookPosX(), entity.getLookController().getLookPosY(), entity.getLookController().getLookPosZ());
-		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
-		return rayTraceResult.getPos();
+		Vector3d posVec = new Vector3d(entity.getLookControl().getWantedX(), entity.getLookControl().getWantedY(), entity.getLookControl().getWantedZ());
+		
+		BlockHitResult rayTraceResult = entity.level.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
+		return rayTraceResult.getBlockPos();
 	}
 	
 	/**
@@ -148,7 +147,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * @return true, if the block is in melee range, otherwise false
 	 */
 	protected boolean isBlockInMeleeRange(BlockPos pos) {
-		return entity.getDistanceSq(Baseraids.getVector3dFromBlockPos(pos)) <= (MELEE_ATTACK_RANGE * MELEE_ATTACK_RANGE);
+		return entity.distanceToSqr(Baseraids.getVector3dFromBlockPos(pos)) <= (MELEE_ATTACK_RANGE * MELEE_ATTACK_RANGE);
 	}
 	
 	/**
@@ -157,7 +156,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * @return true, if the block is attackable, otherwise false
 	 */
 	protected boolean isAttackableBlock(BlockPos pos) {
-		if(entity.world.getBlockState(pos).equals(Blocks.AIR.getDefaultState())){
+		if(entity.level.getBlockState(pos).equals(Blocks.AIR.defaultBlockState())){
 			return false;
 		}
 		
@@ -169,9 +168,9 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	}
 	
 	@Override
-	public void resetTask() {
-		super.resetTask();
-		this.entity.setAggroed(false);
+	public void stop() {
+		super.stop();
+		this.entity.setAggressive(false);
 		target = null;
 	}
 	
@@ -179,8 +178,8 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * Swings the active arm of the entity with a certain probability. 
 	 */
 	private void swingArmAtRandom() {
-		if (this.entity.getRNG().nextInt(20) == 0 && !this.entity.isSwingInProgress) {
-			this.entity.swingArm(this.entity.getActiveHand());
+		if (this.entity.getRandom().nextInt(20) == 0 && !this.entity.swinging) {
+			this.entity.swing(entity.getUsedItemHand());
 		}
 	}
 	
@@ -188,9 +187,9 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * Adds some randomized variation (jitter) to the nexus position and sets this new position as the look position of the entity.
 	 */
 	private void jitterLookPositionAroundNexus() {		
-		Vector3d jitter = new Vector3d(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()).scale(JITTER_FACTOR);
-		Vector3d jitteredLookPos = jitter.add(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
-		entity.getLookController().setLookPosition(jitteredLookPos);
+		Vec3 jitter = new Vec3(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()).scale(JITTER_FACTOR);
+		Vec3 jitteredLookPos = jitter.add(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
+		entity.getLookControl().setLookAt(jitteredLookPos);
 	}
 	
 	/**
@@ -199,7 +198,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 * @return true, if the block is closer, otherwise false
 	 */
 	private boolean isBlockCloserToNexusThanEntityToNexus(BlockPos pos) {
-		return pos.distanceSq(NexusBlock.getBlockPos()) <= entity.getPosition().distanceSq(NexusBlock.getBlockPos());
+		return pos.distSqr(NexusBlock.getBlockPos()) <= entity.position().distanceToSqr(Baseraids.getVector3dFromBlockPos(NexusBlock.getBlockPos()));
 	}
 	
 	/**
@@ -209,8 +208,8 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal{
 	 */
 	private boolean canEntitySeeBlock(BlockPos pos) {
 		Vector3d posVec = Baseraids.getVector3dFromBlockPos(pos);
-		BlockRayTraceResult rayTraceResult = entity.world.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
-		return rayTraceResult.getPos().equals(pos);
+		BlockHitResult rayTraceResult = entity.level.rayTraceBlocks(new RayTraceContext(entity.getEyePosition(1), posVec, BlockMode.COLLIDER, FluidMode.NONE, entity));
+		return rayTraceResult.getBlockPos().equals(pos);
 	}
 
 }

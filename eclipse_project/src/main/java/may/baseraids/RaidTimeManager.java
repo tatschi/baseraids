@@ -13,7 +13,6 @@ import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.SleepStatus;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraft.world.level.Level;
@@ -125,7 +124,7 @@ public class RaidTimeManager {
 	private void restrictSleepBeforeRaid(PlayerSleepInBedEvent event) {
 		if (getTimeUntilRaid().getTicks() < SLEEP_RESTRICTION_TICKS) {			
 			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
-			event.getPlayer().sendStatusMessage(new TextComponent("You cannot sleep before a raid!"), true);
+			event.getPlayer().displayClientMessage(new TextComponent("You cannot sleep before a raid!"), true);
 		}
 	}
 
@@ -138,7 +137,7 @@ public class RaidTimeManager {
 	private void restrictSleepDuringRaid(PlayerSleepInBedEvent event) {
 		if (raidManager.isRaidActive()) {
 			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
-			event.getPlayer().sendStatusMessage(new TextComponent("You cannot sleep during a raid!"), true);
+			event.getPlayer().displayClientMessage(new TextComponent("You cannot sleep during a raid!"), true);
 		}
 	}
 

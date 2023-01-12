@@ -8,12 +8,16 @@ import org.jline.utils.Log;
 import may.baseraids.Baseraids;
 import may.baseraids.RaidManager;
 import may.baseraids.nexus.NexusBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -72,9 +76,9 @@ public class GlobalBlockBreakProgressManager {
 		Baseraids.LOGGER.debug("GlobalBlockBreakProgressManager#breakBlock");
 		resetProgress(pos);
 
-		level.playEvent(1021, pos, 0);
-		level.playEvent(2001, pos, Block.getStateId(level.getBlockState(pos)));
-
+        SoundType soundtype = level.getBlockState(pos).getSoundType(level, pos, null);
+		Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(soundtype.getBreakSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F, pos));        
+		
 		if (NexusBlock.getBlockPos().equals(pos)) {
 			raidManager.loseRaid();
 			return;

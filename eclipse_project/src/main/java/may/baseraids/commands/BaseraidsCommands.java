@@ -3,14 +3,14 @@ package may.baseraids.commands;
 import java.util.function.BiFunction;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.*;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import may.baseraids.MCDuration;
 import may.baseraids.RaidManager;
 import may.baseraids.WorldManager;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -98,25 +98,25 @@ public class BaseraidsCommands {
 	private int giveNexusToPlayer(CommandSourceStack commandSourceStack, ServerPlayer target) {
 		boolean success = NexusBlock.giveNexusToPlayer(target);
 		if (success) {
-			sendFeedback(commandSourceStack, "Added nexus block to inventory");
+			sendSuccess(commandSourceStack, "Added nexus block to inventory");
 		}
 		return success ? 0 : 1;
 	}
 
 	private int winRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().winRaid();
-		sendFeedback(commandSourceStack, "Raid won");
+		sendSuccess(commandSourceStack, "Raid won");
 		return 0;
 	}
 
 	private int loseRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().loseRaid();
-		sendFeedback(commandSourceStack, "Raid lost");
+		sendSuccess(commandSourceStack, "Raid lost");
 		return 0;
 	}
 
 	private int getTimeUntilRaid(CommandSourceStack commandSourceStack) {
-		sendFeedback(commandSourceStack,
+		sendSuccess(commandSourceStack,
 				"Time until raid: " + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
 		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
@@ -141,34 +141,34 @@ public class BaseraidsCommands {
 
 	private int getRaidLevel(CommandSourceStack commandSourceStack) {
 		int level = worldManager.getRaidManager().getRaidLevel();
-		sendFeedback(commandSourceStack, "Raid level: " + level);
+		sendSuccess(commandSourceStack, "Raid level: " + level);
 		return level;
 	}
 
 	private int setRaidLevel(CommandSourceStack commandSourceStack, int level) {
 		worldManager.getRaidManager().setRaidLevel(level);
-		sendFeedback(commandSourceStack, "Raid level: " + level);
+		sendSuccess(commandSourceStack, "Raid level: " + level);
 		return level;
 	}
 
 	private int startRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().startRaid();
-		sendFeedback(commandSourceStack, "Raid started");
+		sendSuccess(commandSourceStack, "Raid started");
 		return 0;
 	}
 
 	private int restoreDestroyedBlocks(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
-		sendFeedback(commandSourceStack, "Restored destroyed blocks");
+		sendSuccess(commandSourceStack, "Restored destroyed blocks");
 		return 0;
 	}
 
 	private void sendTimeUntilRaidFeedback(CommandSourceStack commandSourceStack) {
-		sendFeedback(commandSourceStack,
+		sendSuccess(commandSourceStack,
 				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
 	}
 
-	private void sendFeedback(CommandSourceStack commandSourceStack, String text) {
-		commandSourceStack.sendFeedback(new TextComponent(text), true);
+	private void sendSuccess(CommandSourceStack commandSourceStack, String text) {
+		commandSourceStack.sendSuccess(new TextComponent(text), true);
 	}
 }

@@ -4,10 +4,14 @@ import org.jline.utils.Log;
 
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 
 /**
  * This class manages all information on breaking a block for a given BlockPos
@@ -72,7 +76,9 @@ public class BlockBreakProgressManager {
 		// and requires the correct order of computation
 		breakProgressRelative = breakProgressAbsolute * 10 / damageUntilBlockBreaks;
 		if (prev != breakProgressRelative) {
-			level.playEvent(1019, pos, 0);
+			SoundType soundtype = level.getBlockState(pos).getSoundType(level, pos, null);
+			Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(soundtype.getHitSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 8.0F, soundtype.getPitch() * 0.5F, pos));
+			
 			level.destroyBlockProgress(breakBlockId, pos, -1);
 			level.destroyBlockProgress(breakBlockId, pos, breakProgressRelative);
 		}
@@ -98,9 +104,9 @@ public class BlockBreakProgressManager {
 		if (NexusBlock.getBlockPos().equals(pos)) {
 			return 500;
 		}
-		float hardness = level.getBlockState(pos).get.getBlockHardness(level, pos); float resistance = level.getBlockState(pos).get.get
+		float hardness = level.getBlockState(pos).getBlock().defaultDestroyTime();
 		return ConfigOptions.getMonsterBlockBreakingTimeMultiplier() * (int) Math.round(
-				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50); resistance +1
+				3 * (hardness + 80 * Math.log10(hardness + 1)) - 60 * Math.exp(-Math.pow(hardness - 2.5, 2) / 6) + 50);
 	}
 
 	/**
