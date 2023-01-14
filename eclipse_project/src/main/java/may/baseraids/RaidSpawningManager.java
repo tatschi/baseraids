@@ -160,8 +160,7 @@ public class RaidSpawningManager {
 		int radius = generateRadius();
 		double angle = generateAngle();		
 		BlockPos spawnPos = NexusBlock.getBlockPos().offset(convertRadiusAndAngleToVector(radius, angle));
-		spawnPos = spawnPos.offset(0, findSpawnHeight(entityType, spawnPos), 0);
-		return spawnPos;
+		return new BlockPos(spawnPos.getX(), findSpawnHeight(entityType, spawnPos), spawnPos.getZ());
 	}
 
 	/**
