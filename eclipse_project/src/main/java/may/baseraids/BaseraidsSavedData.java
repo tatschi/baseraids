@@ -6,6 +6,7 @@ import may.baseraids.nexus.NexusBlock;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 
 /**
  * This class is the base of saving and loading data for this mod.
@@ -27,7 +28,7 @@ public class BaseraidsSavedData extends SavedData {
 	 * @param worldManager the {@link WorldManager} that created this instance
 	 */
 	public BaseraidsSavedData(ServerLevel level, WorldManager worldManager) {
-		super(DATA_NAME);
+		super();
 		raidManager = new RaidManager(level, worldManager);
 		this.serverLevel = level;
 	}
@@ -41,10 +42,10 @@ public class BaseraidsSavedData extends SavedData {
 	 * @param nbt the nbt that will be read out. It is assumed to include certain
 	 *            elements.
 	 */
-	@Override
-	public void read(CompoundTag nbt) {
+	public BaseraidsSavedData load(CompoundTag nbt) {
 		NexusBlock.read(nbt.getCompound("nexusBlock"));
 		this.raidManager.read(nbt.getCompound("raidManager"), serverLevel);
+		return this;
 	}
 
 	/**
@@ -55,7 +56,7 @@ public class BaseraidsSavedData extends SavedData {
 	 * @return the adapted {@link CompoundTag} that was written to
 	 */
 	@Override
-	public CompoundTag write(CompoundTag nbt) {
+	public CompoundTag save(CompoundTag nbt) {
 		nbt.put("raidManager", raidManager.write());
 		nbt.put("nexusBlock", NexusBlock.write());
 		return nbt;
@@ -84,8 +85,8 @@ public class BaseraidsSavedData extends SavedData {
 	 */
 	public static BaseraidsSavedData get(WorldManager worldManager, ServerLevel world) {
 		Baseraids.LOGGER.info("collecting baseraidsSavedData");
-		DimensionSavedDataManager manager = world.getSavedData();
-		return manager.getOrCreate(() -> new BaseraidsSavedData(world, worldManager), DATA_NAME);
+		DimensionDataStorage manager = world.getDataStorage();
+		return manager.computeIfAbsent(compoundTag -> new BaseraidsSavedData(world, worldManager).load(compoundTag), () -> new BaseraidsSavedData(world, worldManager), DATA_NAME);
 	}
 
 	@Override

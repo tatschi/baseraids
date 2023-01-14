@@ -68,7 +68,7 @@ public class WorldManager {
 		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
 			return;
 
-		if (event.getWorld() instanceof ServerLevel serverLevel) {
+		if (event.getWorld()instanceof ServerLevel serverLevel) {
 			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 
@@ -86,7 +86,7 @@ public class WorldManager {
 		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
 			return;
 
-		if (event.getWorld() instanceof ServerLevel serverLevel) {
+		if (event.getWorld()instanceof ServerLevel serverLevel) {
 			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 	}
@@ -127,11 +127,11 @@ public class WorldManager {
 		if (!((Level) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
 			return false;
 		}
-		
+
 		if (event.getEntityLiving().getClassification(false) != MobCategory.MONSTER) {
 			return false;
 		}
-		
+
 		BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
 		if (!event.getWorld().getBlockState(pos).equals(Blocks.CAVE_AIR.defaultBlockState())) {
 			return true;
@@ -151,7 +151,7 @@ public class WorldManager {
 	public RaidManager getRaidManager() {
 		return baseraidsData.raidManager;
 	}
-	
+
 	public RaidTimeManager getRaidTimeManager() {
 		return baseraidsData.raidManager.getRaidTimeManager();
 	}
