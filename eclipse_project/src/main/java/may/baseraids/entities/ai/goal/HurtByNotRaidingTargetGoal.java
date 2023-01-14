@@ -24,7 +24,7 @@ public class HurtByNotRaidingTargetGoal extends HurtByTargetGoal {
 			return false;
 		}
 		
-		return !raidManager.isEntityRaiding(this.targetMob);
+		return !raidManager.isEntityRaiding(mob.getLastHurtByMob());
 	}
 
 }
