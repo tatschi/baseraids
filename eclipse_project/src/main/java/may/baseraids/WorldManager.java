@@ -18,6 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
@@ -100,15 +101,12 @@ public class WorldManager {
 	@SubscribeEvent
 	public void onMonsterSpawn(final LivingSpawnEvent.CheckSpawn event) {
 		Level level = (Level) event.getWorld();
-		if (level.isClientSide)
-			return;
-
-		if (!event.isCancelable()) {
-			return;
+		if (level.isClientSide) {
+			return;			
 		}
 
 		if (onMonsterSpawnOutsideCaveShouldCancelSpawn(event)) {
-			event.setCanceled(true);
+			event.setResult(Result.DENY);
 		}
 	}
 
