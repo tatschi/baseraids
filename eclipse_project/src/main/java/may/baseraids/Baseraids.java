@@ -7,12 +7,13 @@ import com.mojang.math.Vector3d;
 
 import may.baseraids.config.ConfigLoader;
 import may.baseraids.nexus.NexusBlock;
-import may.baseraids.nexus.NexusEffectsTileEntity;
+import may.baseraids.nexus.NexusEffectsBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -45,8 +46,8 @@ public class Baseraids {
 	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
 			Baseraids.MODID);
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Baseraids.MODID);
-	public static final DeferredRegister<BlockEntityType<?>> TILE_ENTITIES = DeferredRegister
-			.create(ForgeRegistries.TILE_ENTITIES, Baseraids.MODID);
+	public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister
+			.create(ForgeRegistries.BLOCK_ENTITIES, Baseraids.MODID);
 	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES,
 			Baseraids.MODID);
 	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS,
@@ -55,12 +56,12 @@ public class Baseraids {
 	// BLOCKS & ITEMS
 	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", NexusBlock::new);
 	public static final RegistryObject<BlockItem> NEXUS_ITEM = ITEMS.register("nexus_block",
-			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().group(ItemGroup.COMBAT)));
+			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().tab(CreativeModeTab.TAB_COMBAT)));
 
 	// ENTITIES
-	public static final RegistryObject<BlockEntityType<NexusEffectsTileEntity>> NEXUS_TILE_ENTITY_TYPE = TILE_ENTITIES
-			.register("nexus_effects_tile_entity", () -> TileEntityType.Builder
-					.create(NexusEffectsTileEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
+	public static final RegistryObject<BlockEntityType<NexusEffectsBlockEntity>> NEXUS_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES
+			.register("nexus_effects_tile_entity", () -> BlockEntityType.Builder
+					.of(NexusEffectsBlockEntity::new, Baseraids.NEXUS_BLOCK.get()).build(null));
 
 	// SOUNDS
 	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win",
@@ -100,7 +101,7 @@ public class Baseraids {
 		// register custom registries
 		BLOCKS.register(bus);
 		ITEMS.register(bus);
-		TILE_ENTITIES.register(bus);
+		BLOCK_ENTITIES.register(bus);
 		ENTITIES.register(bus);
 		SOUNDS.register(bus);
 	}

@@ -15,10 +15,11 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
@@ -59,7 +60,7 @@ import net.minecraftforge.items.IItemHandler;
  */
 //@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
+public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 
 	private static final Properties PROPERTIES = BlockBehaviour.Properties.of(Material.STONE).strength(15f, 30f).sound(SoundType.GLASS)
 			.lightLevel(light -> 15);
@@ -100,19 +101,6 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	}
 
 	/**
-	 * Overrides the inherited method to always return true, because this block has
-	 * a <code>TileEntity</code> connected in any state.
-	 * 
-	 * @param state the <code>BlockState</code> that is checked for having a
-	 *              <code>TileEntity</code>
-	 * @return always true
-	 */
-	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
-
-	/**
 	 * Creates a <code>NexusEffectsTileEntity</code> and returns it. This entity
 	 * will be connected to the block.
 	 * 
@@ -121,10 +109,15 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 	 * @returns the created <code>TileEntity</code>
 	 */
 	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return new NexusEffectsTileEntity();
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new NexusEffectsBlockEntity(pos, state);
 	}
 
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType){
+		return level.isClientSide() ? null : createTickerHelper(blockEntityType, Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get(), NexusEffectsBlockEntity::tick);
+	}
+	
 	/**
 	 * Adds a debuff with properties specified in the inner class
 	 * <code>Debuff</code> to all players, if the nexus is not placed. This is done
@@ -198,7 +191,7 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
 		}
-		Baseraids.worldManager.getServerLevel().getTileEntity(getBlockPos()).remove();
+		Baseraids.worldManager.getServerLevel().getBlockEntity(getBlockPos()).setRemoved();
 	}
 
 	/**
@@ -439,12 +432,6 @@ public class NexusBlock extends Block implements IForgeBlock, EntityBlock {
 		nbt.putInt("curBlockPosY", curBlockPos.getY());
 		nbt.putInt("curBlockPosZ", curBlockPos.getZ());
 		return nbt;
-	}
-
-	@Override
-	public BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

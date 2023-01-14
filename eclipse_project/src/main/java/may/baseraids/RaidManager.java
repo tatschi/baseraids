@@ -8,7 +8,7 @@ import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffects;
-import may.baseraids.nexus.NexusEffectsTileEntity;
+import may.baseraids.nexus.NexusEffectsBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -178,10 +178,8 @@ public class RaidManager {
 		spawnAndFillRewardChest();
 
 		// make sure to add these effects before increasing the raid level
-		NexusEffectsTileEntity nexusEntity = (NexusEffectsTileEntity) worldManager.getServerLevel()
-				.getBlockEntity(NexusBlock.getBlockPos());
-		nexusEntity.addEffectsToPlayers(NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
-		nexusEntity.setLastWonRaidLevel(getRaidLevel());
+		NexusEffectsBlockEntity.addEffectsToPlayers(level, NexusBlock.getBlockPos(), NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
+		NexusEffectsBlockEntity.setLastWonRaidLevel(getRaidLevel());
 
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
