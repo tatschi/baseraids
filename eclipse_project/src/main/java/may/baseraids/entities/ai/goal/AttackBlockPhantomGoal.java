@@ -6,7 +6,11 @@ import com.mojang.math.Vector3d;
 
 import may.baseraids.RaidManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 
@@ -24,7 +28,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 			return false;
 		}
 
-		if (entity.getAttackTarget() != null) {
+		if (entity.getTarget() != null) {
 			return false;
 		}
 
@@ -52,7 +56,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 		}
 		if(entity.attackPhase == Phantom.AttackPhase.SWOOP) {
 			sweepAttack();
-		}		
+		}
 	}
 	
 	private void pickAttack() {
@@ -62,16 +66,16 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 				entity.attackPhase = Phantom.AttackPhase.SWOOP;
 				this.setOrbitPositionForSwoopPhase();
 				this.tickDelay = 80 + rand.nextInt(1200);
-				entity.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, 10.0F, 0.95F + rand.nextFloat() * 0.1F);
+				entity.playSound(SoundEvents.PHANTOM_SWOOP, 10.0F, 0.95F + rand.nextFloat() * 0.1F);
 			}
 		}
 	}
 	
 	private void sweepAttack() {		
-        entity.orbitOffset = new Vector3d(target.getX(), target.getY(), target.getZ());
-        AxisAlignedBB originalBB = entity.getBoundingBox();
-        entity.setBoundingBox(originalBB.grow(0.2F));
-        if (entity.collidedHorizontally && isBlockInMeleeRange(target)) {
+        entity.moveTargetPoint = new Vec3(target.getX(), target.getY(), target.getZ());
+        AABB originalBB = entity.getBoundingBox();
+        entity.setBoundingBox(originalBB.inflate(0.2F));
+        if (entity.horizontalCollision && touchingTarget()) {
            
            boolean wasBroken = raidManager.globalBlockBreakProgressMng.addProgress(target, PHANTOM_DAMAGE);		
 			if(wasBroken) {
@@ -79,7 +83,7 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 			}				
 			entity.attackPhase = Phantom.AttackPhase.CIRCLE;
            if (!entity.isSilent()) {
-        	   entity.world.playEvent(1039, entity.getPosition(), 0);
+        	   entity.level.levelEvent(1039, entity.blockPosition(), 0);
            }
            resetAttack();
            return;           
@@ -90,9 +94,9 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
         }
 	}
 	
+  
+	
 	private void resetAttack() {
-		entity.orbitPosition = entity.getHomePosition();
-		entity.orbitOffset = Vector3d.ZERO;
 	}
 	
 	@Override
@@ -102,12 +106,17 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
 
 	// copied from PickAttackGoal#func_203143_f
 	private void setOrbitPositionForSwoopPhase() {
-		entity.orbitPosition = target.up(20 + rand.nextInt(20));
-		if (entity.orbitPosition.getY() < entity.world.getSeaLevel()) {
-			entity.orbitPosition = new BlockPos(entity.orbitPosition.getX(), entity.world.getSeaLevel() + 1,
-					entity.orbitPosition.getZ());
+		entity.anchorPoint = target.above(20 + rand.nextInt(20));
+		if (entity.anchorPoint.getY() < entity.level.getSeaLevel()) {
+			entity.anchorPoint = new BlockPos(entity.anchorPoint.getX(), entity.level.getSeaLevel() + 1,
+					entity.anchorPoint.getZ());
 		}
 
 	}
+	
+	protected boolean touchingTarget() {
+        return entity.moveTargetPoint.distanceToSqr(entity.getX(), entity.getY(), entity.getZ()) < 4.0D;
+     }
 
 }
+

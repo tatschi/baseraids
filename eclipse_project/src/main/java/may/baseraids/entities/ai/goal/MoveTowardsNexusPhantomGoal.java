@@ -55,8 +55,8 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	 */
 	private boolean isOrbitPositionCloseEnoughToNexus() {
 		BlockPos nexusPos = NexusBlock.getBlockPos();
-		Vec3i orbitPosAtNexusHeight = new Vec3i(entity.orbitPosition.getX(), nexusPos.getY(),
-				entity.orbitPosition.getZ());
+		Vec3i orbitPosAtNexusHeight = new Vec3i(entity.anchorPoint.getX(), nexusPos.getY(),
+				entity.anchorPoint.getZ());
 		Vec3i nexusPosVec = new Vec3i(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ());
 		return orbitPosAtNexusHeight.distSqr(nexusPosVec) < distanceReached;
 	}
@@ -66,10 +66,10 @@ public class MoveTowardsNexusPhantomGoal extends MoveTowardsNexusGoal<Phantom> {
 	 * above the nexus.
 	 */
 	private void setOrbitPositionAtNexus() {
-		entity.orbitPosition = NexusBlock.getBlockPos().up(20 + entity.getRandom().nextInt(20));
-		if (entity.orbitPosition.getY() < entity.level.getSeaLevel()) {
-			entity.orbitPosition = new BlockPos(entity.orbitPosition.getX(), entity.level.getSeaLevel() + 1,
-					entity.orbitPosition.getZ());
+		entity.anchorPoint = NexusBlock.getBlockPos().above(20 + entity.getRandom().nextInt(20));
+		if (entity.anchorPoint.getY() < entity.level.getSeaLevel()) {
+			entity.anchorPoint = new BlockPos(entity.anchorPoint.getX(), entity.level.getSeaLevel() + 1,
+					entity.anchorPoint.getZ());
 		}
 	}
 }
