@@ -4,27 +4,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.Objects;
 
 import may.baseraids.entities.RaidEntitySpawnCountRegistry;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacements.Type;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
@@ -51,9 +52,11 @@ public class RaidSpawningManager {
 	private List<UUID> spawnedMobsUUIDs = new ArrayList<>();
 
 	// spawning parameters
-	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / 100;
+	private static final int SPAWN_ANGLE_STEPS = 100;
+	private static final double SPAWN_ANGLE_INTERVAL = 2 * Math.PI / SPAWN_ANGLE_STEPS;
 	private static final int SPAWN_RADIUS_MIN = 40;
 	private static final int SPAWN_RADIUS_MAX = 60;
+	private static final int MAX_SPAWN_TRIES = 5;
 
 	private Random rand = new Random();
 
@@ -72,7 +75,7 @@ public class RaidSpawningManager {
 	 */
 	void spawnRaidMobs() {
 		int raidLevel = raidManager.getRaidLevel();
-		Set<EntityType<?>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
+		Set<EntityType<? extends Mob>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
 
 		int playerCount = level.players().size();
 
@@ -83,7 +86,7 @@ public class RaidSpawningManager {
 
 			// remove nulls and convert to collection
 			Collection<Mob> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
-					.filter(Objects::nonNull).collect(Collectors.toList());
+					.filter(Objects::nonNull).toList();
 
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
 		});
@@ -95,25 +98,23 @@ public class RaidSpawningManager {
 	/**
 	 * Spawns the given number of mobs of the given entity type.
 	 * 
-	 * @param <T>        extends {@link Entity} the entity class corresponding to
+	 * @param <T>        extends {@link Mob} the entity class corresponding to
 	 *                   the {@code entityType}
 	 * @param entityType
 	 * @param numMobs    the amount of mobs to spawn of this type
 	 * @return an array of {@link Mob} containing the spawned entities
 	 */
-	private <T extends Entity> Mob[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
-
+	private <T extends Mob> Mob[] spawnSpecificEntities(EntityType<T> entityType, int numMobs) {
 		SpawnGroupData spawnGroupData = null;
 		Mob[] mobs = new Mob[numMobs];
 		for (int i = 0; i < numMobs; i++) {
-
 			BlockPos spawnPos = findSpawnPos(entityType);
 
 			if (entityType.equals(EntityType.PHANTOM)) {
 				mobs[i] = EntityType.PHANTOM.create(level);
 				mobs[i].moveTo(spawnPos, 0.0F, 0.0F);
 				spawnGroupData = mobs[i].finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.NATURAL, spawnGroupData, (CompoundTag) null);
-				((ServerLevelAccessor) level).func_242417_l(mobs[i]);
+				level.addFreshEntity(mobs[i]);
 			} else {
 				mobs[i] = (Mob) entityType.spawn((ServerLevel) level, null, null, spawnPos,
 						MobSpawnType.MOB_SUMMONED, false, false);
@@ -133,37 +134,83 @@ public class RaidSpawningManager {
 	 * @param entityType
 	 * @return compatible spawn position
 	 */
-	private <T extends Entity> BlockPos findSpawnPos(EntityType<T> entityType) {
-
-		// select random radius between SPAWN_RADIUS_MIN and SPAWN_RADIUS_MAX
-		int radius = rand.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
-
-		// select random angle
-		int randomAngleIndex = rand.nextInt(100);
-		double angle = randomAngleIndex * SPAWN_ANGLE_INTERVAL;
-
-		// compute coordinates x and z for the radius and angle
-		int x = (int) (radius * Math.cos(angle));
-		int z = (int) (radius * Math.sin(angle));
-		BlockPos centerSpawnPos = NexusBlock.getBlockPos().offset(0, 1, 0);
-		BlockPos spawnPosXZ = centerSpawnPos.offset(x, 0, z);
-
-		// find the right height at which this entity type can be spawned
+	private <T extends Mob> BlockPos findSpawnPos(EntityType<T> entityType) {
+		int tries = 0;
 		BlockPos spawnPos;
-		if(T instanceof Monster monsterType) {
-			Monster.checkMonsterSpawnRules(monsterType);		
-		}
-		if (EntitySpawnPlacementRegistry.getPlacementType(entityType)
-				.equals((EntitySpawnPlacementRegistry.PlacementType.NO_RESTRICTIONS))) {
-			spawnPos = spawnPosXZ.offset(0, level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z), 0);
-		} else {
-			spawnPos = spawnPosXZ.offset(0, level.getHeight(EntitySpawnPlacementRegistry.func_209342_b(entityType), x, z), 0);
-		}
+		do {
+			spawnPos = generateRandomSpawnPos(entityType);
+			tries++;
+			if(tries >= MAX_SPAWN_TRIES) {
+				break;
+			}
+		}while(!Mob.checkMobSpawnRules(entityType, level, MobSpawnType.MOB_SUMMONED, spawnPos, rand));
 
-		Baseraids.LOGGER.debug("Spawn %s at radius %i and angle %d", entityType.getRegistryName().toDebugFileName(), radius, angle);
+		Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+		return spawnPos;
+	}
+	
+	/**
+	 * Generates an unchecked spawn position for the given entity type. The
+	 * position is selected randomly on a circle around the nexus block.
+	 * 
+	 * @param entityType
+	 * @return spawn position
+	 */
+	private <T extends Mob> BlockPos generateRandomSpawnPos(EntityType<T> entityType) {
+		int radius = generateRadius();
+		double angle = generateAngle();		
+		BlockPos spawnPos = NexusBlock.getBlockPos().offset(convertRadiusAndAngleToVector(radius, angle));
+		spawnPos = spawnPos.offset(0, findSpawnHeight(entityType, spawnPos), 0);
 		return spawnPos;
 	}
 
+	/**
+	 * Selects a random radius between {@link #SPAWN_RADIUS_MIN} and {@link #SPAWN_RADIUS_MAX}. 
+	 * @return the radius
+	 */
+	private int generateRadius() {
+		return rand.nextInt(SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN) + SPAWN_RADIUS_MIN;
+	}
+	
+	/**
+	 * Converts the radius and angle to an offset vector for a {@link BlockPos}. 
+	 * @param radius
+	 * @param angle
+	 * @return a {@link Vec3i} that offsets a {@link BlockPos} by the given radius and angle
+	 */
+	private Vec3i convertRadiusAndAngleToVector(int radius, double angle) {
+		int x = (int) (radius * Math.cos(angle));
+		int z = (int) (radius * Math.sin(angle));
+		return new Vec3i(x, 0, z);
+	}
+	
+	/**
+	 * Selects a random angle from {@link #SPAWN_ANGLE_STEPS} number of uniformly distributed angles.
+	 * @return the angle
+	 */
+	private double generateAngle() {
+		int randomAngleIndex = rand.nextInt(SPAWN_ANGLE_STEPS);
+		return randomAngleIndex * SPAWN_ANGLE_INTERVAL;
+	}
+	
+	/**
+	 * Finds the right height at which this entity type can be spawned at this xz-position.
+	 * @param <T>	extends {@link Mob} the entity class corresponding to
+	 *                   the {@code entityType}
+	 * @param entityType
+	 * @param spawnPos
+	 * @return the y-coordinate corresponding to the height
+	 */
+	private <T extends Mob> int findSpawnHeight(EntityType<T> entityType, BlockPos spawnPos) {
+		Type heightmapType = SpawnPlacements.getPlacementType(entityType);
+		if (heightmapType.equals(Type.ON_GROUND)) {
+			return level.getHeight(Heightmap.Types.WORLD_SURFACE, spawnPos.getX(), spawnPos.getZ());
+		}
+		else {			
+			return 20 + rand.nextInt(15);
+		}
+	}
+	
 	/**
 	 * @return {@code true} if and only if all mobs that were spawned by this object
 	 *         are dead.
@@ -186,7 +233,7 @@ public class RaidSpawningManager {
 	 * Kills all mobs that were spawned by this object.
 	 */
 	void killAllMobs() {
-		spawnedMobs.forEach(Entity::remove);
+		spawnedMobs.forEach(mob -> mob.remove(RemovalReason.KILLED));
 		spawnedMobs.clear();
 		raidManager.markDirty();
 	}
