@@ -8,6 +8,8 @@ import com.mojang.math.Vector3d;
 import may.baseraids.config.ConfigLoader;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffectsBlockEntity;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -16,13 +18,18 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fmllegacy.RegistryObject;
@@ -54,7 +61,9 @@ public class Baseraids {
 			Baseraids.MODID);
 
 	// BLOCKS & ITEMS
-	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block", NexusBlock::new);
+	public static final RegistryObject<Block> NEXUS_BLOCK = BLOCKS.register("nexus_block",
+			() -> new NexusBlock(BlockBehaviour.Properties.of(Material.STONE).strength(15f, 30f).sound(SoundType.GLASS)
+					.lightLevel(light -> 15)));
 	public static final RegistryObject<BlockItem> NEXUS_ITEM = ITEMS.register("nexus_block",
 			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().tab(CreativeModeTab.TAB_COMBAT)));
 

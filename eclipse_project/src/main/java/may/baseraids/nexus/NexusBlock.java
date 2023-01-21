@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Sets;
 
 import may.baseraids.Baseraids;
@@ -15,15 +17,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -60,12 +59,8 @@ import net.minecraftforge.items.IItemHandler;
  */
 //@Mod.EventBusSubscriber annotation automatically registers STATIC event handlers
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
+public class NexusBlock extends Block implements EntityBlock {
 
-	private static final Properties PROPERTIES = BlockBehaviour.Properties.of(Material.STONE).strength(15f, 30f).sound(SoundType.GLASS)
-			.lightLevel(light -> 15);
-	//.harvestTool(ToolType.PICKAXE)
-	
 	private static Random rand = new Random();
 
 	public enum NexusState {
@@ -96,17 +91,17 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 	 */
 	private static BlockPos curBlockPos = new BlockPos(0, 0, 0);
 
-	public NexusBlock() {
-		super(PROPERTIES);
+	public NexusBlock(Properties properties) {
+		super(properties);
 	}
 
 	/**
-	 * Creates a <code>NexusEffectsTileEntity</code> and returns it. This entity
+	 * Creates a {@link NexusEffectsBlockEntity} and returns it. This entity
 	 * will be connected to the block.
 	 * 
-	 * @param state the <code>BlockState</code> for which the entity is created
+	 * @param state the {@link BlockState} for which the entity is created
 	 * @param world the world in which the block is
-	 * @returns the created <code>TileEntity</code>
+	 * @returns the created {@link BlockEntity}
 	 */
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -114,16 +109,25 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 	}
 
 	@Override
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType){
-		return level.isClientSide() ? null : createTickerHelper(blockEntityType, Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get(), NexusEffectsBlockEntity::tick);
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState,
+			BlockEntityType<T> blockEntityType) {
+		return level.isClientSide() ? null
+				: createTickerHelper(blockEntityType, Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get(),
+						NexusEffectsBlockEntity::tick);
 	}
-	
+
+	@Nullable
+	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
+			BlockEntityType<A> p_152133_, BlockEntityType<E> p_152134_, BlockEntityTicker<? super E> p_152135_) {
+		return p_152134_ == p_152133_ ? (BlockEntityTicker<A>) p_152135_ : null;
+	}
+
 	/**
 	 * Adds a debuff with properties specified in the inner class
-	 * <code>Debuff</code> to all players, if the nexus is not placed. This is done
+	 * {@link NexusEffects#DEBUFF} to all players, if the nexus is not placed. This is done
 	 * in all dimensions.
 	 * 
-	 * @param event the event of type <code>TickEvent.WorldTickEvent</code> that
+	 * @param event the event of type {@link TickEvent.WorldTickEvent} that
 	 *              triggers this method
 	 */
 	@SubscribeEvent
@@ -190,6 +194,7 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
+			return;
 		}
 		Baseraids.worldManager.getServerLevel().getBlockEntity(getBlockPos()).setRemoved();
 	}
@@ -294,9 +299,9 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 		// Otherwise, this allows the log out with the nexus.
 		List<? extends Player> playerList = level.players();
 		playerList.remove(playerLogOut);
-		if (!playerList.isEmpty() && giveNexusToRandomPlayerFromList(playerList)) {			
+		if (!playerList.isEmpty() && giveNexusToRandomPlayerFromList(playerList)) {
 			Baseraids.LOGGER.info("PlayerLoggedOutEvent Nexus given to other player");
-			removeNexusFromPlayer(playerLogOut);			
+			removeNexusFromPlayer(playerLogOut);
 		}
 	}
 
@@ -355,7 +360,7 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 	 * @return a flag whether the method was successful
 	 */
 	private static boolean giveNexusToRandomPlayerFromList(List<? extends Player> playerList) {
-		
+
 		do {
 			int randIndex = rand.nextInt(playerList.size());
 			Player selectedPlayer = playerList.get(randIndex);
@@ -375,14 +380,15 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 	 * @return a flag whether the method was successful
 	 */
 	private static boolean removeNexusFromPlayer(Player player) {
-		LazyOptional<IItemHandler> capabilityLazyOpt = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+		LazyOptional<IItemHandler> capabilityLazyOpt = player
+				.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 		Optional<Boolean> successful = capabilityLazyOpt.map(NexusBlock::removeNexusFromItemHandler);
 		return successful.orElse(false);
 	}
-	
+
 	/**
-	 * Removes all nexus items from the given {@link IItemHandler} and returns a flag
-	 * whether it was successful.
+	 * Removes all nexus items from the given {@link IItemHandler} and returns a
+	 * flag whether it was successful.
 	 * 
 	 * @param itemHandler the {@link IItemHandler} to remove the items from
 	 * @return a flag whether the method was successful
@@ -407,9 +413,9 @@ public class NexusBlock extends BaseEntityBlock implements IForgeBlock {
 	}
 
 	/**
-	 * Reads the data stored in the given {@link CompoundTag}. This function
-	 * assumes that the nbt was previously written by this class or to be precise,
-	 * that the nbt includes certain elements.
+	 * Reads the data stored in the given {@link CompoundTag}. This function assumes
+	 * that the nbt was previously written by this class or to be precise, that the
+	 * nbt includes certain elements.
 	 * 
 	 * @param nbt the nbt that will be read out. It is assumed to include certain
 	 *            elements.

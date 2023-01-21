@@ -145,7 +145,9 @@ public class RaidSpawningManager {
 			}
 		}while(!Mob.checkMobSpawnRules(entityType, level, MobSpawnType.MOB_SUMMONED, spawnPos, rand));
 
-		Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+		if (Baseraids.LOGGER.isDebugEnabled()) {
+			Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+		}
 		return spawnPos;
 	}
 	
@@ -301,7 +303,7 @@ public class RaidSpawningManager {
 	 */
 	@SubscribeEvent
 	public void onEntityJoinWorld(final EntityJoinWorldEvent event) {
-		if (event.getWorld().isClientSide) {
+		if (event.getWorld().isClientSide()) {
 			return;
 		}
 		if (!event.getWorld().equals(level)) {
