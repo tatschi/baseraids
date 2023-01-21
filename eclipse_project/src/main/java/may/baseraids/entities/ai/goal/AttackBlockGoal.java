@@ -214,18 +214,24 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal {
 
 	/**
 	 * Checks if a given block can be seen from the entities eye position.
-	 * entity.getSensing().hasLineOfSight(pos);
+	 * @see LivingEntity#hasLineOfSight()
 	 * 
 	 * @param pos	the position of the block that is checked to be visible
 	 * @return true, if the block can be seen, otherwise false
 	 */
 	public boolean hasLineOfSight(BlockPos pos) {
+		entity.getSensing().hasLineOfSight(entity);
 		Vec3 posVec = Baseraids.getVector3dFromBlockPos(pos);
+		Vec3 vec3 = new Vec3(entity.getX(), entity.getEyeY(), entity.getZ());
 		if (posVec.distanceTo(entity.getEyePosition()) > 128.0D) {
 			return false;
 		} else {
-			return entity.level.clip(new ClipContext(entity.getEyePosition(), posVec, ClipContext.Block.COLLIDER,
-					ClipContext.Fluid.NONE, entity)).getType() == HitResult.Type.MISS;
+			BlockHitResult rayTraceResult = entity.level.clip(new ClipContext(vec3, posVec, ClipContext.Block.COLLIDER,
+					ClipContext.Fluid.NONE, entity));
+			if(rayTraceResult.getType() == HitResult.Type.MISS) {
+				return true;
+			}			
+			return rayTraceResult.getType() == HitResult.Type.BLOCK && rayTraceResult.getBlockPos().equals(pos);
 		}
 
 	}
