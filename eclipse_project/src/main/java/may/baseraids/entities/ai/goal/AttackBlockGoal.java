@@ -84,7 +84,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal {
 	}
 
 	/**
-	 * Attacks the block specified by the field <code>target</code>. This method is
+	 * Attacks the block specified by the field {@link #target}. This method is
 	 * expected to be extended by every implementing class.
 	 */
 	protected void attackTarget() {
@@ -110,7 +110,7 @@ public abstract class AttackBlockGoal<T extends Mob> extends Goal {
 
 	/**
 	 * Attempts to find a target block and saves the result in the field
-	 * <code>target</code>. Prioritizes the nexus direction, otherwise jitters the
+	 * {@link #target}. Prioritizes the nexus direction, otherwise jitters the
 	 * look direction of the entity to find a possible target.
 	 */
 	protected void findTarget() {

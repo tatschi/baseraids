@@ -2,12 +2,9 @@ package may.baseraids.entities.ai.goal;
 
 import java.util.Random;
 
-import com.mojang.math.Vector3d;
-
 import may.baseraids.RaidManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -85,7 +82,6 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
            if (!entity.isSilent()) {
         	   entity.level.levelEvent(1039, entity.blockPosition(), 0);
            }
-           resetAttack();
            return;           
         }
         entity.setBoundingBox(originalBB);
@@ -94,10 +90,6 @@ public class AttackBlockPhantomGoal extends AttackBlockGoal<Phantom> {
         }
 	}
 	
-  
-	
-	private void resetAttack() {
-	}
 	
 	@Override
 	protected void attackTarget() {

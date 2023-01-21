@@ -96,8 +96,8 @@ public class NexusBlock extends Block implements EntityBlock {
 	}
 
 	/**
-	 * Creates a {@link NexusEffectsBlockEntity} and returns it. This entity
-	 * will be connected to the block.
+	 * Creates a {@link NexusEffectsBlockEntity} and returns it. This entity will be
+	 * connected to the block.
 	 * 
 	 * @param state the {@link BlockState} for which the entity is created
 	 * @param world the world in which the block is
@@ -111,24 +111,35 @@ public class NexusBlock extends Block implements EntityBlock {
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState,
 			BlockEntityType<T> blockEntityType) {
-		return level.isClientSide() ? null
-				: createTickerHelper(blockEntityType, Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get(),
-						NexusEffectsBlockEntity::tick);
+		return level.isClientSide() ? null : createTickerHelper(blockEntityType);
 	}
 
+	/**
+	 * Copied and adapted from {@link BaseEntityBlock#createTickerHelper} due to
+	 * buggy behavior cause by the {@link BaseEntityBlock} class. Returns the ticker
+	 * method for a {@link BlockEntity} of the {@link BlockEntityType} that belongs
+	 * to this class.
+	 * 
+	 * @param <A>
+	 * @param entityTypeOfIncomingEntity
+	 * @return the ticker method for a {@link BlockEntity} of the
+	 *         {@link BlockEntityType} that belongs to this class
+	 */
 	@Nullable
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-			BlockEntityType<A> p_152133_, BlockEntityType<E> p_152134_, BlockEntityTicker<? super E> p_152135_) {
-		return p_152134_ == p_152133_ ? (BlockEntityTicker<A>) p_152135_ : null;
+	protected static <A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
+			BlockEntityType<A> entityTypeOfIncomingEntity) {
+		return Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get() == entityTypeOfIncomingEntity
+				? (BlockEntityTicker<A>) NexusEffectsBlockEntity::tick
+				: null;
 	}
 
 	/**
 	 * Adds a debuff with properties specified in the inner class
-	 * {@link NexusEffects#DEBUFF} to all players, if the nexus is not placed. This is done
-	 * in all dimensions.
+	 * {@link NexusEffects#DEBUFF} to all players, if the nexus is not placed. This
+	 * is done in all dimensions.
 	 * 
-	 * @param event the event of type {@link TickEvent.WorldTickEvent} that
-	 *              triggers this method
+	 * @param event the event of type {@link TickEvent.WorldTickEvent} that triggers
+	 *              this method
 	 */
 	@SubscribeEvent
 	public static void onWorldTickAddDebuff(final TickEvent.WorldTickEvent event) {
@@ -153,10 +164,10 @@ public class NexusBlock extends Block implements EntityBlock {
 	}
 
 	/**
-	 * Sets the state to <code>State.BLOCK</code> and the new position of the nexus,
+	 * Sets the state to {@link NexusState#BLOCK} and the new position of the nexus,
 	 * when a nexus block is placed.
 	 * 
-	 * @param event the event of type <code>BlockEvent.EntityPlaceEvent</code> that
+	 * @param event the event of type {@link BlockEvent.EntityPlaceEvent} that
 	 *              triggers this method
 	 */
 	@SubscribeEvent
@@ -174,8 +185,8 @@ public class NexusBlock extends Block implements EntityBlock {
 	 * a nexus block is broken. If it is not successful or the event happens during
 	 * a raid, the breaking event is cancelled.
 	 * 
-	 * @param event the event of type <code>BlockEvent.BreakEvent</code> that
-	 *              triggers this method
+	 * @param event the event of type {@link BlockEvent.BreakEvent} that triggers
+	 *              this method
 	 */
 	@SubscribeEvent
 	public static void onNexusBreakGiveNexusOrCancelEvent(final BlockEvent.BreakEvent event) {
@@ -203,7 +214,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	 * When a nexus item is tossed out of an inventory, cancels the tossing event
 	 * and gives the nexus back to the player that tossed it.
 	 * 
-	 * @param event the event of type <code>ItemTossEvent</code> that triggers this
+	 * @param event the event of type {@link ItemTossEvent} that triggers this
 	 *              method
 	 */
 	@SubscribeEvent
@@ -228,11 +239,11 @@ public class NexusBlock extends Block implements EntityBlock {
 	}
 
 	/**
-	 * Sets the state of <code>NexusBlock</code> to <code>State.ITEM</code> when a
-	 * nexus is picked up.
+	 * Sets the state of {@link NexusBlock} to {@link NexusState#ITEM} when a nexus
+	 * is picked up.
 	 * 
-	 * @param event the event of type <code>EntityItemPickupEvent</code> that
-	 *              triggers this method
+	 * @param event the event of type {@link EntityItemPickupEvent} that triggers
+	 *              this method
 	 */
 	@SubscribeEvent
 	public static void onNexusPickedUpSetStateToITEM(final EntityItemPickupEvent event) {
@@ -251,11 +262,11 @@ public class NexusBlock extends Block implements EntityBlock {
 
 	/**
 	 * Gives a nexus to the player when a player logs in and the state of the
-	 * <code>NexusBlock</code> is <code>State.UNINITIALIZED</code>. This should only
+	 * {@link NexusBlock} is {@link NexusState#UNINITIALIZED}. This should only
 	 * occur in a world where the mod was not active yet.
 	 * 
-	 * @param event the event of type <code>PlayerEvent.PlayerLoggedInEvent</code>
-	 *              that triggers this method
+	 * @param event the event of type {@link PlayerEvent.PlayerLoggedInEvent} that
+	 *              triggers this method
 	 */
 	@SubscribeEvent
 	public static void onPlayerLogInAndStateUNINITIALZEDGiveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
@@ -278,8 +289,8 @@ public class NexusBlock extends Block implements EntityBlock {
 	 * the transfer was not successful, this method allows the log out with the
 	 * nexus.
 	 * 
-	 * @param event the event of type <code>PlayerEvent.PlayerLoggedOutEvent</code>
-	 *              that triggers this method
+	 * @param event the event of type {@link PlayerEvent.PlayerLoggedOutEvent} that
+	 *              triggers this method
 	 */
 	@SubscribeEvent
 	public static void onPlayerLogOutWithNexusTransferNexusToOtherPlayerOrIgnore(
