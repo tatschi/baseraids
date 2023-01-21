@@ -11,13 +11,13 @@ public class RaidEntitySpawnCountRegistry {
 
 	private static Map<EntityType<? extends Mob>, int[]> entitySpawnCountRegistry = new HashMap<>();
 	
-	private static final int[] SPAWN_COUNT_ZOMBIES = 			{8, 8, 7, 5, 5, 5, 8, 8, 10, 10};
-	private static final int[] SPAWN_COUNT_SKELETONS = 			{0, 2, 2, 4, 5, 5, 8, 8, 10, 10};
-	private static final int[] SPAWN_COUNT_SPIDERS = 			{0, 0, 2, 5, 5, 5, 5, 8, 8, 10};
+	private static final int[] SPAWN_COUNT_ZOMBIES = 			{8, 8, 7, 5, 5, 5, 5, 5, 3, 3};
+	private static final int[] SPAWN_COUNT_SKELETONS = 			{0, 2, 2, 4, 5, 5, 8, 5, 5, 5};
+	private static final int[] SPAWN_COUNT_SPIDERS = 			{0, 0, 2, 5, 5, 5, 5, 8, 5, 5};
 	private static final int[] SPAWN_COUNT_PHANTOMS = 			{0, 0, 0, 0, 0, 1, 1, 3, 3, 5};
-	private static final int[] SPAWN_COUNT_ZOMBIFIED_PIGLINS = 	{0, 0, 0, 0, 2, 3, 5, 8, 10};
-	private static final int[] SPAWN_COUNT_WITHER_SKELETONS = 	{0, 0, 0, 0, 0, 0, 0, 0, 1};
-	private static final int[] SPAWN_COUNT_CAVE_SPIDERS = 		{0, 0, 0, 0, 0, 0, 1, 2, 3};
+	private static final int[] SPAWN_COUNT_ZOMBIFIED_PIGLINS = 	{0, 0, 0, 0, 2, 3, 5, 8, 8, 8};
+	private static final int[] SPAWN_COUNT_WITHER_SKELETONS = 	{0, 0, 0, 0, 0, 0, 0, 1, 2, 3};
+	private static final int[] SPAWN_COUNT_CAVE_SPIDERS = 		{0, 0, 0, 0, 0, 0, 1, 1, 2, 3};
 	
 	private RaidEntitySpawnCountRegistry() {
 		throw new IllegalStateException("Utility class");
