@@ -205,9 +205,8 @@ public class NexusBlock extends Block implements EntityBlock {
 		}
 		if (!giveNexusToPlayer(event.getPlayer())) {
 			event.setCanceled(true);
-			return;
-		}
-		Baseraids.worldManager.getServerLevel().getBlockEntity(getBlockPos()).setRemoved();
+			Baseraids.LOGGER.warn("Couldn't add nexus to player inventory");
+		}		
 	}
 
 	/**
