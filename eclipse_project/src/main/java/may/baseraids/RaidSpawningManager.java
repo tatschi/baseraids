@@ -114,7 +114,7 @@ public class RaidSpawningManager {
 				mobs[i] = EntityType.PHANTOM.create(level);
 				mobs[i].moveTo(spawnPos, 0.0F, 0.0F);
 				spawnGroupData = mobs[i].finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.NATURAL, spawnGroupData, (CompoundTag) null);
-				level.addFreshEntity(mobs[i]);
+				((ServerLevelAccessor) level).addFreshEntityWithPassengers(mobs[i]);
 			} else {
 				mobs[i] = (Mob) entityType.spawn((ServerLevel) level, null, null, spawnPos,
 						MobSpawnType.MOB_SUMMONED, false, false);
@@ -204,12 +204,11 @@ public class RaidSpawningManager {
 	 */
 	private <T extends Mob> int findSpawnHeight(EntityType<T> entityType, BlockPos spawnPos) {
 		Type heightmapType = SpawnPlacements.getPlacementType(entityType);
-		if (heightmapType.equals(Type.ON_GROUND)) {
-			return level.getHeight(Heightmap.Types.WORLD_SURFACE, spawnPos.getX(), spawnPos.getZ());
+		int surfaceHeight = level.getHeight(Heightmap.Types.WORLD_SURFACE, spawnPos.getX(), spawnPos.getZ());
+		if (!heightmapType.equals(Type.ON_GROUND)) {
+			return surfaceHeight + 20 + rand.nextInt(15);
 		}
-		else {			
-			return 20 + rand.nextInt(15);
-		}
+		return surfaceHeight;
 	}
 	
 	/**
