@@ -76,11 +76,8 @@ out
 
 # gradle
 build
-*.gradle
+.gradle
 gradle
-*.bat
-gradle.properties
-gradlew
 
 # other
 eclipse
