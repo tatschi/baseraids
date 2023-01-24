@@ -121,6 +121,9 @@ public class RaidSpawningManager {
 			}
 
 			if (mobs[i] != null) {
+				if (Baseraids.LOGGER.isDebugEnabled()) {
+					Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+				}
 				worldManager.entityManager.setupGoals(mobs[i]);
 			}
 		}
@@ -143,11 +146,7 @@ public class RaidSpawningManager {
 			if(tries >= MAX_SPAWN_TRIES) {
 				break;
 			}
-		}while(!Mob.checkMobSpawnRules(entityType, level, MobSpawnType.MOB_SUMMONED, spawnPos, rand));
-
-		if (Baseraids.LOGGER.isDebugEnabled()) {
-			Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-		}
+		}while(!Mob.checkMobSpawnRules(entityType, level, MobSpawnType.MOB_SUMMONED, spawnPos, rand));		
 		return spawnPos;
 	}
 	

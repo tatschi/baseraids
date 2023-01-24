@@ -100,8 +100,7 @@ public class WorldManager {
 	 */
 	@SubscribeEvent
 	public void onMonsterSpawn(final LivingSpawnEvent.CheckSpawn event) {
-		Level level = (Level) event.getWorld();
-		if (level.isClientSide) {
+		if (event.getWorld().isClientSide()) {
 			return;			
 		}
 
@@ -122,6 +121,10 @@ public class WorldManager {
 			return false;
 		}
 
+		if(!(event.getWorld() instanceof Level)) {
+			return false;
+		}
+		
 		if (!((Level) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
 			return false;
 		}
