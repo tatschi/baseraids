@@ -54,6 +54,7 @@ public class RaidTimeManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.raidManager = raidManager;
 		this.level = level;
+		setDefaultWriteParametersIfNotSet();
 	}
 	
 	/**
@@ -90,6 +91,9 @@ public class RaidTimeManager {
 	 * @return a flag whether a raid should start or not
 	 */
 	boolean shouldStartRaid() {
+		if(nextRaidGameTime == -1) {
+			return false;
+		}
 		if (level.getGameTime() < nextRaidGameTime) {
 			return false;
 		}
