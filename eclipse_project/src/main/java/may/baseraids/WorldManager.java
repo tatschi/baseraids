@@ -9,8 +9,10 @@ import may.baseraids.config.ConfigOptions;
 import may.baseraids.entities.BaseraidsEntityManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -32,6 +34,7 @@ public class WorldManager {
 		MinecraftForge.EVENT_BUS.register(this);
 		commands = new BaseraidsCommands(this);
 		entityManager = new BaseraidsEntityManager(this);
+
 	}
 
 	/**
@@ -101,7 +104,7 @@ public class WorldManager {
 	@SubscribeEvent
 	public void onMonsterSpawn(final LivingSpawnEvent.CheckSpawn event) {
 		if (event.getWorld().isClientSide()) {
-			return;			
+			return;
 		}
 
 		if (onMonsterSpawnOutsideCaveShouldCancelSpawn(event)) {
@@ -121,10 +124,10 @@ public class WorldManager {
 			return false;
 		}
 
-		if(!(event.getWorld() instanceof Level)) {
+		if (!(event.getWorld() instanceof Level)) {
 			return false;
 		}
-		
+
 		if (!((Level) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
 			return false;
 		}

@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 
 /**
  * This class controls everything concerning raids: spawning, timers, starting
@@ -64,7 +65,7 @@ public class RaidManager {
 		setDefaultWriteParametersIfNotSet();
 		Baseraids.LOGGER.info("RaidManager created");
 		isInitialized = true;
-	}	
+	}
 
 	/**
 	 * Controls everything that happens every tick like warning of raids, starting
@@ -75,27 +76,28 @@ public class RaidManager {
 	 */
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.WorldTickEvent event) {
-		if (event.phase != TickEvent.Phase.START)
+		if (event.phase != TickEvent.Phase.START) {
 			return;
-		if (level.isClientSide)
+		}
+		if (event.side != LogicalSide.SERVER) {
 			return;
-		if (!level.dimension().equals(Level.OVERWORLD))
+		}		
+		if (!event.world.dimension().equals(Level.OVERWORLD)) {
 			return;
+		}
 
 		raidTimeMng.warnPlayersOfRaid();
 		if (raidTimeMng.shouldStartRaid()) {
 			startRaid();
 		}
-		if (isRaidActive()) {
-			activeRaidTick();
-		}
+		activeRaidTick();
 	}
-	
+
 	/**
 	 * Ticks during raids and checks if the raid is won or the max duration is over.
 	 */
 	private void activeRaidTick() {
-		if (Boolean.FALSE.equals(isRaidActive)) {
+		if (!isRaidActive()) {
 			return;
 		}
 		if (level.getDifficulty() == Difficulty.PEACEFUL) {
@@ -178,7 +180,8 @@ public class RaidManager {
 		spawnAndFillRewardChest();
 
 		// make sure to add these effects before increasing the raid level
-		NexusEffectsBlockEntity.addEffectsToPlayers(level, NexusBlock.getBlockPos(), NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
+		NexusEffectsBlockEntity.addEffectsToPlayers(level, NexusBlock.getBlockPos(),
+				NexusEffects.getEffectInstance(NexusEffects.REGEN_EFFECT_AFTER_RAID_WIN));
 		NexusEffectsBlockEntity.setLastWonRaidLevel(getRaidLevel());
 
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
@@ -343,7 +346,7 @@ public class RaidManager {
 	public RaidTimeManager getRaidTimeManager() {
 		return raidTimeMng;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(curRaidLevel, globalBlockBreakProgressMng, isInitialized, isRaidActive, raidSpawningMng,
