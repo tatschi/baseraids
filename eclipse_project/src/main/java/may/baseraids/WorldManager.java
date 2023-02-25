@@ -76,6 +76,9 @@ public class WorldManager {
 			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 
+		MinecraftServer server = event.getWorld().getServer();
+		server.getGameRules().getRule(GameRules.RULE_DOINSOMNIA).set(false, server);
+		Baseraids.LOGGER.info("Set GameRule DOINSOMNIA to false");
 	}
 
 	/**
