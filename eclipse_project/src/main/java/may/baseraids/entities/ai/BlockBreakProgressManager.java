@@ -4,8 +4,6 @@ import org.jline.utils.Log;
 
 import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -77,7 +75,7 @@ public class BlockBreakProgressManager {
 		breakProgressRelative = breakProgressAbsolute * 10 / damageUntilBlockBreaks;
 		if (prev != breakProgressRelative) {
 			SoundType soundtype = level.getBlockState(pos).getSoundType(level, pos, null);
-			Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(soundtype.getHitSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 8.0F, soundtype.getPitch() * 0.5F, pos));
+			level.playSound(null, pos, soundtype.getHitSound(), SoundSource.BLOCKS, soundtype.getVolume() * 2.0F, soundtype.getPitch() * 0.5F);
 			
 			level.destroyBlockProgress(breakBlockId, pos, -1);
 			level.destroyBlockProgress(breakBlockId, pos, breakProgressRelative);
