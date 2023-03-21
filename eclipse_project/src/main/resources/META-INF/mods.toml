@@ -58,6 +58,6 @@ Raise your defense, secure your base and nexus, fight! The raids are coming.
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     #side="SERVER"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.17.1,1.18)"
+    versionRange="[1.18.1,1.18.1)"
     ordering="NONE"
     side="BOTH"
