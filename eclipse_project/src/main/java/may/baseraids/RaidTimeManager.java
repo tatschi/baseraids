@@ -11,14 +11,15 @@ import may.baseraids.config.ConfigOptions;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.world.SleepFinishedTimeEvent;
+import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class RaidTimeManager {
@@ -76,7 +77,7 @@ public class RaidTimeManager {
 		}
 
 		timeUntilRaidInLastWarnPlayersOfRaidRun = timeUntilRaidInSec;
-		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString());
+		Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.time_until_raid", getTimeUntilRaid().getDisplayString()));
 		if (timeUntilRaidInSec <= 5 && ConfigOptions.getEnableSoundCountdown()) {
 			level.playSound(null, NexusBlock.getBlockPos(), Baseraids.SOUND_RAID_TICKING.get(), SoundSource.BLOCKS,
 					300F, 1.0F);
@@ -109,7 +110,7 @@ public class RaidTimeManager {
 	 */
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-		if (event.getPlayer().level.isClientSide) {
+		if (event.getEntity().level.isClientSide) {
 			return;
 		}
 		restrictSleepDuringRaid(event);
@@ -128,7 +129,7 @@ public class RaidTimeManager {
 	private void restrictSleepBeforeRaid(PlayerSleepInBedEvent event) {
 		if (getTimeUntilRaid().getTicks() < SLEEP_RESTRICTION_TICKS) {			
 			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
-			event.getPlayer().displayClientMessage(new TextComponent("You cannot sleep before a raid!"), true);
+			Baseraids.messageManager.sendStatusMessage("baseraids.error.sleep_before_raid", (ServerPlayer) event.getEntity(), true);
 		}
 	}
 
@@ -141,7 +142,7 @@ public class RaidTimeManager {
 	private void restrictSleepDuringRaid(PlayerSleepInBedEvent event) {
 		if (raidManager.isRaidActive()) {
 			event.setResult(BedSleepingProblem.OTHER_PROBLEM);
-			event.getPlayer().displayClientMessage(new TextComponent("You cannot sleep during a raid!"), true);
+			Baseraids.messageManager.sendStatusMessage("baseraids.error.sleep_during_raid", (ServerPlayer) event.getEntity(), true);
 		}
 	}
 
@@ -154,15 +155,15 @@ public class RaidTimeManager {
 	 */
 	@SubscribeEvent
 	public void onSleepFinished(SleepFinishedTimeEvent event) {
-		if (event.getWorld().isClientSide()) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
 		if (!ConfigOptions.getEnableTimeReductionFromSleeping()) {
 			return;
 		}
-		MCDuration subtractionTime = new MCDuration(event.getNewTime() - ((ServerLevel) event.getWorld()).getDayTime());
+		MCDuration subtractionTime = new MCDuration(event.getNewTime() - ((ServerLevel) event.getLevel()).getDayTime());
 		subtractFromTimeUntilRaid(subtractionTime);
-		Baseraids.messageManager.sendStatusMessage("Time until next raid: " + getTimeUntilRaid().getDisplayString(), true);
+		Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.time_until_raid", getTimeUntilRaid().getDisplayString()));
 	}
 	
 	/**

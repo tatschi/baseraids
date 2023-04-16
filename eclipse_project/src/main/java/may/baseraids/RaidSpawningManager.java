@@ -16,6 +16,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
@@ -29,7 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -58,7 +59,7 @@ public class RaidSpawningManager {
 	private static final int SPAWN_RADIUS_MAX = 60;
 	private static final int MAX_SPAWN_TRIES = 5;
 
-	private Random rand = new Random();
+	private RandomSource rand = RandomSource.create();
 
 	public RaidSpawningManager(RaidManager raidManager, Level world, WorldManager worldManager) {
 		this.raidManager = raidManager;
@@ -122,8 +123,9 @@ public class RaidSpawningManager {
 
 			if (mobs[i] != null) {
 				if (Baseraids.LOGGER.isDebugEnabled()) {
-					Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getRegistryName().toDebugFileName(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+					Baseraids.LOGGER.debug("Spawn %s at (%i, %i, %i)", entityType.getDescriptionId(), spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
 				}
+				
 				worldManager.entityManager.setupGoals(mobs[i]);
 			}
 		}
@@ -147,6 +149,7 @@ public class RaidSpawningManager {
 				break;
 			}
 		}while(!Mob.checkMobSpawnRules(entityType, level, MobSpawnType.MOB_SUMMONED, spawnPos, rand));		
+		
 		return spawnPos;
 	}
 	
@@ -300,11 +303,11 @@ public class RaidSpawningManager {
 	 *              this function
 	 */
 	@SubscribeEvent
-	public void onEntityJoinWorld(final EntityJoinWorldEvent event) {
-		if (event.getWorld().isClientSide()) {
+	public void onEntityJoinWorld(final EntityJoinLevelEvent event) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
-		if (!event.getWorld().equals(level)) {
+		if (!event.getLevel().equals(level)) {
 			return;
 		}
 

@@ -14,7 +14,7 @@ import may.baseraids.nexus.NexusBlock;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -25,7 +25,6 @@ import net.minecraft.server.level.ServerPlayer;
 public class BaseraidsCommands {
 
 	private static final String NAME_ARG_TICKS = "ticks";
-	private static final String TEXT_TIME_UNTIL_NEXT_RAID = "Set time until next raid to ";
 	private static final String NAME_ARG_LEVEL = "level";
 	private WorldManager worldManager;
 
@@ -34,9 +33,10 @@ public class BaseraidsCommands {
 	}
 
 	public void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
-		commandDispatcher.register(Commands.literal("baseraids").requires(commandSource -> commandSource.hasPermission(2))
-				.then(registerTimeUntilRaidCommand()).then(registerLevelCommand()).then(registerRaidCommand())
-				.then(registerGiveNexusCommand()).then(registerRestoreDestroyedBlocksCommand()));
+		commandDispatcher
+				.register(Commands.literal("baseraids").requires(commandSource -> commandSource.hasPermission(2))
+						.then(registerTimeUntilRaidCommand()).then(registerLevelCommand()).then(registerRaidCommand())
+						.then(registerGiveNexusCommand()).then(registerRestoreDestroyedBlocksCommand()));
 	}
 
 	private LiteralArgumentBuilder<CommandSourceStack> registerTimeUntilRaidCommand() {
@@ -80,15 +80,14 @@ public class BaseraidsCommands {
 
 	private LiteralArgumentBuilder<CommandSourceStack> registerTimeInputCommand(String leadingLiteral,
 			BiFunction<CommandSourceStack, MCDuration, Integer> func) {
-		return Commands.literal(leadingLiteral)
-				.then(Commands.literal("min")
-						.then(Commands.argument("minutes", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
-								.executes(commandSource -> func.apply(commandSource.getSource(),
-										new MCDuration().setMin(IntegerArgumentType.getInteger(commandSource, "minutes"))))))
-				.then(Commands.literal("sec")
-						.then(Commands.argument("seconds", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
-								.executes(commandSource -> func.apply(commandSource.getSource(),
-										new MCDuration().setSec(IntegerArgumentType.getInteger(commandSource, "seconds"))))))
+		return Commands.literal(leadingLiteral).then(Commands.literal("min")
+				.then(Commands.argument("minutes", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+						.executes(commandSource -> func.apply(commandSource.getSource(),
+								new MCDuration().setMin(IntegerArgumentType.getInteger(commandSource, "minutes"))))))
+				.then(Commands.literal("sec").then(Commands
+						.argument("seconds", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
+						.executes(commandSource -> func.apply(commandSource.getSource(),
+								new MCDuration().setSec(IntegerArgumentType.getInteger(commandSource, "seconds"))))))
 				.then(Commands.literal(NAME_ARG_TICKS)
 						.then(Commands.argument(NAME_ARG_TICKS, LongArgumentType.longArg(1, Long.MAX_VALUE))
 								.executes(commandSource -> func.apply(commandSource.getSource(),
@@ -98,26 +97,26 @@ public class BaseraidsCommands {
 	private int giveNexusToPlayer(CommandSourceStack commandSourceStack, ServerPlayer target) {
 		boolean success = NexusBlock.giveNexusToPlayer(target);
 		if (success) {
-			sendSuccess(commandSourceStack, "Added nexus block to inventory");
+			commandSourceStack.sendSuccess(Component.translatable("baseraids.success.add_nexus_to_inventory"), true);
 		}
 		return success ? 0 : 1;
 	}
 
 	private int winRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().winRaid();
-		sendSuccess(commandSourceStack, "Raid won");
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.raid_won"), true);
 		return 0;
 	}
 
 	private int loseRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().loseRaid();
-		sendSuccess(commandSourceStack, "Raid lost");
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.raid_lost"), true);
 		return 0;
 	}
 
 	private int getTimeUntilRaid(CommandSourceStack commandSourceStack) {
-		sendSuccess(commandSourceStack,
-				"Time until raid: " + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.time_until_raid",
+				worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString()), true);
 		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
 
@@ -132,7 +131,7 @@ public class BaseraidsCommands {
 		sendTimeUntilRaidFeedback(commandSourceStack);
 		return worldManager.getRaidTimeManager().getTimeUntilRaid().getSec();
 	}
-	
+
 	private int subtractTimeUntilRaid(CommandSourceStack commandSourceStack, MCDuration time) {
 		worldManager.getRaidTimeManager().subtractFromTimeUntilRaid(time);
 		sendTimeUntilRaidFeedback(commandSourceStack);
@@ -141,34 +140,31 @@ public class BaseraidsCommands {
 
 	private int getRaidLevel(CommandSourceStack commandSourceStack) {
 		int level = worldManager.getRaidManager().getRaidLevel();
-		sendSuccess(commandSourceStack, "Raid level: " + level);
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.next_level", level), true);
 		return level;
 	}
 
 	private int setRaidLevel(CommandSourceStack commandSourceStack, int level) {
 		worldManager.getRaidManager().setRaidLevel(level);
-		sendSuccess(commandSourceStack, "Raid level: " + level);
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.next_level", level), true);
 		return level;
 	}
 
 	private int startRaid(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().startRaid();
-		sendSuccess(commandSourceStack, "Raid started");
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.raid_start"), true);
 		return 0;
 	}
 
 	private int restoreDestroyedBlocks(CommandSourceStack commandSourceStack) {
 		worldManager.getRaidManager().restoreDestroyedBlocksMng.restoreAndClearSavedBlocks();
-		sendSuccess(commandSourceStack, "Restored destroyed blocks");
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.success.restore_destroyed_blocks"), true);
 		return 0;
 	}
 
 	private void sendTimeUntilRaidFeedback(CommandSourceStack commandSourceStack) {
-		sendSuccess(commandSourceStack,
-				TEXT_TIME_UNTIL_NEXT_RAID + worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString());
+		commandSourceStack.sendSuccess(Component.translatable("baseraids.subtitle.time_until_raid",
+				worldManager.getRaidTimeManager().getTimeUntilRaid().getDisplayString()), true);
 	}
 
-	private void sendSuccess(CommandSourceStack commandSourceStack, String text) {
-		commandSourceStack.sendSuccess(new TextComponent(text), true);
-	}
 }

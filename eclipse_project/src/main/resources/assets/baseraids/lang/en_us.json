@@ -5,8 +5,17 @@
 	"entity.baseraids.baseraids_skeleton_entity": "Skeleton",
 	"entity.baseraids.baseraids_spider_entity": "Spider",
 	"entity.baseraids.baseraids_phantom_entity": "Phantom",
-	"baseraids.subtitle.raid_win": "Raid won",
-	"baseraids.subtitle.raid_lose": "Raid lost",
-	"baseraids.subtitle.raid_ticking": "Raid starts shortly",
-	"baseraids.subtitle.raid_active": "Raid is active"
+	"baseraids.subtitle.raid_won": "You won the raid!",
+	"baseraids.subtitle.raid_lost": "You lost the raid!",
+	"baseraids.subtitle.raid_start": "You are being raided!",
+	"baseraids.subtitle.time_until_raid": "Time until next raid: %s",
+	"baseraids.subtitle.next_level": "Your next raid will have level %s",
+	"baseraids.error.add_nexus_to_inventory": "Error: Could not add Nexus to inventory!",
+	"baseraids.error.toss_nexus": "You cannot toss away the Nexus. It needs to be placed!",
+	"baseraids.error.remove_nexus_during_raid": "The Nexus cannot be removed during raid!",
+	"baseraids.error.sleep_before_raid": "You cannot sleep before a raid!",
+	"baseraids.error.sleep_during_raid": "You cannot sleep during a raid!",
+	"baseraids.warning.raid_end_peaceful": "Raid was ended because difficulty is peaceful",
+	"baseraids.success.add_nexus_to_inventory": "Added Nexus to inventory",
+	"baseraids.success.restore_destroyed_blocks": "Restored destroyed blocks"	
 }

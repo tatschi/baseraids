@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -68,15 +68,15 @@ public class WorldManager {
 	 *              function
 	 */
 	@SubscribeEvent
-	public void onWorldLoadedLoadBaseraidsWorldSavedData(final WorldEvent.Load event) {
-		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
+	public void onWorldLoadedLoadBaseraidsWorldSavedData(final LevelEvent.Load event) {
+		if (event.getLevel().isClientSide() || !((Level) event.getLevel()).dimension().equals(Level.OVERWORLD))
 			return;
 
-		if (event.getWorld()instanceof ServerLevel serverLevel) {
+		if (event.getLevel()instanceof ServerLevel serverLevel) {
 			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 
-		MinecraftServer server = event.getWorld().getServer();
+		MinecraftServer server = event.getLevel().getServer();
 		server.getGameRules().getRule(GameRules.RULE_DOINSOMNIA).set(false, server);
 		Baseraids.LOGGER.info("Set GameRule DOINSOMNIA to false");
 	}
@@ -89,11 +89,11 @@ public class WorldManager {
 	 *              function
 	 */
 	@SubscribeEvent
-	public void onWorldSavedSaveBaseraidsWorldSavedData(final WorldEvent.Save event) {
-		if (event.getWorld().isClientSide() || !((Level) event.getWorld()).dimension().equals(Level.OVERWORLD))
+	public void onWorldSavedSaveBaseraidsWorldSavedData(final LevelEvent.Save event) {
+		if (event.getLevel().isClientSide() || !((Level) event.getLevel()).dimension().equals(Level.OVERWORLD))
 			return;
 
-		if (event.getWorld()instanceof ServerLevel serverLevel) {
+		if (event.getLevel() instanceof ServerLevel serverLevel) {
 			baseraidsData = BaseraidsSavedData.get(this, serverLevel);
 		}
 	}
@@ -106,7 +106,7 @@ public class WorldManager {
 	 */
 	@SubscribeEvent
 	public void onMonsterSpawn(final LivingSpawnEvent.CheckSpawn event) {
-		if (event.getWorld().isClientSide()) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
 
@@ -127,28 +127,28 @@ public class WorldManager {
 			return false;
 		}
 
-		if (!(event.getWorld() instanceof Level)) {
+		if (!(event.getLevel() instanceof Level)) {
 			return false;
 		}
 
-		if (!((Level) event.getWorld()).dimension().equals(Level.OVERWORLD)) {
+		if (!((Level) event.getLevel()).dimension().equals(Level.OVERWORLD)) {
 			return false;
 		}
-
-		if (event.getEntityLiving().getClassification(false) != MobCategory.MONSTER) {
+		
+		if (event.getEntity().getClassification(false) != MobCategory.MONSTER) {
 			return false;
 		}
 
 		BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-		if (!event.getWorld().getBlockState(pos).equals(Blocks.CAVE_AIR.defaultBlockState())) {
+		if (!event.getLevel().getBlockState(pos).equals(Blocks.CAVE_AIR.defaultBlockState())) {
 			return true;
 		}
 
-		if (event.getWorld().getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) == pos.getY()) {
+		if (event.getLevel().getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) == pos.getY()) {
 			return true;
 		}
 
-		return event.getWorld().canSeeSky(pos);
+		return event.getLevel().canSeeSky(pos);
 	}
 
 	public void markDirty() {

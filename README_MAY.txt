@@ -1,9 +1,20 @@
+# setup branch
+create a new branch with the name of the version that was previously on the main branch
+change the branch of the cloned repo with the version that was previously on the main branch to the new branch
+clone the repository once more into a folder with the name of the new version and change the alias accordingly
+
 # get appropriate forge mdk
-download the forge mdk folder for the wanted version
+download and extract the forge mdk folder for the wanted version
 
 # install appropriate jdk
-depending on the current forge version, a specific java jdk has to be installed and used
+open the build.gradle from the new forge mdk folder and check the java version
+if there is no jdk for the given version:
+install new jdk
 change JAVA_HOME in gradlew.bat to the path where the jdk is installed
+
+# adapt forge gradle files
+compare the old and new build.gradle and see if any changes need to be made
+copy the "gradle" folder from inside the forge mdk folder to this folder
 
 # run gradle scripts
 open windows shell in this folder
@@ -11,9 +22,10 @@ run ".\gradlew genEclipseRuns --refresh-dependencies"
 run ".\gradlew eclipse"
 
 # create and setup eclipse project
+open eclipse and create a new workspace
 open eclipse and import folder as gradle project
 eclipse settings(for workspace):
-go to eclipse preferences->Java->Installed JREs and add and select the jdk1.8
+go to eclipse preferences->Java->Installed JREs and add and select the appropriate jdk (see earlier steps)
 go to eclipse preferences->Compiler and set compiler compliance level to 1.8
 
 alternatively eclipse settings(for project):

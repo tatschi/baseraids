@@ -50,8 +50,8 @@ public class Baseraids {
 			Baseraids.MODID);
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Baseraids.MODID);
 	public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister
-			.create(ForgeRegistries.BLOCK_ENTITIES, Baseraids.MODID);
-	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES,
+			.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Baseraids.MODID);
+	private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES,
 			Baseraids.MODID);
 	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS,
 			Baseraids.MODID);

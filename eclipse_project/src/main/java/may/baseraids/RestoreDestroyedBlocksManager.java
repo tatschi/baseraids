@@ -12,7 +12,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -43,10 +43,10 @@ public class RestoreDestroyedBlocksManager {
 	 */
 	@SubscribeEvent
 	public void onBlockDestroyedDuringRaidSaveBlock(final BlockEvent.BreakEvent event) {
-		if (event.getWorld().isClientSide()) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
-		if (!event.getWorld().equals(level)) {
+		if (!event.getLevel().equals(level)) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {

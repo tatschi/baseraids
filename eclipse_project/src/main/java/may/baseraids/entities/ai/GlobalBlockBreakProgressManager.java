@@ -17,7 +17,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -130,7 +130,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	@SubscribeEvent
 	public void onPlaceBlockResetAllInfoForThisBlockPos(final BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isClientSide()) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {
@@ -147,7 +147,7 @@ public class GlobalBlockBreakProgressManager {
 	 */
 	@SubscribeEvent
 	public void onPlaceFluidResetAllInfoForThisBlockPos(final BlockEvent.FluidPlaceBlockEvent event) {
-		if (event.getWorld().isClientSide()) {
+		if (event.getLevel().isClientSide()) {
 			return;
 		}
 		if (!raidManager.isRaidActive()) {

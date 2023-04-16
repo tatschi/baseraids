@@ -11,6 +11,7 @@ import may.baseraids.nexus.NexusEffects;
 import may.baseraids.nexus.NexusEffectsBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -75,14 +76,14 @@ public class RaidManager {
 	 *              this function
 	 */
 	@SubscribeEvent
-	public void onWorldTick(TickEvent.WorldTickEvent event) {
+	public void onWorldTick(TickEvent.LevelTickEvent event) {		
 		if (event.phase != TickEvent.Phase.START) {
 			return;
 		}
 		if (event.side != LogicalSide.SERVER) {
 			return;
 		}		
-		if (!event.world.dimension().equals(Level.OVERWORLD)) {
+		if (!event.level.dimension().equals(Level.OVERWORLD)) {
 			return;
 		}
 
@@ -101,7 +102,7 @@ public class RaidManager {
 			return;
 		}
 		if (level.getDifficulty() == Difficulty.PEACEFUL) {
-			Baseraids.messageManager.sendStatusMessage("Raid was ended because difficulty is peaceful", true);
+			Baseraids.messageManager.sendStatusMessage("baseraids.warning.raid_end_peaceful", true);
 			endRaid();
 		}
 		raidTimeMng.incrementActiveRaidTicks();
@@ -122,7 +123,7 @@ public class RaidManager {
 	 * instance and related managing instances and calls the spawning of the mobs.
 	 */
 	public void startRaid() {
-		Baseraids.messageManager.sendStatusMessage("You are being raided!");
+		Baseraids.messageManager.sendStatusMessage("baseraids.subtitle.raid_start");
 		Baseraids.LOGGER.info("Initiating raid");
 
 		raidTimeMng.resetActiveRaidTicks();
@@ -143,7 +144,7 @@ public class RaidManager {
 		if (level == null)
 			return;
 		Baseraids.LOGGER.info("Raid lost");
-		Baseraids.messageManager.sendStatusMessage("You lost the raid!");
+		Baseraids.messageManager.sendStatusMessage("baseraids.subtitle.raid_lost");
 		// make sure the raid level is adjusted before endRaid() because endRaid() uses
 		// the new level
 		resetRaidLevel();
@@ -175,7 +176,7 @@ public class RaidManager {
 		if (level == null)
 			return;
 		Baseraids.LOGGER.info("Raid won");
-		Baseraids.messageManager.sendStatusMessage("You won the raid!");
+		Baseraids.messageManager.sendStatusMessage("baseraids.subtitle.raid_won");
 
 		spawnAndFillRewardChest();
 
@@ -197,7 +198,7 @@ public class RaidManager {
 	 * and related managing instances and killing all mobs spawned by the raid.
 	 */
 	private void endRaid() {
-		Baseraids.messageManager.sendStatusMessage("Your next raid will have level " + curRaidLevel, false);
+		Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.next_level", curRaidLevel), false);
 		setRaidActive(false);
 		level.destroyBlockProgress(-1, NexusBlock.getBlockPos(), -1);
 		globalBlockBreakProgressMng.resetAllProgress();

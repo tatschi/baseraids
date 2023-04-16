@@ -28,7 +28,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -142,8 +142,8 @@ public class NexusBlock extends Block implements EntityBlock {
 	 *              this method
 	 */
 	@SubscribeEvent
-	public static void onWorldTickAddDebuff(final TickEvent.WorldTickEvent event) {
-		Level level = event.world;
+	public static void onWorldTickAddDebuff(final TickEvent.LevelTickEvent event) {
+		Level level = event.level;
 		if (level.isClientSide) {
 			return;
 		}
@@ -172,7 +172,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusPlacedSetStateAndBlockPos(final BlockEvent.EntityPlaceEvent event) {
-		if (event.getWorld().isClientSide())
+		if (event.getLevel().isClientSide())
 			return;
 		if (event.getPlacedBlock().getBlock() instanceof NexusBlock) {
 			setState(NexusState.BLOCK);
@@ -199,7 +199,7 @@ public class NexusBlock extends Block implements EntityBlock {
 		if (Baseraids.worldManager.getRaidManager().isRaidActive()) {
 			event.setCanceled(true);
 			Baseraids.LOGGER.warn("NexusBlock cannot be removed during raid");
-			Baseraids.messageManager.sendStatusMessage("The NexusBlock cannot be removed during raid!",
+			Baseraids.messageManager.sendStatusMessage("baseraids.error.remove_nexus_during_raid",
 					(ServerPlayer) event.getPlayer(), true);
 			return;
 		}
@@ -220,7 +220,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	public static void onNexusDroppedCancelEventAndGiveNexusBack(final ItemTossEvent event) {
 		if (event.getPlayer().level.isClientSide)
 			return;
-		Item item = event.getEntityItem().getItem().getItem();
+		Item item = event.getEntity().getItem().getItem();
 		if (!(item instanceof BlockItem)) {
 			return;
 		}
@@ -229,7 +229,7 @@ public class NexusBlock extends Block implements EntityBlock {
 		}
 		event.setCanceled(true);
 		Baseraids.LOGGER.warn("NexusBlock cannot be tossed");
-		Baseraids.messageManager.sendStatusMessage("You cannot toss away the Nexus. It needs to be placed!");
+		Baseraids.messageManager.sendStatusMessage("baseraids.error.toss_nexus");
 		// Canceling the event means that the item is not dropped by is still removed
 		// from the inventory.
 		// Therefore, give it the nexus to the player again.
@@ -246,7 +246,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onNexusPickedUpSetStateToITEM(final EntityItemPickupEvent event) {
-		if (event.getPlayer().level.isClientSide)
+		if (event.getEntity().level.isClientSide)
 			return;
 		Item item = event.getItem().getItem().getItem();
 		if (!(item instanceof BlockItem)) {
@@ -269,7 +269,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLogInAndStateUNINITIALZEDGiveNexus(final PlayerEvent.PlayerLoggedInEvent event) {
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		Level level = player.level;
 		if (level.isClientSide)
 			return;
@@ -294,7 +294,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	@SubscribeEvent
 	public static void onPlayerLogOutWithNexusTransferNexusToOtherPlayerOrIgnore(
 			final PlayerEvent.PlayerLoggedOutEvent event) {
-		Player playerLogOut = event.getPlayer();
+		Player playerLogOut = event.getEntity();
 		Level level = playerLogOut.level;
 		if (level.isClientSide)
 			return;
@@ -353,7 +353,7 @@ public class NexusBlock extends Block implements EntityBlock {
 		ItemStack itemStack = new ItemStack(Baseraids.NEXUS_ITEM.get());
 		if (!player.addItem(itemStack)) {
 			Baseraids.LOGGER.warn("NexusBlock could not be added to player's inventory");
-			Baseraids.messageManager.sendStatusMessage("Error: Could not add Nexus to inventory!");
+			Baseraids.messageManager.sendStatusMessage("baseraids.error.add_nexus_to_inventory");
 			return false;
 		}
 		Baseraids.LOGGER.debug("Successfully added nexus to player's inventory");
