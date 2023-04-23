@@ -18,11 +18,12 @@ copy the "gradle" folder from inside the forge mdk folder to this folder
 
 # run gradle scripts
 open windows shell in this folder
-run ".\gradlew genEclipseRuns --refresh-dependencies"
+run ".\gradlew --refresh-dependencies"
+run ".\gradlew genEclipseRuns"
 run ".\gradlew eclipse"
 
 # create and setup eclipse project
-open eclipse and create a new workspace
+open eclipse and create a new workspace (copy preferences!)
 open eclipse and import folder as gradle project
 eclipse settings(for workspace):
 go to eclipse preferences->Java->Installed JREs and add and select the appropriate jdk (see earlier steps)
@@ -36,6 +37,12 @@ change Java home environment variable in eclipse settings:
 Window -> Preferences -> Gradle -> Adanced Options -> Java home
 refresh gradle project
 
+# adapt version in mods.toml
+compare loaderVersion with that from the mods.toml of the downloaded mdk and adapt
+adapt versionRange to new version
 
-Run/Debug in Eclipse: Run/Debug Configurations -> Java Application -> runClient
-Sync only src folder to git
+# Run/Debug in Eclipse
+Run/Debug Configurations -> Java Application -> runClient
+
+
+Consider: Sync only src folder to git
