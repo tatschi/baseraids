@@ -17,7 +17,7 @@ compare the old and new build.gradle and see if any changes need to be made
 copy the "gradle" folder from inside the forge mdk folder to this folder
 
 # run gradle scripts
-open windows shell in this folder
+open windows shell in the "eclipse_project" folder
 run ".\gradlew --refresh-dependencies"
 run ".\gradlew genEclipseRuns"
 run ".\gradlew eclipse"

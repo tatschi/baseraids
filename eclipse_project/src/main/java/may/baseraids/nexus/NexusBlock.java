@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -31,7 +32,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 /**
@@ -391,7 +391,7 @@ public class NexusBlock extends Block implements EntityBlock {
 	 */
 	private static boolean removeNexusFromPlayer(Player player) {
 		LazyOptional<IItemHandler> capabilityLazyOpt = player
-				.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
 		Optional<Boolean> successful = capabilityLazyOpt.map(NexusBlock::removeNexusFromItemHandler);
 		return successful.orElse(false);
 	}
