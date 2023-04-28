@@ -25,19 +25,16 @@ run ".\gradlew eclipse"
 # create and setup eclipse project
 open eclipse and create a new workspace (copy preferences!)
 open eclipse and import folder as gradle project
-eclipse settings(for workspace):
-go to eclipse preferences->Java->Installed JREs and add and select the appropriate jdk (see earlier steps)
-go to eclipse preferences->Compiler and set compiler compliance level to 1.8
 
-alternatively eclipse settings(for project):
-project properties->Java Build Path->Libraries->JRE System Library->Edit->Select JavaSE-1.8 as execution environment
-project properties->Java Compiler->Select JavaSE-1.8
+# change workspace default jdk if neccessary
+go to Window -> Preferences -> Java -> Installed JREs and add and select the correct jdk
+go to Window -> Preferences -> Compiler and set compiler compliance level to 1.8
 
-change Java home environment variable in eclipse settings:
-Window -> Preferences -> Gradle -> Adanced Options -> Java home
-refresh gradle project
+# select correct jdk for project
+project properties -> Java Build Path -> Libraries -> JRE System Library -> Edit -> Select correct jdk
 
 # adapt version in mods.toml
+open src/main/resources/META-INF/mods.toml
 compare loaderVersion with that from the mods.toml of the downloaded mdk and adapt
 adapt versionRange to new version
 
