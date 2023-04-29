@@ -1,6 +1,6 @@
 {
 	"parent": "block/cube_all",
 	"textures": {
-		"all": "baseraids:blocks/nexus_block"
+		"all": "baseraids:block/nexus_block"
 	}
 }
