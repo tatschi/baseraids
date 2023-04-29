@@ -67,13 +67,13 @@ public class Baseraids {
 
 	// SOUNDS
 	public static final RegistryObject<SoundEvent> SOUND_RAID_WON = SOUNDS.register("raid_win",
-			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
+			() -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Baseraids.MODID, "raid_win")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_LOST = SOUNDS.register("raid_lose",
-			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
+			() -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Baseraids.MODID, "raid_lose")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_TICKING = SOUNDS.register("pock_ticking",
-			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
+			() -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Baseraids.MODID, "pock_ticking")));
 	public static final RegistryObject<SoundEvent> SOUND_RAID_ACTIVE = SOUNDS.register("pock_low",
-			() -> new SoundEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
+			() -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Baseraids.MODID, "pock_low")));
 
 	public static final WorldManager worldManager = new WorldManager();
 	public static final MessageManager messageManager = new MessageManager();
