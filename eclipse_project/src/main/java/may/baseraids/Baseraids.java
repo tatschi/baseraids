@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -59,7 +58,7 @@ public class Baseraids {
 			() -> new NexusBlock(BlockBehaviour.Properties.of(Material.STONE).strength(15f, 30f).sound(SoundType.GLASS)
 					.lightLevel(light -> 15)));
 	public static final RegistryObject<BlockItem> NEXUS_ITEM = ITEMS.register("nexus_block",
-			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties().tab(CreativeModeTab.TAB_COMBAT)));
+			() -> new BlockItem(Baseraids.NEXUS_BLOCK.get(), new Item.Properties()));
 
 	// ENTITIES
 	public static final RegistryObject<BlockEntityType<NexusEffectsBlockEntity>> NEXUS_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES
@@ -91,6 +90,7 @@ public class Baseraids {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigLoader.config);
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+		bus.addListener(worldManager::onCreativeModeTabBuildContents);
 		bus.addListener(worldManager::onFMLCommonSetup);
 		registerDeferredRegistries(bus);
 

@@ -12,11 +12,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -58,6 +60,18 @@ public class WorldManager {
 	@SubscribeEvent
 	public void onFMLCommonSetup(final FMLCommonSetupEvent event) {
 		entityManager.registerSetups();
+	}
+	
+	/**
+	 * Adds the registered items to a creative mode tab.
+	 * @param event
+	 */
+	@SubscribeEvent
+	public void onCreativeModeTabBuildContents(final CreativeModeTabEvent.BuildContents event) {
+	  if (event.getTab() == CreativeModeTabs.COMBAT) {
+	    event.accept(Baseraids.NEXUS_ITEM.get());
+	    event.accept(Baseraids.NEXUS_BLOCK.get());
+	  }
 	}
 
 	/**
