@@ -3,8 +3,6 @@ package may.baseraids;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mojang.math.Vector3d;
-
 import may.baseraids.config.ConfigLoader;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffectsBlockEntity;

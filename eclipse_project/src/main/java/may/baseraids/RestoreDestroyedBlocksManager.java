@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jline.utils.Log;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -110,11 +111,11 @@ public class RestoreDestroyedBlocksManager {
 	public void read(CompoundTag nbt) {
 		try {
 			savedBlocks.clear();
-			ListTag savedBlocksList = nbt.getList("savedBlocks", 10);
+			ListTag savedBlocksList = nbt.getList("savedBlocks", 10);			
 			savedBlocksList.forEach(c -> {
 				CompoundTag com = (CompoundTag) c;
 				BlockPos key = NbtUtils.readBlockPos(com.getCompound("BlockPos"));
-				BlockState value = NbtUtils.readBlockState(com.getCompound("BlockState"));
+				BlockState value = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), com.getCompound("BlockState"));
 				savedBlocks.put(key, value);
 			});
 

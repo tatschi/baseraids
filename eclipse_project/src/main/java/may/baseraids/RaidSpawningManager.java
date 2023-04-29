@@ -116,8 +116,7 @@ public class RaidSpawningManager {
 				spawnGroupData = mobs[i].finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.NATURAL, spawnGroupData, (CompoundTag) null);
 				((ServerLevelAccessor) level).addFreshEntityWithPassengers(mobs[i]);
 			} else {
-				mobs[i] = (Mob) entityType.spawn((ServerLevel) level, null, null, spawnPos,
-						MobSpawnType.MOB_SUMMONED, false, false);
+				mobs[i] = entityType.spawn((ServerLevel) level, spawnPos, MobSpawnType.MOB_SUMMONED);
 			}
 
 			if (mobs[i] != null) {
