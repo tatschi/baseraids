@@ -223,7 +223,7 @@ public class RaidSpawningManager {
 		}
 
 		for (Mob mob : spawnedMobs) {
-			if (mob.isAlive()) {
+			if (!mob.isDeadOrDying()) {
 				return false;
 			}
 		}
