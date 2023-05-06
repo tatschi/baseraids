@@ -44,9 +44,4 @@ public class MoveTowardsNexusGoal<T extends Mob> extends Goal {
 		entity.getNavigation().moveTo(nexusPos.getX(), nexusPos.getY(), nexusPos.getZ(), 1);
 	}
 
-	@Override
-	public void stop() {
-		entity.getNavigation().stop();
-	}
-
 }
