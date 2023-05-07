@@ -30,6 +30,8 @@ public class NexusEffectsBlockEntity extends BlockEntity {
 		super(Baseraids.NEXUS_BLOCK_ENTITY_TYPE.get(), pos, state);
 	}
 
+
+	@SuppressWarnings("java:S1172")
 	public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState blockState, T type) {
 		if (level.isClientSide)
 			return;

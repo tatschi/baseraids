@@ -10,7 +10,7 @@
 	"baseraids.subtitle.raid_start": "You are being raided!",
 	"baseraids.subtitle.time_until_raid": "Time until next raid: %s",
 	"baseraids.subtitle.next_level": "Your next raid will have level %s",
-	"baseraids.subtitle.spawn_wave": "Wave %s",
+	"baseraids.subtitle.spawn_wave": "Wave %s of %s",
 	"baseraids.error.add_nexus_to_inventory": "Error: Could not add Nexus to inventory!",
 	"baseraids.error.toss_nexus": "You cannot toss away the Nexus. It needs to be placed!",
 	"baseraids.error.remove_nexus_during_raid": "The Nexus cannot be removed during raid!",

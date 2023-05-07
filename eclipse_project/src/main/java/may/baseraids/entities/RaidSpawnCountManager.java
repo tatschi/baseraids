@@ -25,7 +25,6 @@ public class RaidSpawnCountManager {
 	/**
 	 * Given a wave number, returns a map that contains the count to spawn for each entity type.
 	 * The values must be registered at the start of each raid and emptied at the end of each raid with {@link registerSpawnCountsForLevelAndPlayerCount}.
-	 * TODO Must be saved or reregistered at loading
 	 */
 	private static RaidSpawnCountPerWaveRegistry entitySpawnCountPerWaveRegistry = new RaidSpawnCountPerWaveRegistry();
 	
@@ -91,6 +90,10 @@ public class RaidSpawnCountManager {
 	 */
 	public static Integer getSpawnCountForEntityAndWave(EntityType<?> type, int wave) {		
 		return entitySpawnCountPerWaveRegistry.get(wave).get(type);
+	}
+	
+	public static int getMaxWave() {
+		return entitySpawnCountPerWaveRegistry.getMaxWave();
 	}
 
 }

@@ -40,9 +40,8 @@ public class RaidManager {
 
 	private Boolean isRaidActive;
 	private int curRaidLevel = -1;
-	// TODO Must be saved and used via getter and setter (markDirty)
 	private int curWave = 0;
-	
+
 	public static final int MAX_RAID_LEVEL = 10;
 	public static final int MIN_RAID_LEVEL = 1;
 
@@ -108,16 +107,14 @@ public class RaidManager {
 			Baseraids.messageManager.sendStatusMessage("baseraids.warning.raid_end_peaceful", true);
 			endRaid();
 		}
-		raidTimeMng.incrementActiveRaidTicks();
-
+		
 		if(raidTimeMng.shouldSpawnWave()) {
-			curWave++;
-			if(raidSpawningMng.spawnRaidMobsForWave(curWave)) {
-				Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.spawn_wave", curWave));
-			}
+			spawnRaidMobsForCurWave();
 		}
 		
-		if (raidSpawningMng.areAllSpawnedMobsDead()) {
+		raidTimeMng.incrementActiveRaidTicks();
+		
+		if (raidSpawningMng.areAllSpawnedMobsDead() && this.getCurWave() >= RaidSpawnCountManager.getMaxWave()) {
 			Baseraids.LOGGER.info("Raid ended: all mobs are dead");
 			winRaid();
 			return;
@@ -125,6 +122,13 @@ public class RaidManager {
 		if (raidTimeMng.isMaxRaidDurationOver()) {
 			Baseraids.LOGGER.info("Raid ended: reached max duration");
 			winRaid();
+		}
+	}
+	
+	private void spawnRaidMobsForCurWave() {
+		setCurWave(getCurWave()+1);
+		if(raidSpawningMng.spawnRaidMobsForWave(getCurWave())) {
+			Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.spawn_wave", getCurWave(), RaidSpawnCountManager.getMaxWave()), false);
 		}
 	}
 
@@ -142,10 +146,10 @@ public class RaidManager {
 
 		raidTimeMng.setTimeToNighttime();
 		setRaidActive(true);
+		setCurWave(0);
 		
 		int playerCount = level.players().size();
 		RaidSpawnCountManager.registerSpawnCountsForLevelAndPlayerCount(getRaidLevel(), playerCount);
-		raidSpawningMng.spawnRaidMobsForWave(1);
 	}
 
 	/**
@@ -270,7 +274,8 @@ public class RaidManager {
 		CompoundTag nbt = new CompoundTag();
 		nbt.putBoolean("isRaidActive", isRaidActive);
 		nbt.putInt("curRaidLevel", curRaidLevel);
-
+		nbt.putInt("curWave", curWave);
+		
 		CompoundTag raidSpawning = raidSpawningMng.write();
 		nbt.put("raidSpawningManager", raidSpawning);
 		CompoundTag raidTime = raidTimeMng.write();
@@ -299,6 +304,7 @@ public class RaidManager {
 		try {
 			isRaidActive = nbt.getBoolean("isRaidActive");
 			curRaidLevel = nbt.getInt("curRaidLevel");
+			curWave = nbt.getInt("curWave");
 
 			CompoundTag raidSpawningNBT = nbt.getCompound("raidSpawningManager");
 			raidSpawningMng.read(raidSpawningNBT);
@@ -307,6 +313,9 @@ public class RaidManager {
 			CompoundTag restoreDestroyedBlocksMngNBT = nbt.getCompound("restoreDestroyedBlocksManager");
 			restoreDestroyedBlocksMng.read(restoreDestroyedBlocksMngNBT);
 
+			int playerCount = level.players().size();
+			RaidSpawnCountManager.registerSpawnCountsForLevelAndPlayerCount(getRaidLevel(), playerCount);
+			
 			Baseraids.LOGGER.debug("Finished loading RaidManager");
 
 		} catch (Exception e) {
@@ -361,6 +370,15 @@ public class RaidManager {
 		return raidTimeMng;
 	}
 
+	public int getCurWave() {
+		return curWave;
+	}
+
+	public void setCurWave(int curWave) {
+		this.curWave = curWave;
+		markDirty();
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(curRaidLevel, globalBlockBreakProgressMng, isInitialized, isRaidActive, raidSpawningMng,

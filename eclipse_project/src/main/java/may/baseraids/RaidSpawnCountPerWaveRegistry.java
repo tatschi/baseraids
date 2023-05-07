@@ -1,6 +1,7 @@
 package may.baseraids;
 
 
+import java.util.Comparator;
 import java.util.HashMap;
 
 import net.minecraft.world.entity.EntityType;
@@ -24,4 +25,7 @@ public class RaidSpawnCountPerWaveRegistry extends HashMap<Integer, HashMap<Enti
 		}
 	}
 	
+	public int getMaxWave() {
+		return this.keySet().stream().max(Comparator.naturalOrder()).orElse(0);
+	}
 }

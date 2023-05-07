@@ -8,6 +8,7 @@ import org.jline.utils.Log;
 import com.google.common.collect.Sets;
 
 import may.baseraids.config.ConfigOptions;
+import may.baseraids.entities.RaidSpawnCountManager;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusBlock.NexusState;
 import net.minecraft.nbt.CompoundTag;
@@ -51,7 +52,7 @@ public class RaidTimeManager {
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 	
-	private static final int TIME_BETWEEN_WAVES = 2400;
+	private static final int TIME_BETWEEN_WAVES = 1800;
 	
 	public RaidTimeManager(RaidManager raidManager, Level level) {
 		MinecraftForge.EVENT_BUS.register(this);
@@ -182,8 +183,8 @@ public class RaidTimeManager {
 		return new MCDuration(nextRaidGameTime - level.getGameTime());
 	}
 
-	boolean isMaxRaidDurationOver() {
-		return activeRaidTicks > ConfigOptions.getMaxRaidDuration();
+	boolean isMaxRaidDurationOver() {		
+		return activeRaidTicks > RaidSpawnCountManager.getMaxWave() * TIME_BETWEEN_WAVES + ConfigOptions.getMaxRaidDuration();
 	}
 	
 	void resetActiveRaidTicks() {
