@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.jline.utils.Log;
 
 import may.baseraids.config.ConfigOptions;
+import may.baseraids.entities.RaidSpawnCountManager;
 import may.baseraids.entities.ai.GlobalBlockBreakProgressManager;
 import may.baseraids.nexus.NexusBlock;
 import may.baseraids.nexus.NexusEffects;
@@ -39,7 +40,9 @@ public class RaidManager {
 
 	private Boolean isRaidActive;
 	private int curRaidLevel = -1;
-
+	// TODO Must be saved and used via getter and setter (markDirty)
+	private int curWave = 0;
+	
 	public static final int MAX_RAID_LEVEL = 10;
 	public static final int MIN_RAID_LEVEL = 1;
 
@@ -107,6 +110,13 @@ public class RaidManager {
 		}
 		raidTimeMng.incrementActiveRaidTicks();
 
+		if(raidTimeMng.shouldSpawnWave()) {
+			curWave++;
+			if(raidSpawningMng.spawnRaidMobsForWave(curWave)) {
+				Baseraids.messageManager.sendStatusMessage(Component.translatable("baseraids.subtitle.spawn_wave", curWave));
+			}
+		}
+		
 		if (raidSpawningMng.areAllSpawnedMobsDead()) {
 			Baseraids.LOGGER.info("Raid ended: all mobs are dead");
 			winRaid();
@@ -132,7 +142,10 @@ public class RaidManager {
 
 		raidTimeMng.setTimeToNighttime();
 		setRaidActive(true);
-		raidSpawningMng.spawnRaidMobs();
+		
+		int playerCount = level.players().size();
+		RaidSpawnCountManager.registerSpawnCountsForLevelAndPlayerCount(getRaidLevel(), playerCount);
+		raidSpawningMng.spawnRaidMobsForWave(1);
 	}
 
 	/**

@@ -51,6 +51,8 @@ public class RaidTimeManager {
 	private static final Set<Integer> TIMES_TO_WARN_PLAYERS_OF_RAID = Sets.newHashSet(4800, 3600, 2400, 1800, 1200, 900,
 			600, 300, 120, 60, 30, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 	
+	private static final int TIME_BETWEEN_WAVES = 2400;
+	
 	public RaidTimeManager(RaidManager raidManager, Level level) {
 		MinecraftForge.EVENT_BUS.register(this);
 		this.raidManager = raidManager;
@@ -99,6 +101,10 @@ public class RaidTimeManager {
 			return false;
 		}
 		return NexusBlock.getState() == NexusState.BLOCK;
+	}
+	
+	public boolean shouldSpawnWave() {
+		return activeRaidTicks % TIME_BETWEEN_WAVES == 0;
 	}
 	
 	/**

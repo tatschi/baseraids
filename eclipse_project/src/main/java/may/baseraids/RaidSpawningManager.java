@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import may.baseraids.entities.RaidEntitySpawnCountRegistry;
+import may.baseraids.entities.RaidSpawnCountManager;
 import may.baseraids.nexus.NexusBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -65,34 +64,39 @@ public class RaidSpawningManager {
 		this.level = world;
 		this.worldManager = worldManager;
 		MinecraftForge.EVENT_BUS.register(this);
-		RaidEntitySpawnCountRegistry.registerSpawnCounts();
+		RaidSpawnCountManager.registerSpawnCounts();
 	}
 
 	/**
 	 * Spawns the mobs for the current level specified in the
-	 * {@link RaidEntitySpawnCountRegistry} and saves the spawned entities into the
+	 * {@link RaidSpawnCountManager} and saves the spawned entities into the
 	 * list {@link #spawnedMobs}.
+	 * @return true, if any mobs were spawned for this wave
 	 */
-	void spawnRaidMobs() {
-		int raidLevel = raidManager.getRaidLevel();
-		Set<EntityType<? extends Mob>> entityTypesToSpawn = RaidEntitySpawnCountRegistry.getEntityTypesToSpawn();
-
-		int playerCount = level.players().size();
-
-		entityTypesToSpawn.forEach(type -> {
-			int count = RaidEntitySpawnCountRegistry.getSpawnCountForEntityAndLevelAndPlayerCount(type, raidLevel,
-					playerCount);
+	boolean spawnRaidMobsForWave(int wave) {
+		Set<EntityType<? extends Mob>> entityTypesToSpawn = RaidSpawnCountManager.getEntityTypesToSpawn();		
+		int spawnCountForWave = 0;
+		
+		for(var type : entityTypesToSpawn) {
+			Integer count = RaidSpawnCountManager.getSpawnCountForEntityAndWave(type, wave);
+			if(count == null) {
+				continue;
+			}
+			
 			Mob[] spawnedMobsArray = spawnSpecificEntities(type, count);
 
-			// remove nulls and convert to collection
 			Collection<Mob> spawnedMobsNonNullCollection = Arrays.stream(spawnedMobsArray)
 					.filter(Objects::nonNull).toList();
 
+			spawnCountForWave += spawnedMobsNonNullCollection.size();
+			
 			spawnedMobs.addAll(spawnedMobsNonNullCollection);
-		});
+
+		}
 
 		raidManager.markDirty();
-		Baseraids.LOGGER.info("Spawned all entities for the raid");
+		Baseraids.LOGGER.info("Spawned all entities for the wave");
+		return spawnCountForWave > 0;
 	}
 
 	/**
